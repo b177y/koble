@@ -77,10 +77,14 @@ func (pd *PodmanDriver) ConnectToMachine(name string) (err error) {
 	if err != nil {
 		return err
 	}
+	// options := new(containers.ExecStartAndAttachOptions).WithOutputStream(io.WriteCloser(os.Stdout)).WithErrorStream(io.WriteCloser(os.Stderr)).WithInputStream(*bufio.NewReader(os.Stdin)).WithAttachError(true).WithAttachInput(true).WithAttachOutput(true)
 	options := new(containers.ExecStartAndAttachOptions)
-	options.OutputStream = io.WriteCloser(os.Stdout)
-	options.ErrorStream = *os.Stderr
-	options.InputStream = bufio.NewReader(os.Stdin)
-	err = containers.ExecStartAndAttach(pd.conn, exId, nil)
+	options.WithOutputStream(io.WriteCloser(os.Stdout))
+	options.WithAttachOutput(true)
+	options.WithErrorStream(io.WriteCloser(os.Stderr))
+	options.WithAttachError(true)
+	options.WithInputStream(*bufio.NewReader(os.Stdin))
+	options.WithAttachInput(true)
+	err = containers.ExecStartAndAttach(pd.conn, exId, options)
 	return err
 }
