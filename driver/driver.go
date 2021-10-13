@@ -20,11 +20,14 @@ type Network struct {
 
 type Driver interface {
 	SetupDriver() (err error)
+
 	StartMachine(m Machine) (id string, err error)
 	StopMachine(name string) (err error)
 	CrashMachine(name string) (err error)
+
 	GetMachineState(name string) (state struct{}, err error)
 	ConnectToMachine(name string) (err error)
+	GetMachineLogs(name string, stdoutChan, stderrChan chan string) (err error)
 
 	CreateNetwork(net Network) (id string, err error)
 	StartNetwork(name string) (err error)

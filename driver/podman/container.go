@@ -88,3 +88,10 @@ func (pd *PodmanDriver) ConnectToMachine(name string) (err error) {
 	err = containers.ExecStartAndAttach(pd.conn, exId, options)
 	return err
 }
+
+func (pd *PodmanDriver) GetMachineLogs(name string, stdoutChan, stderrChan chan string) (err error) {
+	opts := new(containers.LogOptions)
+	opts.WithStdout(true)
+	err = containers.Logs(pd.conn, name, nil, stdoutChan, stderrChan)
+	return err
+}
