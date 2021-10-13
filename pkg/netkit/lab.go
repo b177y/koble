@@ -3,6 +3,7 @@ package netkit
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,10 +15,10 @@ import (
 )
 
 type PodmanMachineExtra struct {
-	AddCaps       []string `yaml:"add_caps"`
-	RmCaps        []string `yaml:"remove_caps"`
-	Volumes       []string `yaml:"volumes"`
-	MountHostHome bool     `yaml:"mount_host_home"`
+	AddCaps       []string `yaml:"add_caps,omitempty"`
+	RmCaps        []string `yaml:"remove_caps,omitempty"`
+	Volumes       []string `yaml:"volumes,omitempty"`
+	MountHostHome bool     `yaml:"mount_host_home,omitempty"`
 }
 
 type Network struct {
@@ -31,20 +32,23 @@ type Network struct {
 
 type Machine struct {
 	Name        string             `yaml:"name" validate:"alphanum,max=30"`
-	Networks    []Network          `yaml:"networks,omitempty,flow"`
+	Networks    []string           `yaml:"networks,omitempty" validate:"alphanum,max=30"`
 	Image       string             `yaml:"image,omitempty"`
-	PodmanExtra PodmanMachineExtra `yaml:"podman_extra,omitempty,flow"`
+	PodmanExtra PodmanMachineExtra `yaml:"podman_extra,omitempty"`
 }
 
 type Lab struct {
-	Name          string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	CreatedAt     string    `yaml:"created_at,omitempty,flow" validate:"datetime"`
-	NetkitVersion string    `yaml:"netkit_version,omitempty,flow"`
-	Description   string    `yaml:"description,omitempty"`
-	Authors       []string  `yaml:"authors,omitempty,flow"`
-	Emails        []string  `yaml:"emails,omitempty,flow" validate:"email"`
-	Web           []string  `yaml:"web,omitempty,flow" validate:"url"`
-	Machines      []Machine `yaml:"machines,omitempty,flow"`
+	Name          string             `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	CreatedAt     string             `yaml:"created_at,omitempty" validate:"datetime"`
+	NetkitVersion string             `yaml:"netkit_version,omitempty"`
+	Description   string             `yaml:"description,omitempty"`
+	Authors       []string           `yaml:"authors,omitempty"`
+	Emails        []string           `yaml:"emails,omitempty" validate:"email"`
+	Web           []string           `yaml:"web,omitempty" validate:"url"`
+	Machines      []Machine          `yaml:"machines,omitempty"`
+	Networks      []Network          `yaml:"networks,omitempty"`
+	DefaultImage  string             `yaml:"default_image,omitempty"`
+	PodmanExtra   PodmanMachineExtra `yaml:"podman_extra,omitempty"`
 }
 
 func InitLab(name string, description string, authors []string, emails []string, web []string) error {
@@ -90,11 +94,14 @@ func InitLab(name string, description string, authors []string, emails []string,
 		os.Mkdir(name, 0755)
 		fn = name + "/" + fn
 	}
-	// check if in script mode
+	// TODO check if in script mode
+	// ask for name, description etc
 	lab := Lab{
 		Description:   description,
-		Machines:      []Machine{},
 		NetkitVersion: VERSION,
+		Authors:       authors,
+		Emails:        emails,
+		Web:           web,
 	}
 	lab.CreatedAt = time.Now().Format("02-01-2006")
 	fmt.Print(lab)
@@ -103,6 +110,48 @@ func InitLab(name string, description string, authors []string, emails []string,
 		return err
 	}
 	err = os.WriteFile(fn, bytes, 0644)
-	// ask for name, description etc
 	return err
+}
+
+func AddMachineToLab(name string, networks []string, image string) error {
+	exists, err := fileExists("lab.yml")
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("lab.yml does not exist, are you in a lab directory?")
+	}
+	f, err := ioutil.ReadFile("lab.yml")
+	if err != nil {
+		return err
+	}
+	lab := Lab{}
+	err = yaml.Unmarshal(f, &lab)
+	if err != nil {
+		return err
+	}
+	err = validator.New().Var(name, "alphanum,max=30")
+	if err != nil {
+		return err
+	}
+	err = os.Mkdir(name, 0755)
+	if err != nil {
+		return err
+	}
+	fn := name + ".startup"
+	err = os.WriteFile(fn, []byte(DEFAULT_STARTUP), 0644)
+	if err != nil {
+		return err
+	}
+
+	lab.Machines = append(lab.Machines, Machine{
+		Name:     name,
+		Image:    image,
+		Networks: networks,
+	})
+	labYaml, err := yaml.Marshal(lab)
+	err = os.WriteFile("lab.yml", labYaml, 0644)
+	// TODO print help for getting started with machine
+	fmt.Printf("Created new machine %s, with directory for machine files and %s.startup as the machine startup script.\n", name, name)
+	return nil
 }

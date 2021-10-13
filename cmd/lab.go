@@ -2,7 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
@@ -12,6 +13,10 @@ var labDescription string
 var labAuthors []string
 var labEmails []string
 var labWeb []string
+
+var machineName string
+var machineNetworks []string
+var machineImage string
 
 var lstartCmd = &cobra.Command{
 	Use:   "start",
@@ -69,6 +74,10 @@ var laddCmd = &cobra.Command{
 	Short: "Add a new machine to a lab.",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("adding machine to lab")
+		err := netkit.AddMachineToLab(machineName, machineNetworks, machineImage)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
@@ -88,7 +97,12 @@ func init() {
 
 	linitCmd.Flags().StringVar(&labName, "name", "", "Name to give the lab. This will create a new directory with the specified name. If no name is given, the lab will be initialised in the current directory.")
 	linitCmd.Flags().StringVar(&labDescription, "description", "", "Description of the new lab.")
-	linitCmd.Flags().StringArrayVar(&labAuthors, "authors", []string{""}, "Comma separated list of lab author(s)")
-	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{""}, "Comma separated list of lab author emails.")
-	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{""}, "Comma separated list of lab web resource URLs.")
+	linitCmd.Flags().StringArrayVar(&labAuthors, "authors", []string{}, "Comma separated list of lab author(s)")
+	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{}, "Comma separated list of lab author emails.")
+	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{}, "Comma separated list of lab web resource URLs.")
+
+	laddCmd.Flags().StringVar(&machineName, "name", "", "Name for new machine.")
+	laddCmd.MarkFlagRequired("name")
+	laddCmd.Flags().StringVar(&machineImage, "image", "", "Image to use for new machine.")
+	laddCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to add to new machine.")
 }
