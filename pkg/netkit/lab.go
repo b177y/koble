@@ -24,10 +24,10 @@ type PodmanMachineExtra struct {
 
 type Network struct {
 	Name     string `yaml:"name" validate:"alphanum,max=30"`
-	Internal bool   `yaml:"external,omitempty"`
-	Gateway  string `yaml:"gateway,omitempty" validate:"ip"`
+	External bool   `yaml:"external,omitempty"`
+	Gateway  net.IP `yaml:"gateway,omitempty" validate:"ip"`
 	Subnet   string `yaml:"subnet,omitempty" validate:"cidr"`
-	IPv6     string `yaml:"ipv6,omitempty" validate:"ipv6"`
+	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
 }
 
 type Machine struct {
@@ -151,7 +151,6 @@ func AddMachineToLab(name string, networks []string, image string) error {
 			return fmt.Errorf("A machine with the name %s already exists.", name)
 		}
 	}
-	// TODO check machine name is not already used
 	lab.Machines = append(lab.Machines, Machine{
 		Name:     name,
 		Image:    image,
@@ -167,6 +166,51 @@ func AddMachineToLab(name string, networks []string, image string) error {
 	return nil
 }
 
-func AddNetworkToLab(name string, internal bool, gateway net.IP, subnet net.IPNet, ipv6 bool) error {
+func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNet, ipv6 bool) error {
+	if gateway.String() != "<nil>" {
+		if subnet.IP == nil {
+			return errors.New("To use a specified gateway you need to also specify a subnet.")
+		} else if !subnet.Contains(gateway) {
+			return fmt.Errorf("Gateway %s is not in subnet %s.", gateway.String(), subnet.String())
+		}
+	}
+	exists, err := fileExists("lab.yml")
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return errors.New("lab.yml does not exist, are you in a lab directory?")
+	}
+	f, err := ioutil.ReadFile("lab.yml")
+	if err != nil {
+		return err
+	}
+	lab := Lab{}
+	err = yaml.Unmarshal(f, &lab)
+	if err != nil {
+		return err
+	}
+	err = validator.New().Var(name, "alphanum,max=30")
+	if err != nil {
+		return err
+	}
+	for _, n := range lab.Networks {
+		if n.Name == name {
+			return fmt.Errorf("A network with the name %s already exists.", name)
+		}
+	}
+	lab.Networks = append(lab.Networks, Network{
+		Name:     name,
+		External: external,
+		Gateway:  gateway,
+		Subnet:   subnet.String(),
+		IPv6:     ipv6,
+	})
+	labYaml, err := yaml.Marshal(lab)
+	err = os.WriteFile("lab.yml", labYaml, 0644)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Created new network %s.\n", name)
 	return nil
 }

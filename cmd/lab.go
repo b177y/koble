@@ -20,7 +20,7 @@ var machineNetworks []string
 var machineImage string
 
 var networkName string
-var networkInternal bool
+var networkExternal bool
 var networkGateway net.IP
 var networkSubnet net.IPNet
 var networkIpv6 bool
@@ -96,7 +96,7 @@ var netAddCmd = &cobra.Command{
 	Use:   "net",
 	Short: "Add a new network to a lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.AddNetworkToLab(networkName, networkInternal, networkGateway, networkSubnet, networkIpv6)
+		err := netkit.AddNetworkToLab(networkName, networkExternal, networkGateway, networkSubnet, networkIpv6)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -133,7 +133,7 @@ func init() {
 
 	netAddCmd.Flags().StringVar(&networkName, "name", "", "Name for new network")
 	netAddCmd.MarkFlagRequired("name")
-	netAddCmd.Flags().BoolVar(&networkInternal, "internal", true, "restrict external access from this network")
+	netAddCmd.Flags().BoolVar(&networkExternal, "external", false, "Allow access to external networks")
 	netAddCmd.Flags().IPVar(&networkGateway, "gateway", net.IP(""), "IPv4 or IPv6 gateway for the subnet")
 	var ipNet net.IPNet
 	netAddCmd.Flags().IPNetVar(&networkSubnet, "subnet", ipNet, "subnet in CIDR format")

@@ -11,7 +11,7 @@ type Machine struct {
 
 type Network struct {
 	Name     string
-	Internal bool
+	External bool
 	Gateway  string
 	IpRange  string
 	Subnet   string
