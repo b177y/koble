@@ -8,10 +8,12 @@ import (
 )
 
 var attachCmd = &cobra.Command{
-	Use:   "attach",
+	Use:   "attach [MACHINE]",
 	Short: "The 'attach' subcommand is used to attach to the main tty on a netkit machine",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO get driver from ?cmd?
+		machine := args[0]
 		d := new(podman.PodmanDriver)
 		err := d.SetupDriver()
 		if err != nil {
@@ -25,6 +27,6 @@ var attachCmd = &cobra.Command{
 }
 
 func init() {
-	attachCmd.Flags().StringVarP(&machine, "machine", "m", "", "Machine to attach to.")
 	// TODO add ability to change detach sequence + add to config
+	// TODO --terminal mode
 }

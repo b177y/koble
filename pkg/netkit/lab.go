@@ -3,7 +3,6 @@ package netkit
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -52,7 +51,6 @@ type Lab struct {
 }
 
 func InitLab(name string, description string, authors []string, emails []string, web []string) error {
-	// check if names are empty etc
 	newDir := true
 	if name == "" {
 		log.Debug("Name not given, initialising lab in current directory.")
@@ -114,21 +112,13 @@ func InitLab(name string, description string, authors []string, emails []string,
 }
 
 func AddMachineToLab(name string, networks []string, image string) error {
-	exists, err := fileExists("lab.yml")
+	lab := Lab{}
+	exists, err := getLab(&lab)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New("lab.yml does not exist, are you in a lab directory?")
-	}
-	f, err := ioutil.ReadFile("lab.yml")
-	if err != nil {
-		return err
-	}
-	lab := Lab{}
-	err = yaml.Unmarshal(f, &lab)
-	if err != nil {
-		return err
 	}
 	err = validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
@@ -156,8 +146,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 		Image:    image,
 		Networks: networks,
 	})
-	labYaml, err := yaml.Marshal(lab)
-	err = os.WriteFile("lab.yml", labYaml, 0644)
+	err = saveLab(&lab)
 	// TODO print help for getting started with machine
 	if err != nil {
 		return err
@@ -174,21 +163,13 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 			return fmt.Errorf("Gateway %s is not in subnet %s.", gateway.String(), subnet.String())
 		}
 	}
-	exists, err := fileExists("lab.yml")
+	lab := Lab{}
+	exists, err := getLab(&lab)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New("lab.yml does not exist, are you in a lab directory?")
-	}
-	f, err := ioutil.ReadFile("lab.yml")
-	if err != nil {
-		return err
-	}
-	lab := Lab{}
-	err = yaml.Unmarshal(f, &lab)
-	if err != nil {
-		return err
 	}
 	err = validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
@@ -206,8 +187,7 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		Subnet:   subnet.String(),
 		IPv6:     ipv6,
 	})
-	labYaml, err := yaml.Marshal(lab)
-	err = os.WriteFile("lab.yml", labYaml, 0644)
+	err = saveLab(&lab)
 	if err != nil {
 		return err
 	}

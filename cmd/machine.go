@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/driver/podman"
+	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
 )
 
@@ -19,20 +18,7 @@ var mstartCmd = &cobra.Command{
 	Short: "Start a netkit machine",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Starting machine...")
-		m := driver.Machine{
-			Name:     "h12",
-			Hostlab:  "/home/billy/repos/rootless-netkit/examples/lab04",
-			Hosthome: "/home/billy",
-			Networks: []string{},
-			Image:    "localhost/netkit-deb-test",
-		}
-		d := new(podman.PodmanDriver)
-		err := d.SetupDriver()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Starting machine")
-		_, err = d.StartMachine(m)
+		err := netkit.StartMachine(machineName, machineImage, machineNetworks)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,4 +54,9 @@ func init() {
 	machineCmd.AddCommand(mcrashCmd)
 	machineCmd.AddCommand(mhaltCmd)
 	machineCmd.AddCommand(minfoCmd)
+
+	mstartCmd.Flags().StringVar(&machineName, "name", "", "Name to give machine")
+	mstartCmd.MarkFlagRequired("name")
+	mstartCmd.Flags().StringVar(&machineImage, "image", "localhost/netkit-deb-test", "Image to run machine with.")
+	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
 }

@@ -28,8 +28,10 @@ type Driver interface {
 	MachineExists(name string) (exists bool, err error)
 	GetMachineState(name string) (state struct{}, err error)
 	AttachToMachine(name string) (err error)
-	MachineExecShell(name string) (err error)
-	GetMachineLogs(name string, stdoutChan, stderrChan chan string) (err error)
+	MachineExecShell(name, command, user string,
+		detach bool, workdir string) (err error)
+	GetMachineLogs(name string, stdoutChan, stderrChan chan string,
+		follow bool, tail int) (err error)
 
 	NetworkExists(name string) (exists bool, err error)
 	CreateNetwork(net Network) (id string, err error)

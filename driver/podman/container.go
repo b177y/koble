@@ -24,6 +24,11 @@ func (pd *PodmanDriver) SetupDriver() (err error) {
 	return err
 }
 
+func (pd *PodmanDriver) MachineExists(name string) (exists bool,
+	err error) {
+	return containers.Exists(pd.conn, name, nil)
+}
+
 func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 	fmt.Println("Checking if image exists")
 	exists, err := images.Exists(pd.conn, m.Image, nil)
@@ -79,14 +84,21 @@ func (pd *PodmanDriver) AttachToMachine(name string) (err error) {
 	return err
 }
 
-func (pd *PodmanDriver) MachineExecShell(name string) (err error) {
+func (pd *PodmanDriver) MachineExecShell(name, command, user string,
+	detach bool, workdir string) (err error) {
+	exists, err := pd.MachineExists(name)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist.", name)
+	}
 	ec := new(handlers.ExecCreateConfig)
-	ec.Cmd = []string{"/bin/bash"}
+	ec.Cmd = []string{command}
 	exId, err := containers.ExecCreate(pd.conn, name, ec)
 	if err != nil {
 		return err
 	}
-	// options := new(containers.ExecStartAndAttachOptions).WithOutputStream(io.WriteCloser(os.Stdout)).WithErrorStream(io.WriteCloser(os.Stderr)).WithInputStream(*bufio.NewReader(os.Stdin)).WithAttachError(true).WithAttachInput(true).WithAttachOutput(true)
 	options := new(containers.ExecStartAndAttachOptions)
 	options.WithOutputStream(io.WriteCloser(os.Stdout))
 	options.WithAttachOutput(true)
@@ -95,13 +107,24 @@ func (pd *PodmanDriver) MachineExecShell(name string) (err error) {
 	options.WithInputStream(*bufio.NewReader(os.Stdin))
 	options.WithAttachInput(true)
 	err = containers.ExecStartAndAttach(pd.conn, exId, options)
-	fmt.Println("Error in execstartandattach is", err)
 	return err
 }
 
-func (pd *PodmanDriver) GetMachineLogs(name string, stdoutChan, stderrChan chan string) (err error) {
+func (pd *PodmanDriver) GetMachineLogs(name string,
+	stdoutChan, stderrChan chan string,
+	follow bool, tail int) (err error) {
+	exists, err := pd.MachineExists(name)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist.", name)
+	}
 	opts := new(containers.LogOptions)
 	opts.WithStdout(true)
-	err = containers.Logs(pd.conn, name, nil, stdoutChan, stderrChan)
+	opts.WithStderr(true)
+	opts.WithTail(fmt.Sprint(tail))
+	opts.WithFollow(follow)
+	err = containers.Logs(pd.conn, name, opts, stdoutChan, stderrChan)
 	return err
 }

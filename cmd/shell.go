@@ -9,19 +9,22 @@ import (
 
 var command string
 var user string
+var detachMode bool
+var workDir string
 
 var shellCmd = &cobra.Command{
-	Use:   "shell",
+	Use:   "shell [MACHINE]",
 	Short: "The 'shell' subcommand is used to connect to a shell on a netkit machine",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO get driver from ?cmd?
+		machine := args[0]
 		d := new(podman.PodmanDriver)
 		err := d.SetupDriver()
 		if err != nil {
 			log.Fatal(err)
 		}
-		// TODO get machine name from ?args?
-		err = d.MachineExecShell(machine)
+		err = d.MachineExecShell(machine, command, user, detachMode, workDir)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -31,7 +34,9 @@ var shellCmd = &cobra.Command{
 }
 
 func init() {
-	shellCmd.Flags().StringVarP(&machine, "machine", "m", "", "Machine to connect shell to.")
-	shellCmd.Flags().StringVarP(&command, "command", "c", "", "Command to execute in shell.")
+	shellCmd.Flags().StringVarP(&command, "command", "c", "/bin/bash", "Command to execute in shell.")
 	shellCmd.Flags().StringVarP(&command, "user", "u", "", "User to execute shell as.")
+	shellCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the exec session in detached mode (backgrounded)")
+	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
+	// TODO --terminal mode
 }
