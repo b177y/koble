@@ -20,11 +20,11 @@ var mstartCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Starting machine...")
 		m := driver.Machine{
-			Name:       "h12",
-			Hostlab:    "/home/billy/repos/rootless-netkit/examples/lab04",
-			Hosthome:   "/home/billy",
-			Networks:   []string{},
-			Filesystem: "localhost/netkit-deb-test",
+			Name:     "h12",
+			Hostlab:  "/home/billy/repos/rootless-netkit/examples/lab04",
+			Hosthome: "/home/billy",
+			Networks: []string{},
+			Image:    "localhost/netkit-deb-test",
 		}
 		d := new(podman.PodmanDriver)
 		err := d.SetupDriver()

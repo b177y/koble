@@ -2,11 +2,11 @@
 package driver
 
 type Machine struct {
-	Name       string
-	Hostlab    string
-	Hosthome   string
-	Networks   []string
-	Filesystem string
+	Name     string
+	Hostlab  string
+	Hosthome string
+	Networks []string
+	Image    string
 }
 
 type Network struct {

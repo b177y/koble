@@ -26,19 +26,19 @@ func (pd *PodmanDriver) SetupDriver() (err error) {
 
 func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 	fmt.Println("Checking if image exists")
-	exists, err := images.Exists(pd.conn, m.Filesystem, nil)
+	exists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return "", err
 	}
 	if !exists {
-		fmt.Println("Image", m.Filesystem, "does not already exist, attempting to pull...")
-		_, err = images.Pull(pd.conn, m.Filesystem, nil)
+		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
+		_, err = images.Pull(pd.conn, m.Image, nil)
 		if err != nil {
 			return "", err
 		}
 	}
 	fmt.Println("new spec")
-	s := specgen.NewSpecGenerator(m.Filesystem, false)
+	s := specgen.NewSpecGenerator(m.Image, false)
 	s.Name = m.Name
 	s.Hostname = m.Name
 	s.Command = []string{"/sbin/init"}

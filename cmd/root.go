@@ -1,19 +1,21 @@
 package cmd
 
 import (
+	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
 )
 
 var NetkitCLI = &cobra.Command{
-	Use:   "netkit",
-	Short: "Netkit is a network emulation tool",
+	Use:     "netkit",
+	Short:   "Netkit is a network emulation tool",
+	Version: netkit.VERSION,
 }
 
 var verbose bool
 
 // Shared flag variables
 var machine string
-var lab string
+var labName string
 
 func init() {
 	NetkitCLI.AddCommand(labCmd)
