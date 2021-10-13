@@ -180,13 +180,17 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 			return fmt.Errorf("A network with the name %s already exists.", name)
 		}
 	}
-	lab.Networks = append(lab.Networks, Network{
+	net := Network{
 		Name:     name,
 		External: external,
 		Gateway:  gateway,
 		Subnet:   subnet.String(),
 		IPv6:     ipv6,
-	})
+	}
+	if net.Subnet == "<nil>" {
+		net.Subnet = ""
+	}
+	lab.Networks = append(lab.Networks, net)
 	err = saveLab(&lab)
 	if err != nil {
 		return err

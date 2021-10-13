@@ -23,5 +23,6 @@ func init() {
 	NetkitCLI.AddCommand(attachCmd)
 	NetkitCLI.AddCommand(logsCmd)
 	NetkitCLI.AddCommand(machineCmd)
+	NetkitCLI.AddCommand(netCmd)
 	NetkitCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 }

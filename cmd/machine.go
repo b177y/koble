@@ -49,14 +49,31 @@ var minfoCmd = &cobra.Command{
 	},
 }
 
+var maddCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add a new machine to a lab",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := netkit.AddMachineToLab(machineName, machineNetworks, machineImage)
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
 func init() {
 	machineCmd.AddCommand(mstartCmd)
 	machineCmd.AddCommand(mcrashCmd)
 	machineCmd.AddCommand(mhaltCmd)
 	machineCmd.AddCommand(minfoCmd)
+	machineCmd.AddCommand(maddCmd)
 
 	mstartCmd.Flags().StringVar(&machineName, "name", "", "Name to give machine")
 	mstartCmd.MarkFlagRequired("name")
 	mstartCmd.Flags().StringVar(&machineImage, "image", "localhost/netkit-deb-test", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
+
+	maddCmd.Flags().StringVar(&machineName, "name", "", "Name for new machine.")
+	maddCmd.MarkFlagRequired("name")
+	maddCmd.Flags().StringVar(&machineImage, "image", "", "Image to use for new machine.")
+	maddCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to add to new machine.")
 }
