@@ -25,10 +25,13 @@ type Driver interface {
 	StopMachine(name string) (err error)
 	CrashMachine(name string) (err error)
 
+	MachineExists(name string) (exists bool, err error)
 	GetMachineState(name string) (state struct{}, err error)
-	ConnectToMachine(name string) (err error)
+	AttachToMachine(name string) (err error)
+	MachineExecShell(name string) (err error)
 	GetMachineLogs(name string, stdoutChan, stderrChan chan string) (err error)
 
+	NetworkExists(name string) (exists bool, err error)
 	CreateNetwork(net Network) (id string, err error)
 	StartNetwork(name string) (err error)
 	StopNetwork(name string) (err error)

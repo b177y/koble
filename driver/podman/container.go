@@ -44,6 +44,7 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
 	s.CNINetworks = m.Networks
+	s.Terminal = true
 	createResponse, err := containers.CreateWithSpec(pd.conn, s, nil)
 	if err != nil {
 		return "", err
@@ -70,7 +71,15 @@ func (pd *PodmanDriver) GetMachineStatus(name string) (data interface{}, err err
 	return data, err
 }
 
-func (pd *PodmanDriver) ConnectToMachine(name string) (err error) {
+func (pd *PodmanDriver) AttachToMachine(name string) (err error) {
+	opts := new(containers.AttachOptions)
+	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", name)
+	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
+	err = containers.Attach(pd.conn, name, os.Stdin, os.Stdout, os.Stderr, nil, opts)
+	return err
+}
+
+func (pd *PodmanDriver) MachineExecShell(name string) (err error) {
 	ec := new(handlers.ExecCreateConfig)
 	ec.Cmd = []string{"/bin/bash"}
 	exId, err := containers.ExecCreate(pd.conn, name, ec)
@@ -86,6 +95,7 @@ func (pd *PodmanDriver) ConnectToMachine(name string) (err error) {
 	options.WithInputStream(*bufio.NewReader(os.Stdin))
 	options.WithAttachInput(true)
 	err = containers.ExecStartAndAttach(pd.conn, exId, options)
+	fmt.Println("Error in execstartandattach is", err)
 	return err
 }
 

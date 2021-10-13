@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var machine string
 var logsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "The 'logs' subcommand is used to get logs from netkit machines",
@@ -38,5 +37,6 @@ var logsCmd = &cobra.Command{
 }
 
 func init() {
+	// TODO change this to positional arg
 	logsCmd.Flags().StringVarP(&machine, "machine", "m", "", "Machine to get logs from.")
 }
