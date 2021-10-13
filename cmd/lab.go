@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net"
 
 	log "github.com/sirupsen/logrus"
 
@@ -17,6 +18,12 @@ var labWeb []string
 var machineName string
 var machineNetworks []string
 var machineImage string
+
+var networkName string
+var networkInternal bool
+var networkGateway net.IP
+var networkSubnet net.IPNet
+var networkIpv6 bool
 
 var lstartCmd = &cobra.Command{
 	Use:   "start",
@@ -60,7 +67,7 @@ var linfoCmd = &cobra.Command{
 
 var linitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialise a new netkit lab.",
+	Short: "Initialise a new netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := netkit.InitLab(labName, labDescription, labAuthors, labEmails, labWeb)
 		if err != nil {
@@ -71,10 +78,25 @@ var linitCmd = &cobra.Command{
 
 var laddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add a new machine to a lab.",
+	Short: "Add a new machine or network to a lab",
+}
+
+var machAddCmd = &cobra.Command{
+	Use:   "machine",
+	Short: "Add a new machine to a lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("adding machine to lab")
 		err := netkit.AddMachineToLab(machineName, machineNetworks, machineImage)
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+var netAddCmd = &cobra.Command{
+	Use:   "net",
+	Short: "Add a new network to a lab",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := netkit.AddNetworkToLab(networkName, networkInternal, networkGateway, networkSubnet, networkIpv6)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,8 +123,19 @@ func init() {
 	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{}, "Comma separated list of lab author emails.")
 	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{}, "Comma separated list of lab web resource URLs.")
 
-	laddCmd.Flags().StringVar(&machineName, "name", "", "Name for new machine.")
-	laddCmd.MarkFlagRequired("name")
-	laddCmd.Flags().StringVar(&machineImage, "image", "", "Image to use for new machine.")
-	laddCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to add to new machine.")
+	laddCmd.AddCommand(machAddCmd)
+	laddCmd.AddCommand(netAddCmd)
+
+	machAddCmd.Flags().StringVar(&machineName, "name", "", "Name for new machine.")
+	machAddCmd.MarkFlagRequired("name")
+	machAddCmd.Flags().StringVar(&machineImage, "image", "", "Image to use for new machine.")
+	machAddCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to add to new machine.")
+
+	netAddCmd.Flags().StringVar(&networkName, "name", "", "Name for new network")
+	netAddCmd.MarkFlagRequired("name")
+	netAddCmd.Flags().BoolVar(&networkInternal, "internal", true, "restrict external access from this network")
+	netAddCmd.Flags().IPVar(&networkGateway, "gateway", net.IP(""), "IPv4 or IPv6 gateway for the subnet")
+	var ipNet net.IPNet
+	netAddCmd.Flags().IPNetVar(&networkSubnet, "subnet", ipNet, "subnet in CIDR format")
+	netAddCmd.Flags().BoolVar(&networkIpv6, "ipv6", false, "enable ipv6 networking")
 }

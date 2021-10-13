@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"time"
@@ -25,7 +26,6 @@ type Network struct {
 	Name     string `yaml:"name" validate:"alphanum,max=30"`
 	Internal bool   `yaml:"external,omitempty"`
 	Gateway  string `yaml:"gateway,omitempty" validate:"ip"`
-	IpRange  string `yaml:"ip_range,omitempty" validate:"cidr"`
 	Subnet   string `yaml:"subnet,omitempty" validate:"cidr"`
 	IPv6     string `yaml:"ipv6,omitempty" validate:"ipv6"`
 }
@@ -136,14 +136,22 @@ func AddMachineToLab(name string, networks []string, image string) error {
 	}
 	err = os.Mkdir(name, 0755)
 	if err != nil {
+		// TODO warn but not error if already exists
 		return err
 	}
 	fn := name + ".startup"
 	err = os.WriteFile(fn, []byte(DEFAULT_STARTUP), 0644)
 	if err != nil {
+		// TODO warn but not error if already exists
 		return err
 	}
 
+	for _, m := range lab.Machines {
+		if m.Name == name {
+			return fmt.Errorf("A machine with the name %s already exists.", name)
+		}
+	}
+	// TODO check machine name is not already used
 	lab.Machines = append(lab.Machines, Machine{
 		Name:     name,
 		Image:    image,
@@ -152,6 +160,13 @@ func AddMachineToLab(name string, networks []string, image string) error {
 	labYaml, err := yaml.Marshal(lab)
 	err = os.WriteFile("lab.yml", labYaml, 0644)
 	// TODO print help for getting started with machine
+	if err != nil {
+		return err
+	}
 	fmt.Printf("Created new machine %s, with directory for machine files and %s.startup as the machine startup script.\n", name, name)
+	return nil
+}
+
+func AddNetworkToLab(name string, internal bool, gateway net.IP, subnet net.IPNet, ipv6 bool) error {
 	return nil
 }
