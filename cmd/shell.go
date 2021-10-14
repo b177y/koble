@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/b177y/netkit/driver/podman"
 	"github.com/spf13/cobra"

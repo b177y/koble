@@ -2,11 +2,20 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
 )
+
+var machineName string
+var machineNetworks []string
+var machineImage string
+
+var addMachineName string
+var addMachineNetworks []string
+var addMachineImage string
 
 var machineCmd = &cobra.Command{
 	Use:   "machine",
@@ -17,7 +26,6 @@ var mstartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a netkit machine",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting machine...")
 		err := netkit.StartMachine(machineName, machineImage, machineNetworks)
 		if err != nil {
 			log.Fatal(err)
@@ -72,8 +80,8 @@ func init() {
 	mstartCmd.Flags().StringVar(&machineImage, "image", "localhost/netkit-deb-test", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
 
-	maddCmd.Flags().StringVar(&machineName, "name", "", "Name for new machine.")
+	maddCmd.Flags().StringVar(&addMachineName, "name", "", "Name for new machine.")
 	maddCmd.MarkFlagRequired("name")
-	maddCmd.Flags().StringVar(&machineImage, "image", "", "Image to use for new machine.")
-	maddCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to add to new machine.")
+	maddCmd.Flags().StringVar(&addMachineImage, "image", "", "Image to use for new machine.")
+	maddCmd.Flags().StringArrayVar(&addMachineNetworks, "networks", []string{}, "Networks to add to new machine.")
 }

@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
@@ -49,6 +50,8 @@ var naddCmd = &cobra.Command{
 
 func init() {
 	netCmd.AddCommand(naddCmd)
+	netCmd.AddCommand(nlistCmd)
+	netCmd.AddCommand(ninfoCmd)
 
 	naddCmd.Flags().StringVar(&networkName, "name", "", "Name for new network")
 	naddCmd.MarkFlagRequired("name")

@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/b177y/netkit/driver/podman"
+	"github.com/b177y/netkit/pkg/netkit"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -17,24 +15,7 @@ var logsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		machine := args[0]
-		d := new(podman.PodmanDriver)
-		err := d.SetupDriver()
-		if err != nil {
-			log.Fatal(err)
-		}
-		stdoutChan := make(chan string)
-		stderrChan := make(chan string)
-		go func() {
-			for recv := range stdoutChan {
-				fmt.Println(recv)
-			}
-		}()
-		go func() {
-			for recv := range stderrChan {
-				fmt.Println(recv)
-			}
-		}()
-		err = d.GetMachineLogs(machine, stdoutChan, stderrChan, logsFollow, logsTail)
+		err := netkit.MachineLogs(machine, logsFollow, logsTail)
 		if err != nil {
 			log.Fatal(err)
 		}

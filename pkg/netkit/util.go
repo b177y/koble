@@ -1,8 +1,10 @@
 package netkit
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"gopkg.in/yaml.v2"
 )
@@ -34,6 +36,11 @@ func getLab(lab *Lab) (exists bool, err error) {
 	if err != nil {
 		return true, err
 	}
+	dir, err := os.Getwd()
+	if err != nil {
+		return true, err
+	}
+	lab.Name = filepath.Base(dir)
 	return true, nil
 }
 
@@ -44,4 +51,33 @@ func saveLab(lab *Lab) error {
 	}
 	err = os.WriteFile("lab.yml", labYaml, 0644)
 	return err
+}
+
+type NetkitError struct {
+	Err   error
+	From  string
+	Doing string
+	Extra string
+}
+
+func (ne NetkitError) Error() string {
+	errString := ""
+	if ne.From != "" {
+		errString += fmt.Sprintf("[%s] :", ne.From)
+	}
+	errString += ne.Err.Error()
+	if ne.Doing != "" {
+		errString += fmt.Sprintf("\nWhile doing: %s\n", ne.Doing)
+	}
+	errString += ne.Extra
+	return errString
+}
+
+func NewError(err error, from, doing, extra string) NetkitError {
+	return NetkitError{
+		Err:   err,
+		From:  from,
+		Doing: doing,
+		Extra: extra,
+	}
 }

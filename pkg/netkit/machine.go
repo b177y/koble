@@ -2,32 +2,23 @@ package netkit
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/podman"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 func StartMachine(name, image string, networks []string) error {
-	exists, err := fileExists("lab.yml")
+	lab := Lab{
+		Name: "",
+	}
+	exists, err := getLab(&lab)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		log.Warn("You are not in a lab directory, starting new non-lab machine.")
-	} else {
-		f, err := ioutil.ReadFile("lab.yml")
-		if err != nil {
-			return err
-		}
-		lab := Lab{}
-		err = yaml.Unmarshal(f, &lab)
-		if err != nil {
-			return err
-		}
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -46,8 +37,7 @@ func StartMachine(name, image string, networks []string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Starting machine")
-	_, err = d.StartMachine(m)
+	_, err = d.StartMachine(m, lab.Name)
 	return err
 }
 
@@ -65,4 +55,33 @@ func DestroyMachine() error {
 
 func MachineInfo() error {
 	return nil
+}
+
+func MachineLogs(machine string, follow bool, tail int) error {
+	lab := Lab{
+		Name: "",
+	}
+	_, err := getLab(&lab)
+	if err != nil {
+		return err
+	}
+	d := new(podman.PodmanDriver)
+	err = d.SetupDriver()
+	if err != nil {
+		return err
+	}
+	stdoutChan := make(chan string)
+	stderrChan := make(chan string)
+	go func() {
+		for recv := range stdoutChan {
+			fmt.Println(recv)
+		}
+	}()
+	go func() {
+		for recv := range stderrChan {
+			fmt.Println(recv)
+		}
+	}()
+	err = d.GetMachineLogs(machine, lab.Name, stdoutChan, stderrChan, follow, tail)
+	return err
 }

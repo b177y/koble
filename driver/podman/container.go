@@ -13,27 +13,54 @@ import (
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
+	log "github.com/sirupsen/logrus"
 )
 
 type PodmanDriver struct {
 	conn context.Context
+	Name string
 }
 
 func (pd *PodmanDriver) SetupDriver() (err error) {
+	pd.Name = "Podman"
+	log.Debug("Attempting to connect to podman socket.")
 	pd.conn, err = bindings.NewConnection(context.Background(), "unix://run/user/1000/podman/podman.sock")
-	return err
+	if err != nil {
+		return driver.NewDriverError(err, pd.Name, "SetupDriver")
+	}
+	return nil
+}
+
+func getName(name, lab string) string {
+	name = "netkit_" + name
+	if lab != "" {
+		name += "_" + lab
+	}
+	return name
+}
+
+func getLabels(name, lab string) map[string]string {
+	labels := make(map[string]string)
+	labels["netkit"] = "true"
+	labels["netkit:name"] = name
+	labels["netkit:lab"] = lab
+	return labels
 }
 
 func (pd *PodmanDriver) MachineExists(name string) (exists bool,
 	err error) {
-	return containers.Exists(pd.conn, name, nil)
+	exists, err = containers.Exists(pd.conn, name, nil)
+	if err != nil {
+		return exists, driver.NewDriverError(err, pd.Name, "MachineExists")
+	}
+	return exists, nil
 }
 
-func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
-	fmt.Println("Checking if image exists")
+func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, err error) {
+	name := getName(m.Name, lab)
 	exists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
-		return "", err
+		return "", driver.NewDriverError(err, pd.Name, "StartMachine")
 	}
 	if !exists {
 		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
@@ -42,14 +69,14 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 			return "", err
 		}
 	}
-	fmt.Println("new spec")
 	s := specgen.NewSpecGenerator(m.Image, false)
-	s.Name = m.Name
-	s.Hostname = m.Name
+	s.Name = name
+	s.Hostname = name
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
 	s.CNINetworks = m.Networks
 	s.Terminal = true
+	s.Labels = getLabels(m.Name, lab)
 	createResponse, err := containers.CreateWithSpec(pd.conn, s, nil)
 	if err != nil {
 		return "", err
@@ -110,9 +137,10 @@ func (pd *PodmanDriver) MachineExecShell(name, command, user string,
 	return err
 }
 
-func (pd *PodmanDriver) GetMachineLogs(name string,
+func (pd *PodmanDriver) GetMachineLogs(name, lab string,
 	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
+	name = getName(name, lab)
 	exists, err := pd.MachineExists(name)
 	if err != nil {
 		return err
@@ -127,4 +155,8 @@ func (pd *PodmanDriver) GetMachineLogs(name string,
 	opts.WithFollow(follow)
 	err = containers.Logs(pd.conn, name, opts, stdoutChan, stderrChan)
 	return err
+}
+
+func (pd *PodmanDriver) ListMachines(lab string) error {
+	return nil
 }

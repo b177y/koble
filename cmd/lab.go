@@ -14,10 +14,6 @@ var labAuthors []string
 var labEmails []string
 var labWeb []string
 
-var machineName string
-var machineNetworks []string
-var machineImage string
-
 var lstartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a netkit lab",
