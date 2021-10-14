@@ -1,7 +1,11 @@
 // defines driver interface for netkit compatible drivers
 package driver
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/cri-o/ocicni/pkg/ocicni"
+)
 
 type Machine struct {
 	Name     string
@@ -9,6 +13,21 @@ type Machine struct {
 	Hosthome string
 	Networks []string
 	Image    string
+}
+
+type MachineInfo struct {
+	Name     string
+	Lab      string
+	Networks []string
+	Image    string
+	State    string
+	Uptime   string
+	ExitCode int32
+	Exited   bool
+	ExitedAt int64
+	Mounts   []string
+	HostPid  int
+	Ports    []ocicni.PortMapping
 }
 
 type Network struct {
@@ -27,7 +46,7 @@ type Driver interface {
 	StopMachine(name string) (err error)
 	CrashMachine(name string) (err error)
 
-	ListMachines(lab string) error
+	ListMachines(lab string) ([]MachineInfo, error)
 	MachineExists(name string, lab string) (exists bool, err error)
 	GetMachineState(name string, lab string) (state struct{}, err error)
 	AttachToMachine(name string, lab string) (err error)

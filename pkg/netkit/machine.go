@@ -85,3 +85,23 @@ func MachineLogs(machine string, follow bool, tail int) error {
 	err = d.GetMachineLogs(machine, lab.Name, stdoutChan, stderrChan, follow, tail)
 	return err
 }
+
+func ListMachines(all bool) error {
+	lab := Lab{
+		Name: "",
+	}
+	_, err := getLab(&lab)
+	if err != nil {
+		return err
+	}
+	d := new(podman.PodmanDriver)
+	err = d.SetupDriver()
+	if err != nil {
+		return err
+	}
+	machines, err := d.ListMachines(lab.Name, all)
+	for _, m := range machines {
+		fmt.Println("Container", m.Name, m.State)
+	}
+	return err
+}

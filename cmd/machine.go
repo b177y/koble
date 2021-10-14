@@ -17,6 +17,8 @@ var addMachineName string
 var addMachineNetworks []string
 var addMachineImage string
 
+var mListAll bool
+
 var machineCmd = &cobra.Command{
 	Use:   "machine",
 	Short: "The 'machine' subcommand is used to start and manage netkit machines",
@@ -68,12 +70,24 @@ var maddCmd = &cobra.Command{
 	},
 }
 
+var mlistCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List netkit machines",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := netkit.ListMachines(mListAll)
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
 func init() {
 	machineCmd.AddCommand(mstartCmd)
 	machineCmd.AddCommand(mcrashCmd)
 	machineCmd.AddCommand(mhaltCmd)
 	machineCmd.AddCommand(minfoCmd)
 	machineCmd.AddCommand(maddCmd)
+	machineCmd.AddCommand(mlistCmd)
 
 	mstartCmd.Flags().StringVar(&machineName, "name", "", "Name to give machine")
 	mstartCmd.MarkFlagRequired("name")
@@ -84,4 +98,6 @@ func init() {
 	maddCmd.MarkFlagRequired("name")
 	maddCmd.Flags().StringVar(&addMachineImage, "image", "", "Image to use for new machine.")
 	maddCmd.Flags().StringArrayVar(&addMachineNetworks, "networks", []string{}, "Networks to add to new machine.")
+
+	mlistCmd.Flags().BoolVarP(&mListAll, "all", "a", false, "List all machines (from all labs / non-labs)")
 }

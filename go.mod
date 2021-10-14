@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/containers/podman/v3 v3.4.0
+	github.com/cri-o/ocicni v0.2.1-0.20210621164014-d0acc7862283
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
@@ -35,7 +36,6 @@ require (
 	github.com/containers/psgo v1.7.1 // indirect
 	github.com/containers/storage v1.36.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/cri-o/ocicni v0.2.1-0.20210621164014-d0acc7862283 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/disiqueira/gotree/v3 v3.0.2 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect

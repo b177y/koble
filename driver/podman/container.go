@@ -43,8 +43,29 @@ func getLabels(name, lab string) map[string]string {
 	labels := make(map[string]string)
 	labels["netkit"] = "true"
 	labels["netkit:name"] = name
-	labels["netkit:lab"] = lab
+	if lab != "" {
+		labels["netkit:lab"] = lab
+	} else {
+		labels["netkit:nolab"] = "true"
+	}
+
 	return labels
+}
+
+func getFilters(machine, lab string, all bool) map[string][]string {
+	filters := make(map[string][]string)
+	var labelFilters []string
+	labelFilters = append(labelFilters, "netkit=true")
+	if lab != "" && !all {
+		labelFilters = append(labelFilters, "netkit:lab="+lab)
+	} else if !all {
+		labelFilters = append(labelFilters, "netkit:nolab=true")
+	}
+	if machine != "" && !all {
+		labelFilters = append(labelFilters, "netkit:name="+machine)
+	}
+	filters["label"] = labelFilters
+	return filters
 }
 
 func (pd *PodmanDriver) MachineExists(name string) (exists bool,
@@ -157,6 +178,31 @@ func (pd *PodmanDriver) GetMachineLogs(name, lab string,
 	return err
 }
 
-func (pd *PodmanDriver) ListMachines(lab string) error {
-	return nil
+func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
+	var machines []driver.MachineInfo
+	opts := new(containers.ListOptions)
+	if lab == "" {
+	}
+	filters := getFilters("", lab, all)
+	opts.WithFilters(filters)
+	ctrs, err := containers.List(pd.conn, opts)
+	if err != nil {
+		return machines, err
+	}
+	for _, c := range ctrs {
+		machines = append(machines, driver.MachineInfo{
+			Name:     c.Names[0],
+			Image:    c.Image,
+			Networks: c.Networks,
+			State:    c.State,
+			Uptime:   c.Status,
+			Exited:   c.Exited,
+			ExitCode: c.ExitCode,
+			ExitedAt: c.ExitedAt,
+			Mounts:   c.Mounts,
+			HostPid:  c.Pid,
+			Ports:    c.Ports,
+		})
+	}
+	return machines, nil
 }
