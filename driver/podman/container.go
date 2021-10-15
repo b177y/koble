@@ -143,6 +143,10 @@ func (pd *PodmanDriver) MachineExecShell(name, command, user string,
 	}
 	ec := new(handlers.ExecCreateConfig)
 	ec.Cmd = []string{command}
+	ec.AttachStderr = true
+	ec.AttachStdin = true
+	ec.AttachStdout = true
+	ec.Tty = true
 	exId, err := containers.ExecCreate(pd.conn, name, ec)
 	if err != nil {
 		return err

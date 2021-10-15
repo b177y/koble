@@ -35,7 +35,7 @@ var shellCmd = &cobra.Command{
 
 func init() {
 	shellCmd.Flags().StringVarP(&command, "command", "c", "/bin/bash", "Command to execute in shell.")
-	shellCmd.Flags().StringVarP(&command, "user", "u", "", "User to execute shell as.")
+	shellCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	shellCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the exec session in detached mode (backgrounded)")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	// TODO --terminal mode
