@@ -3,7 +3,7 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/b177y/netkit/driver/podman"
+	"github.com/b177y/netkit/pkg/netkit"
 	"github.com/spf13/cobra"
 )
 
@@ -19,17 +19,10 @@ var shellCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO get driver from ?cmd?
 		machine := args[0]
-		d := new(podman.PodmanDriver)
-		err := d.SetupDriver()
+		err := netkit.ExecMachineShell(machine, command, user, detachMode, workDir)
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = d.MachineExecShell(machine, command, user, detachMode, workDir)
-		if err != nil {
-			log.Fatal(err)
-		}
-		// custom command
-		// --user to execute as
 	},
 }
 

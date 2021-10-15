@@ -52,6 +52,18 @@ func getLabels(name, lab string) map[string]string {
 	return labels
 }
 
+func getInfoFromLabels(labels map[string]string) (name, lab string) {
+	if val, ok := labels["netkit:name"]; ok {
+		name = val
+	}
+	if val, ok := labels["netkit:nolab"]; ok && val == "true" {
+		lab = ""
+	} else if val, ok := labels["netkit:lab"]; ok {
+		lab = val
+	}
+	return name, lab
+}
+
 func getFilters(machine, lab string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
@@ -78,7 +90,7 @@ func (pd *PodmanDriver) MachineExists(name string) (exists bool,
 }
 
 func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, err error) {
-	name := getName(m.Name, lab)
+	nk_fullname := getName(m.Name, lab)
 	exists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return "", driver.NewDriverError(err, pd.Name, "StartMachine")
@@ -91,8 +103,8 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 		}
 	}
 	s := specgen.NewSpecGenerator(m.Image, false)
-	s.Name = name
-	s.Hostname = name
+	s.Name = nk_fullname
+	s.Hostname = m.Name
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
 	s.CNINetworks = m.Networks
@@ -132,8 +144,9 @@ func (pd *PodmanDriver) AttachToMachine(name string) (err error) {
 	return err
 }
 
-func (pd *PodmanDriver) MachineExecShell(name, command, user string,
+func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	detach bool, workdir string) (err error) {
+	name = getName(name, lab)
 	exists, err := pd.MachineExists(name)
 	if err != nil {
 		return err
@@ -194,8 +207,10 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 		return machines, err
 	}
 	for _, c := range ctrs {
+		name, lab := getInfoFromLabels(c.Labels)
 		machines = append(machines, driver.MachineInfo{
-			Name:     c.Names[0],
+			Name:     name,
+			Lab:      lab,
 			Image:    c.Image,
 			Networks: c.Networks,
 			State:    c.State,

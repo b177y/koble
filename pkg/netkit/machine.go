@@ -109,12 +109,31 @@ func ListMachines(all bool) error {
 		}
 	}
 	machines, err := d.ListMachines(lab.Name, all)
-	// TODO - only show lab if using --all
-	headers := []string{"Name", "Lab", "Image", "Networks", "State"}
-	mlist, err := MachineInfoToStringArr(machines)
+	var mlist [][]string
+	var headers []string
+	if all {
+		mlist, headers = MachineInfoToStringArr(machines, true)
+	} else {
+		mlist, headers = MachineInfoToStringArr(machines, false)
+	}
+	RenderTable(headers, mlist)
+	return err
+}
+
+func ExecMachineShell(machine, command, user string,
+	detach bool, workdir string) error {
+	lab := Lab{
+		Name: "",
+	}
+	_, err := getLab(&lab)
 	if err != nil {
 		return err
 	}
-	RenderTable(headers, mlist)
+	d := new(podman.PodmanDriver)
+	err = d.SetupDriver()
+	if err != nil {
+		return err
+	}
+	err = d.MachineExecShell(machine, lab.Name, command, user, detach, workdir)
 	return err
 }

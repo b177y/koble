@@ -103,15 +103,26 @@ func RenderTable(headers []string, mlist [][]string) {
 	table.Render()
 }
 
-func MachineInfoToStringArr(machines []driver.MachineInfo) (mlist [][]string, err error) {
-	for _, m := range machines {
-		mlist = append(mlist, []string{
-			m.Name,
-			m.Lab,
-			m.Image,
-			strings.Join(m.Networks, ","),
-			m.State,
-		})
+func MachineInfoToStringArr(machines []driver.MachineInfo, showLab bool) (mlist [][]string, headers []string) {
+	headers = append(headers, "name")
+	if showLab {
+		headers = append(headers, "lab")
 	}
-	return mlist, nil
+	headers = append(headers, "image")
+	headers = append(headers, "networks")
+	headers = append(headers, "state")
+
+	for _, m := range machines {
+		var minfo []string
+		minfo = append(minfo, m.Name)
+		if showLab {
+			minfo = append(minfo, m.Lab)
+		}
+		minfo = append(minfo, m.Image)
+		minfo = append(minfo, strings.Join(m.Networks, ","))
+		minfo = append(minfo, m.State)
+		// Add machine info to list of machines
+		mlist = append(mlist, minfo)
+	}
+	return mlist, headers
 }

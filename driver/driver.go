@@ -50,7 +50,7 @@ type Driver interface {
 	MachineExists(name string, lab string) (exists bool, err error)
 	GetMachineState(name string, lab string) (state struct{}, err error)
 	AttachToMachine(name string, lab string) (err error)
-	MachineExecShell(name, command, user, lab string,
+	MachineExecShell(name, lab, command, user string,
 		detach bool, workdir string) (err error)
 	GetMachineLogs(name, lab string, stdoutChan, stderrChan chan string,
 		follow bool, tail int) (err error)
