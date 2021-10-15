@@ -99,9 +99,22 @@ func ListMachines(all bool) error {
 	if err != nil {
 		return err
 	}
-	machines, err := d.ListMachines(lab.Name, all)
-	for _, m := range machines {
-		fmt.Println("Container", m.Name, m.State)
+	if !all {
+		if lab.Name == "" {
+			fmt.Println("Listing all machines which are not associated with a lab.")
+			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
+		} else {
+			fmt.Printf("Listing all machines within this lab (%s).\n", lab.Name)
+			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
+		}
 	}
+	machines, err := d.ListMachines(lab.Name, all)
+	// TODO - only show lab if using --all
+	headers := []string{"Name", "Lab", "Image", "Networks", "State"}
+	mlist, err := MachineInfoToStringArr(machines)
+	if err != nil {
+		return err
+	}
+	RenderTable(headers, mlist)
 	return err
 }

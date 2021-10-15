@@ -5,7 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/b177y/netkit/driver"
+	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 )
 
@@ -80,4 +83,35 @@ func NewError(err error, from, doing, extra string) NetkitError {
 		Doing: doing,
 		Extra: extra,
 	}
+}
+
+func RenderTable(headers []string, mlist [][]string) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(headers)
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t")
+	table.SetNoWhiteSpace(true)
+	table.AppendBulk(mlist)
+	table.Render()
+}
+
+func MachineInfoToStringArr(machines []driver.MachineInfo) (mlist [][]string, err error) {
+	for _, m := range machines {
+		mlist = append(mlist, []string{
+			m.Name,
+			m.Lab,
+			m.Image,
+			strings.Join(m.Networks, ","),
+			m.State,
+		})
+	}
+	return mlist, nil
 }
