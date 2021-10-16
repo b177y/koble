@@ -27,6 +27,6 @@ var attachCmd = &cobra.Command{
 }
 
 func init() {
-	// TODO add ability to change detach sequence + add to config
-	// TODO --terminal mode
+	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
+	attachCmd.Flags().BoolVar(&noTerm, "console", false, "Launch shell within current console.")
 }

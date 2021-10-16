@@ -31,5 +31,6 @@ func init() {
 	shellCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	shellCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the exec session in detached mode (backgrounded)")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
-	// TODO --terminal mode
+	shellCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
+	shellCmd.Flags().BoolVar(&noTerm, "console", false, "Launch shell within current console.")
 }
