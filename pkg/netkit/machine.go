@@ -119,21 +119,3 @@ func ListMachines(all bool) error {
 	RenderTable(headers, mlist)
 	return err
 }
-
-func ExecMachineShell(machine, command, user string,
-	detach bool, workdir string) error {
-	lab := Lab{
-		Name: "",
-	}
-	_, err := getLab(&lab)
-	if err != nil {
-		return err
-	}
-	d := new(podman.PodmanDriver)
-	err = d.SetupDriver()
-	if err != nil {
-		return err
-	}
-	err = d.MachineExecShell(machine, lab.Name, command, user, detach, workdir)
-	return err
-}

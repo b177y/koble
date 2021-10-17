@@ -1,9 +1,12 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
+	"errors"
+	"os"
 
 	"github.com/b177y/netkit/pkg/netkit"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/spf13/cobra"
 )
 
@@ -16,10 +19,27 @@ var shellCmd = &cobra.Command{
 	Use:   "shell [MACHINE]",
 	Short: "The 'shell' subcommand is used to connect to a shell on a netkit machine",
 	Args:  cobra.ExactArgs(1),
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if useTerm && noTerm {
+			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
+			log.Fatal(err)
+		} else if useTerm {
+			nk.Config.OpenTerms = true
+		} else if noTerm {
+			nk.Config.OpenTerms = false
+		}
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO get driver from ?cmd?
+		if nk.Config.OpenTerms {
+			err := netkit.LaunchInTerm()
+			if err != nil {
+				log.Fatal(err)
+			}
+			os.Exit(0)
+		}
 		machine := args[0]
-		err := netkit.ExecMachineShell(machine, command, user, detachMode, workDir)
+		err := nk.ExecMachineShell(machine, command, user, detachMode, workDir)
 		if err != nil {
 			log.Fatal(err)
 		}

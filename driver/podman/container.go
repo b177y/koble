@@ -80,7 +80,7 @@ func getFilters(machine, lab string, all bool) map[string][]string {
 	return filters
 }
 
-func (pd *PodmanDriver) MachineExists(name string) (exists bool,
+func (pd *PodmanDriver) MachineExists(name, lab string) (exists bool,
 	err error) {
 	exists, err = containers.Exists(pd.conn, name, nil)
 	if err != nil {
@@ -136,7 +136,15 @@ func (pd *PodmanDriver) GetMachineStatus(name string) (data interface{}, err err
 	return data, err
 }
 
-func (pd *PodmanDriver) AttachToMachine(name string) (err error) {
+func (pd *PodmanDriver) AttachToMachine(name, lab string) (err error) {
+	name = getName(name, lab)
+	exists, err := pd.MachineExists(name, lab)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist.", name)
+	}
 	opts := new(containers.AttachOptions)
 	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", name)
 	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
@@ -147,7 +155,7 @@ func (pd *PodmanDriver) AttachToMachine(name string) (err error) {
 func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	detach bool, workdir string) (err error) {
 	name = getName(name, lab)
-	exists, err := pd.MachineExists(name)
+	exists, err := pd.MachineExists(name, lab)
 	if err != nil {
 		return err
 	}
@@ -179,7 +187,7 @@ func (pd *PodmanDriver) GetMachineLogs(name, lab string,
 	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
 	name = getName(name, lab)
-	exists, err := pd.MachineExists(name)
+	exists, err := pd.MachineExists(name, lab)
 	if err != nil {
 		return err
 	}
@@ -224,4 +232,8 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 		})
 	}
 	return machines, nil
+}
+
+func (pd *PodmanDriver) GetMachineState(name, lab string) (state string, err error) {
+	return "", nil
 }

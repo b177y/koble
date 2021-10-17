@@ -46,16 +46,16 @@ type Driver interface {
 	StopMachine(name string) (err error)
 	CrashMachine(name string) (err error)
 
-	ListMachines(lab string) ([]MachineInfo, error)
+	ListMachines(lab string, all bool) ([]MachineInfo, error)
 	MachineExists(name string, lab string) (exists bool, err error)
-	GetMachineState(name string, lab string) (state struct{}, err error)
+	GetMachineState(name string, lab string) (state string, err error)
 	AttachToMachine(name string, lab string) (err error)
 	MachineExecShell(name, lab, command, user string,
 		detach bool, workdir string) (err error)
 	GetMachineLogs(name, lab string, stdoutChan, stderrChan chan string,
 		follow bool, tail int) (err error)
 
-	ListNetworks(lab string) error
+	ListNetworks(lab string, all bool) error
 	NetworkExists(name, lab string) (exists bool, err error)
 	CreateNetwork(net Network) (id string, err error)
 	StartNetwork(name string, lab string) (err error)

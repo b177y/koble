@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/olekukonko/tablewriter"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -125,4 +127,24 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showLab bool) (mlist 
 		mlist = append(mlist, minfo)
 	}
 	return mlist, headers
+}
+
+func LaunchInTerm() error {
+	args := []string{"-e"}
+	args = append(args, os.Args...)
+	added := false
+	for i, a := range args {
+		if a == "--terminal" {
+			args[i] = "--console"
+			added = true
+		}
+	}
+	if !added {
+		args = append(args, "--console")
+	}
+	term := "alacritty"
+	log.Debug("Relaunching current command in terminal with:", term, args)
+	cmd := exec.Command(term, args...)
+	err := cmd.Start()
+	return err
 }
