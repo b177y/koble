@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 
+	copier "github.com/containers/buildah/copier"
+
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
 	"github.com/containers/podman/v3/pkg/bindings"
@@ -117,6 +119,10 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	err = containers.Start(pd.conn, createResponse.ID, nil)
 	if err != nil {
 		return createResponse.ID, err
+	}
+	err = pd.CopyInFiles(m.Name, lab, m.Hostlab)
+	if err != nil {
+		return "", err
 	}
 	return createResponse.ID, nil
 }
@@ -236,4 +242,22 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 
 func (pd *PodmanDriver) GetMachineState(name, lab string) (state string, err error) {
 	return "", nil
+}
+
+func (pd *PodmanDriver) CopyInFiles(machine, lab, hostlab string) error {
+	name := getName(machine, lab)
+	opts := new(containers.CopyOptions)
+	reader, writer := io.Pipe()
+	defer writer.Close()
+	var copts copier.GetOptions
+	err := copier.Get("/", "", copts, []string{"/home/billy/repos/rootless-netkit/examples/lab04/h1"}, writer)
+	if err != nil {
+		return err
+	}
+	cp, err := containers.CopyFromArchiveWithOptions(pd.conn, name, "/", reader, opts)
+	if err != nil {
+		return err
+	}
+	fmt.Println("cp", cp)
+	return nil
 }
