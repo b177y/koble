@@ -15,7 +15,7 @@ var NetkitCLI = &cobra.Command{
 		var err error
 		nk, err = netkit.NewNetkit()
 		if err != nil {
-			log.Fatal(err, nk.Lab.Name)
+			log.Fatal(err)
 		}
 	},
 	Version: netkit.VERSION,

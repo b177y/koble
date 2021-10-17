@@ -1,14 +1,14 @@
 package netkit
 
 type DriverConfig struct {
-	Name      string      `yaml:"name"`
-	ExtraConf interface{} `yaml:"extra"`
+	Name      string      `mapstructure:"name"`
+	ExtraConf interface{} `mapstructure:"extra"`
 }
 
 type Config struct {
-	Driver    DriverConfig `yaml:"driver"`
-	Terminal  string       `yaml:"terminal"`
-	OpenTerms bool         `yaml:"open_terms"`
+	Driver    DriverConfig `mapstructure:"driver"`
+	Terminal  string       `mapstructure:"terminal"`
+	OpenTerms bool         `mapstructure:"open_terms"`
 	Terms     []Terminal   `mapstructure:"terminals"`
 }
 

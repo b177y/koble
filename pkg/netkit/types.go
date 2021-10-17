@@ -1,6 +1,8 @@
 package netkit
 
 import (
+	"fmt"
+
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/podman"
 	log "github.com/sirupsen/logrus"
@@ -34,10 +36,15 @@ func NewNetkit() (*Netkit, error) {
 	if err != nil {
 		return nil, err
 	}
-	d := new(podman.PodmanDriver)
-	err = d.SetupDriver()
-	if err != nil {
-		return nil, err
+	var d driver.Driver
+	if config.Driver.Name == "podman" {
+		d = new(podman.PodmanDriver)
+		err = d.SetupDriver()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("Driver %s is not currently supported.", config.Driver.Name)
 	}
 	nk := &Netkit{
 		Lab:    lab,
