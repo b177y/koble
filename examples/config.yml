@@ -1,3 +1,10 @@
 terminal: alacritty
 driver:
   name: podman
+  # # Use custom podman URI (e.g. remote socket, run under different user)
+  # uri: "unix://run/user/1000/podman/podman.sock"
+
+# # Add custom terminals which can then be chosen using the terminal option
+# terminals:
+#   - name: "xterm"
+#     command: ["xterm", "-e"]

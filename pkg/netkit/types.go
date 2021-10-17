@@ -39,7 +39,7 @@ func NewNetkit() (*Netkit, error) {
 	var d driver.Driver
 	if config.Driver.Name == "podman" {
 		d = new(podman.PodmanDriver)
-		err = d.SetupDriver()
+		err = d.SetupDriver(config.Driver.ExtraConf)
 		if err != nil {
 			return nil, err
 		}

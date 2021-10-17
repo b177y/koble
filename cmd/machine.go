@@ -28,7 +28,7 @@ var mstartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a netkit machine",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.StartMachine(machineName, machineImage, machineNetworks)
+		err := nk.StartMachine(machineName, machineImage, machineNetworks)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,7 +74,7 @@ var mlistCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List netkit machines",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.ListMachines(mListAll)
+		err := nk.ListMachines(mListAll)
 		if err != nil {
 			log.Fatal(err)
 		}

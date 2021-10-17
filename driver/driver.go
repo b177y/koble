@@ -40,7 +40,7 @@ type Network struct {
 }
 
 type Driver interface {
-	SetupDriver() (err error)
+	SetupDriver(conf map[string]interface{}) (err error)
 
 	StartMachine(m Machine, lab string) (id string, err error)
 	StopMachine(name string) (err error)

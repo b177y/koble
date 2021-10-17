@@ -5,21 +5,10 @@ import (
 	"os"
 
 	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/driver/podman"
 	log "github.com/sirupsen/logrus"
 )
 
-func StartMachine(name, image string, networks []string) error {
-	lab := Lab{
-		Name: "",
-	}
-	exists, err := getLab(&lab)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		log.Warn("You are not in a lab directory, starting new non-lab machine.")
-	}
+func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -32,12 +21,10 @@ func StartMachine(name, image string, networks []string) error {
 		Networks: []string{},
 		Image:    image,
 	}
-	d := new(podman.PodmanDriver)
-	err = d.SetupDriver()
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err = d.StartMachine(m, lab.Name)
+	_, err = nk.Driver.StartMachine(m, nk.Lab.Name)
 	return err
 }
 
@@ -57,19 +44,7 @@ func MachineInfo() error {
 	return nil
 }
 
-func MachineLogs(machine string, follow bool, tail int) error {
-	lab := Lab{
-		Name: "",
-	}
-	_, err := getLab(&lab)
-	if err != nil {
-		return err
-	}
-	d := new(podman.PodmanDriver)
-	err = d.SetupDriver()
-	if err != nil {
-		return err
-	}
+func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 	stdoutChan := make(chan string)
 	stderrChan := make(chan string)
 	go func() {
@@ -82,33 +57,22 @@ func MachineLogs(machine string, follow bool, tail int) error {
 			fmt.Println(recv)
 		}
 	}()
-	err = d.GetMachineLogs(machine, lab.Name, stdoutChan, stderrChan, follow, tail)
+	err := nk.Driver.GetMachineLogs(machine, nk.Lab.Name,
+		stdoutChan, stderrChan, follow, tail)
 	return err
 }
 
-func ListMachines(all bool) error {
-	lab := Lab{
-		Name: "",
-	}
-	_, err := getLab(&lab)
-	if err != nil {
-		return err
-	}
-	d := new(podman.PodmanDriver)
-	err = d.SetupDriver()
-	if err != nil {
-		return err
-	}
+func (nk *Netkit) ListMachines(all bool) error {
 	if !all {
-		if lab.Name == "" {
+		if nk.Lab.Name == "" {
 			fmt.Println("Listing all machines which are not associated with a lab.")
 			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
 		} else {
-			fmt.Printf("Listing all machines within this lab (%s).\n", lab.Name)
+			fmt.Printf("Listing all machines within this lab (%s).\n", nk.Lab.Name)
 			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
 		}
 	}
-	machines, err := d.ListMachines(lab.Name, all)
+	machines, err := nk.Driver.ListMachines(nk.Lab.Name, all)
 	var mlist [][]string
 	var headers []string
 	if all {

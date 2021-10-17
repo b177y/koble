@@ -1,8 +1,8 @@
 package netkit
 
 type DriverConfig struct {
-	Name      string      `mapstructure:"name"`
-	ExtraConf interface{} `mapstructure:"extra"`
+	Name      string                 `mapstructure:"name"`
+	ExtraConf map[string]interface{} `mapstructure:"extra,remain"`
 }
 
 type Config struct {

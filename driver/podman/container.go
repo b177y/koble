@@ -22,12 +22,27 @@ import (
 type PodmanDriver struct {
 	conn context.Context
 	Name string
+	URI  string
 }
 
-func (pd *PodmanDriver) SetupDriver() (err error) {
+type PDConf struct {
+	URI string
+}
+
+func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	pd.Name = "Podman"
+	pd.URI = fmt.Sprintf("unix://run/user/%s/podman/podman.sock",
+		fmt.Sprint(os.Getuid()))
+	// override uri with config option
+	if val, ok := conf["uri"]; ok {
+		if str, ok := val.(string); ok {
+			pd.URI = str
+		} else {
+			return fmt.Errorf("Driver 'uri' in config must be a string.")
+		}
+	}
 	log.Debug("Attempting to connect to podman socket.")
-	pd.conn, err = bindings.NewConnection(context.Background(), "unix://run/user/1000/podman/podman.sock")
+	pd.conn, err = bindings.NewConnection(context.Background(), pd.URI)
 	if err != nil {
 		return driver.NewDriverError(err, pd.Name, "SetupDriver")
 	}
