@@ -16,6 +16,7 @@ import (
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -128,6 +129,11 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	s.CNINetworks = m.Networks
 	s.Terminal = true
 	s.Labels = getLabels(m.Name, lab)
+	s.Mounts = append(s.Mounts, spec.Mount{
+		Destination: "/hostlab",
+		Type:        "bind",
+		Source:      m.Hostlab,
+	})
 	createResponse, err := containers.CreateWithSpec(pd.conn, s, nil)
 	if err != nil {
 		return "", err
