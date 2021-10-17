@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	copier "github.com/containers/buildah/copier"
 
@@ -116,13 +117,13 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	if err != nil {
 		return "", err
 	}
-	err = containers.Start(pd.conn, createResponse.ID, nil)
-	if err != nil {
-		return createResponse.ID, err
-	}
 	err = pd.CopyInFiles(m.Name, lab, m.Hostlab)
 	if err != nil {
 		return "", err
+	}
+	err = containers.Start(pd.conn, createResponse.ID, nil)
+	if err != nil {
+		return createResponse.ID, err
 	}
 	return createResponse.ID, nil
 }
@@ -246,18 +247,34 @@ func (pd *PodmanDriver) GetMachineState(name, lab string) (state string, err err
 
 func (pd *PodmanDriver) CopyInFiles(machine, lab, hostlab string) error {
 	name := getName(machine, lab)
-	opts := new(containers.CopyOptions)
-	reader, writer := io.Pipe()
-	defer writer.Close()
-	var copts copier.GetOptions
-	err := copier.Get("/", "", copts, []string{"/home/billy/repos/rootless-netkit/examples/lab04/h1"}, writer)
-	if err != nil {
+	machineDir := filepath.Join(hostlab, machine)
+	mDirInfo, err := os.Stat(machineDir)
+	if os.IsNotExist(err) {
+		log.Warnf("Machine directory %s doesn't exist, creating machine %s without mounting custom files.\n", machineDir, machine)
+		return nil
+	} else if err != nil {
 		return err
 	}
+	if !mDirInfo.IsDir() {
+		return fmt.Errorf("%s is a file when it should be the machine directory for %s.", machineDir, machine)
+	}
+	opts := new(containers.CopyOptions)
+	reader, writer := io.Pipe()
+	var copts copier.GetOptions
+	go func() {
+		defer writer.Close()
+		err := copier.Get("/", "", copts, []string{hostlab}, writer)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	cp, err := containers.CopyFromArchiveWithOptions(pd.conn, name, "/", reader, opts)
 	if err != nil {
 		return err
 	}
-	fmt.Println("cp", cp)
+	err = cp()
+	if err != nil {
+		return err
+	}
 	return nil
 }
