@@ -1,6 +1,7 @@
 package netkit
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -129,8 +130,34 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showLab bool) (mlist 
 	return mlist, headers
 }
 
-func LaunchInTerm() error {
-	args := []string{"-e"}
+func (nk *Netkit) getTerm() (term Terminal, err error) {
+	// Check custom terms first
+	// This allows users to override default ones to add custom flags
+	for _, t := range nk.Config.Terms {
+		if t.Name == nk.Config.Terminal {
+			return t, nil
+		}
+	}
+	// Check default terminal list
+	for _, t := range defaultTerms {
+		if t.Name == nk.Config.Terminal {
+			return t, nil
+		}
+	}
+	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal)
+}
+
+func (nk *Netkit) LaunchInTerm() error {
+	term, err := nk.getTerm()
+	if err != nil {
+		return err
+	}
+	var args []string
+	if tl := len(term.Command); tl == 0 {
+		return errors.New("Terminal command must not be empty")
+	} else if tl != 1 {
+		args = append(args, term.Command[1:]...)
+	}
 	args = append(args, os.Args...)
 	added := false
 	for i, a := range args {
@@ -142,9 +169,8 @@ func LaunchInTerm() error {
 	if !added {
 		args = append(args, "--console")
 	}
-	term := "alacritty"
-	log.Debug("Relaunching current command in terminal with:", term, args)
-	cmd := exec.Command(term, args...)
-	err := cmd.Start()
+	log.Info("Relaunching current command in terminal with:", term.Name, args)
+	cmd := exec.Command(term.Command[0], args...)
+	err = cmd.Start()
 	return err
 }

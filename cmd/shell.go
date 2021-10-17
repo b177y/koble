@@ -4,7 +4,6 @@ import (
 	"errors"
 	"os"
 
-	"github.com/b177y/netkit/pkg/netkit"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -32,7 +31,7 @@ var shellCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO get driver from ?cmd?
 		if nk.Config.OpenTerms {
-			err := netkit.LaunchInTerm()
+			err := nk.LaunchInTerm()
 			if err != nil {
 				log.Fatal(err)
 			}
