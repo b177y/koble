@@ -1,0 +1,21 @@
+#!/bin/bash
+
+## TERMSHARK INSTALL ##
+cd /tmp
+wget https://github.com/gcla/termshark/releases/download/v2.3.0/termshark_2.3.0_linux_x64.tar.gz -O /tmp/termshark.tar.gz
+tar -xvf /tmp/termshark.tar.gz
+mv termshark_2.3.0_linux_x64/termshark /usr/local/bin
+chmod +x /usr/local/bin/termshark
+
+
+## MICRO EDITOR INSTALL ##
+wget https://github.com/zyedidia/micro/releases/download/v2.0.10/micro-2.0.10-amd64.deb -O /tmp/micro.deb
+dpkg -i /tmp/micro.deb
+
+## TCPDUMP INSTALL ##
+wget http://ftp.uk.debian.org/debian/pool/main/t/tcpdump/tcpdump_4.9.3-1~deb10u2_amd64.deb -O /tmp/tcpdump.deb
+dpkg -i /tmp/tcpdump.deb
+
+## WIREGUARD INSTALL ##
+wget http://ftp.uk.debian.org/debian/pool/main/w/wireguard/wireguard-tools_1.0.20210223-1~bpo10+1_amd64.deb -O /tmp/wireguard-tools.deb
+dpkg -i /tmp/wireguard-tools.deb
