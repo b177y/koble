@@ -9,32 +9,10 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	spec "github.com/opencontainers/runtime-spec/specs-go"
 	"gopkg.in/yaml.v2"
 
 	log "github.com/sirupsen/logrus"
 )
-
-type PodmanMachineExtra struct {
-	Caps []string `yaml:"caps,omitempty"`
-}
-
-type Network struct {
-	Name     string `yaml:"name" validate:"alphanum,max=30"`
-	External bool   `yaml:"external,omitempty"`
-	Gateway  net.IP `yaml:"gateway,omitempty" validate:"ip"`
-	Subnet   string `yaml:"subnet,omitempty" validate:"cidr"`
-	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
-}
-
-type Machine struct {
-	Name        string             `yaml:"name" validate:"alphanum,max=30"`
-	Networks    []string           `yaml:"networks,omitempty" validate:"alphanum,max=30"`
-	Image       string             `yaml:"image,omitempty"`
-	Volumes     []spec.Mount       `yaml:"volumes,omitempty"`
-	HostHome    bool               `yaml:"hosthome,omitempty"`
-	PodmanExtra PodmanMachineExtra `yaml:"podman_extra,omitempty"`
-}
 
 type Lab struct {
 	Name          string `validate:"alphanum,max=30"`
