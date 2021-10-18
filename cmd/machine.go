@@ -63,7 +63,7 @@ var maddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new machine to a lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.AddMachineToLab(machineName, machineNetworks, machineImage)
+		err := netkit.AddMachineToLab(addMachineName, machineNetworks, machineImage)
 		if err != nil {
 			log.Fatal(err)
 		}

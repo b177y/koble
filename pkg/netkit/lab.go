@@ -101,7 +101,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 	}
 	err = validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
-		return err
+		return fmt.Errorf("Machine name %s must be alphanumeric and shorter than 30 characters: %w", name, err)
 	}
 	err = os.Mkdir(name, 0755)
 	if err != nil {
