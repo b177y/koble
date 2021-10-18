@@ -66,10 +66,10 @@ func InitLab(name string, description string, authors []string, emails []string,
 			return fmt.Errorf("A file named %s exists. Please use a different name to initialise the lab or rename the file.", name)
 		}
 	}
-	fn := "lab.yml"
+	pathPrefix := ""
 	if newDir {
 		os.Mkdir(name, 0755)
-		fn = name + "/" + fn
+		pathPrefix = name
 	}
 	// TODO check if in script mode
 	// ask for name, description etc
@@ -86,7 +86,17 @@ func InitLab(name string, description string, authors []string, emails []string,
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(fn, bytes, 0644)
+	err = os.WriteFile(filepath.Join(pathPrefix, "lab.yml"), bytes, 0644)
+	err = os.Mkdir(filepath.Join(pathPrefix, "shared"), 0755)
+	if err != nil {
+		// TODO warn but not error if already exists
+		return err
+	}
+	err = os.WriteFile(filepath.Join(pathPrefix, "shared.startup"), []byte(SHARED_STARTUP), 0644)
+	if err != nil {
+		// TODO warn but not error if already exists
+		return err
+	}
 	return err
 }
 
