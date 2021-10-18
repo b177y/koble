@@ -91,7 +91,7 @@ func init() {
 
 	mstartCmd.Flags().StringVar(&machineName, "name", "", "Name to give machine")
 	mstartCmd.MarkFlagRequired("name")
-	mstartCmd.Flags().StringVar(&machineImage, "image", "localhost/netkit-deb-test", "Image to run machine with.")
+	mstartCmd.Flags().StringVar(&machineImage, "image", "", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
 
 	maddCmd.Flags().StringVar(&addMachineName, "name", "", "Name for new machine.")

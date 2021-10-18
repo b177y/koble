@@ -5,13 +5,15 @@ import (
 	"fmt"
 
 	"github.com/cri-o/ocicni/pkg/ocicni"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 type Machine struct {
 	Name     string
 	Hostlab  string
-	Hosthome string
+	Hosthome bool `default:"false"`
 	Networks []string
+	Volumes  []spec.Mount
 	Image    string
 }
 
@@ -40,6 +42,7 @@ type Network struct {
 }
 
 type Driver interface {
+	GetDefaultImage() string
 	SetupDriver(conf map[string]interface{}) (err error)
 
 	StartMachine(m Machine, lab string) (id string, err error)

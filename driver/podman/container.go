@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	copier "github.com/containers/buildah/copier"
 
@@ -16,30 +17,42 @@ import (
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
-	spec "github.com/opencontainers/runtime-spec/specs-go"
 	log "github.com/sirupsen/logrus"
 )
 
 type PodmanDriver struct {
-	conn context.Context
-	Name string
-	URI  string
+	conn         context.Context
+	Name         string
+	DefaultImage string
+	URI          string
 }
 
 type PDConf struct {
 	URI string
 }
 
+func (pd *PodmanDriver) GetDefaultImage() string {
+	return pd.DefaultImage
+}
+
 func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	pd.Name = "Podman"
 	pd.URI = fmt.Sprintf("unix://run/user/%s/podman/podman.sock",
 		fmt.Sprint(os.Getuid()))
+	pd.DefaultImage = "localhost/netkit-deb-test"
 	// override uri with config option
 	if val, ok := conf["uri"]; ok {
 		if str, ok := val.(string); ok {
 			pd.URI = str
 		} else {
 			return fmt.Errorf("Driver 'uri' in config must be a string.")
+		}
+	}
+	if val, ok := conf["default_image"]; ok {
+		if str, ok := val.(string); ok {
+			pd.DefaultImage = str
+		} else {
+			return fmt.Errorf("Driver 'default_image' in config must be a string.")
 		}
 	}
 	log.Debug("Attempting to connect to podman socket.")
@@ -110,6 +123,7 @@ func (pd *PodmanDriver) MachineExists(name, lab string) (exists bool,
 
 func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, err error) {
 	nk_fullname := getName(m.Name, lab)
+	log.Debug("Starting machine", m)
 	exists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return "", driver.NewDriverError(err, pd.Name, "StartMachine")
@@ -129,11 +143,13 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	s.CNINetworks = m.Networks
 	s.Terminal = true
 	s.Labels = getLabels(m.Name, lab)
-	s.Mounts = append(s.Mounts, spec.Mount{
-		Destination: "/hostlab",
-		Type:        "bind",
-		Source:      m.Hostlab,
-	})
+	fmt.Println("Volumes:", m.Volumes)
+	for _, mnt := range m.Volumes {
+		if mnt.Type == "" {
+			mnt.Type = "bind"
+		}
+		s.Mounts = append(s.Mounts, mnt)
+	}
 	createResponse, err := containers.CreateWithSpec(pd.conn, s, nil)
 	if err != nil {
 		return "", err
@@ -191,7 +207,7 @@ func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 		return fmt.Errorf("Machine %s does not exist.", name)
 	}
 	ec := new(handlers.ExecCreateConfig)
-	ec.Cmd = []string{command}
+	ec.Cmd = strings.Fields(command)
 	ec.AttachStderr = true
 	ec.AttachStdin = true
 	ec.AttachStdout = true

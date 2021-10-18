@@ -1,17 +1,31 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/b177y/netkit/pkg/netkit"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var nk *netkit.Netkit
+var verbose bool
+var quiet bool
 
 var NetkitCLI = &cobra.Command{
 	Use:   "netkit",
 	Short: "Netkit is a network emulation tool",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if verbose && quiet {
+			log.Fatal(errors.New("CLI Flags --verbose and --quiet cannot be used together."))
+		}
+		if verbose {
+			log.SetLevel(log.DebugLevel)
+		} else if quiet {
+			log.SetLevel(log.ErrorLevel)
+		} else {
+			log.SetLevel(log.InfoLevel)
+		}
 		var err error
 		nk, err = netkit.NewNetkit()
 		if err != nil {
@@ -21,7 +35,6 @@ var NetkitCLI = &cobra.Command{
 	Version: netkit.VERSION,
 }
 
-var verbose bool
 var useTerm bool
 var noTerm bool
 
@@ -37,4 +50,5 @@ func init() {
 	NetkitCLI.AddCommand(machineCmd)
 	NetkitCLI.AddCommand(netCmd)
 	NetkitCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	NetkitCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
 }

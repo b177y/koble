@@ -5,26 +5,53 @@ import (
 	"os"
 
 	"github.com/b177y/netkit/driver"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 	log "github.com/sirupsen/logrus"
 )
 
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	home, err := os.UserHomeDir()
+	// Start with defaults
 	m := driver.Machine{
 		Name:     name,
-		Hostlab:  wd,
-		Hosthome: home,
+		Hostlab:  nk.Lab.Directory,
+		Hosthome: false,
 		Networks: []string{},
-		Image:    image,
+		Image:    nk.Driver.GetDefaultImage(),
 	}
-	if err != nil {
-		log.Fatal(err)
+	log.Debug("defaults", m)
+
+	// Add options from lab
+	for _, lm := range nk.Lab.Machines {
+		if lm.Name == m.Name {
+			m.Volumes = lm.Volumes
+			m.Hosthome = lm.HostHome
+			if lm.Image != "" {
+				m.Image = lm.Image
+			}
+			m.Networks = lm.Networks
+		}
 	}
-	_, err = nk.Driver.StartMachine(m, nk.Lab.Name)
+	log.Debug("lab", m)
+	// Add options from command line flags
+	if image != "" {
+		m.Image = image
+	}
+	if m.Hosthome {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+		m.Volumes = append(m.Volumes, spec.Mount{
+			Source:      home,
+			Destination: "/hosthome",
+		})
+	}
+	m.Volumes = append(m.Volumes, spec.Mount{
+		Source:      nk.Lab.Directory,
+		Destination: "/hostlab",
+	})
+	log.Debug("cli", m)
+	_, err := nk.Driver.StartMachine(m, nk.Lab.Name)
 	return err
 }
 

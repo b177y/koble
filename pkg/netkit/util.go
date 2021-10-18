@@ -47,10 +47,13 @@ func getLab(lab *Lab) (exists bool, err error) {
 		return true, err
 	}
 	lab.Name = filepath.Base(dir)
+	lab.Directory = dir
 	return true, nil
 }
 
 func saveLab(lab *Lab) error {
+	lab.Name = ""
+	lab.Directory = ""
 	labYaml, err := yaml.Marshal(lab)
 	if err != nil {
 		return err
