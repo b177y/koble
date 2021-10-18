@@ -19,12 +19,15 @@ var shellCmd = &cobra.Command{
 	Short: "The 'shell' subcommand is used to connect to a shell on a netkit machine",
 	Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if useTerm && noTerm {
+		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
+			log.Fatal(err)
+		} else if (useTerm && detachMode) || (useCon && detachMode) {
+			err := errors.New("CLI Flag --detach cannot be used with --terminal or --console.")
 			log.Fatal(err)
 		} else if useTerm {
 			nk.Config.OpenTerms = true
-		} else if noTerm {
+		} else if useCon {
 			nk.Config.OpenTerms = false
 		}
 	},
@@ -51,5 +54,5 @@ func init() {
 	shellCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the exec session in detached mode (backgrounded)")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	shellCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
-	shellCmd.Flags().BoolVar(&noTerm, "console", false, "Launch shell within current console.")
+	shellCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
 }

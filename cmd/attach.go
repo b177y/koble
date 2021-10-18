@@ -13,12 +13,12 @@ var attachCmd = &cobra.Command{
 	Short: "The 'attach' subcommand is used to attach to the main tty on a netkit machine",
 	Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {
-		if useTerm && noTerm {
+		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
 			log.Fatal(err)
 		} else if useTerm {
 			nk.Config.OpenTerms = true
-		} else if noTerm {
+		} else if useCon {
 			nk.Config.OpenTerms = false
 		}
 	},
@@ -40,5 +40,5 @@ var attachCmd = &cobra.Command{
 
 func init() {
 	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
-	attachCmd.Flags().BoolVar(&noTerm, "console", false, "Launch shell within current console.")
+	attachCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
 }

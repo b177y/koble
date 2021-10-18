@@ -36,7 +36,7 @@ var NetkitCLI = &cobra.Command{
 }
 
 var useTerm bool
-var noTerm bool
+var useCon bool
 
 // Shared flag variables
 var machine string

@@ -208,6 +208,9 @@ func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	}
 	ec := new(handlers.ExecCreateConfig)
 	ec.Cmd = strings.Fields(command)
+	ec.User = user
+	ec.Detach = detach
+	ec.WorkingDir = workdir
 	ec.AttachStderr = true
 	ec.AttachStdin = true
 	ec.AttachStdout = true
