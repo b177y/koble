@@ -60,11 +60,11 @@ type Driver interface {
 
 	ListNetworks(lab string, all bool) error
 	NetworkExists(name, lab string) (exists bool, err error)
-	CreateNetwork(net Network) (id string, err error)
-	StartNetwork(name string, lab string) (err error)
-	StopNetwork(name string, lab string) (err error)
-	RemoveNetwork(name string, lab string) (err error)
-	GetNetworkState(name string, lab string) (state string, err error)
+	CreateNetwork(net Network, lab string) (id string, err error)
+	StartNetwork(name, lab string) (err error)
+	StopNetwork(name, lab string) (err error)
+	RemoveNetwork(name, lab string) (err error)
+	GetNetworkState(name, lab string) (state string, err error)
 }
 
 type DriverError struct {

@@ -65,6 +65,17 @@ var linitCmd = &cobra.Command{
 	},
 }
 
+var lvalidateCmd = &cobra.Command{
+	Use:   "validate",
+	Short: "Validate a netkit lab",
+	Run: func(cmd *cobra.Command, args []string) {
+		err := nk.Validate()
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
 var labCmd = &cobra.Command{
 	Use:   "lab",
 	Short: "The 'lab' subcommand is used to control netkit labs",
@@ -77,6 +88,7 @@ func init() {
 	labCmd.AddCommand(lhaltCmd)
 	labCmd.AddCommand(linfoCmd)
 	labCmd.AddCommand(linitCmd)
+	labCmd.AddCommand(lvalidateCmd)
 
 	linitCmd.Flags().StringVar(&labName, "name", "", "Name to give the lab. This will create a new directory with the specified name. If no name is given, the lab will be initialised in the current directory.")
 	linitCmd.Flags().StringVar(&labDescription, "description", "", "Description of the new lab.")

@@ -176,6 +176,7 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		Subnet:   subnet.String(),
 		IPv6:     ipv6,
 	}
+
 	if net.Subnet == "<nil>" {
 		net.Subnet = ""
 	}
@@ -185,5 +186,10 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		return err
 	}
 	fmt.Printf("Created new network %s.\n", name)
+	return nil
+}
+
+func (nk *Netkit) Validate() error {
+	// do some extra validation here
 	return nil
 }
