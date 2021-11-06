@@ -199,9 +199,16 @@ func (nk *Netkit) LabStart() error {
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	log.Printf("Starting lab %s\n", nk.Lab.Name)
+	fmt.Println("======================== Starting lab ===========================")
+	fmt.Printf("Lab Directory: %s\n", nk.Lab.Directory)
+	fmt.Println("Version(s):       <unknown>")     // TODO
+	fmt.Println("Author(s):       <unknown>")      // TODO
+	fmt.Println("Email(s):       <unknown>")       // TODO
+	fmt.Println("Web(s):       <unknown>")         // TODO
+	fmt.Println("Description(s):       <unknown>") // TODO
+	fmt.Println("=================================================================")
 	for _, m := range nk.Lab.Machines {
-		log.Printf("Starting machine %s.\n", m.Name)
+		fmt.Printf("Starting %s...\n", m.Name)
 		err := nk.StartMachine(m.Name, m.Image, m.Networks)
 		if err != nil && err != driver.ErrExists {
 			return err
