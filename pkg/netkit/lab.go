@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/b177y/netkit/driver"
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v2"
 
@@ -191,5 +192,20 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 
 func (nk *Netkit) Validate() error {
 	// do some extra validation here
+	return nil
+}
+
+func (nk *Netkit) LabStart() error {
+	if nk.Lab.Name == "" {
+		return errors.New("You are not currently in a lab directory.")
+	}
+	log.Printf("Starting lab %s\n", nk.Lab.Name)
+	for _, m := range nk.Lab.Machines {
+		log.Printf("Starting machine %s.\n", m.Name)
+		err := nk.StartMachine(m.Name, m.Image, m.Networks)
+		if err != nil && err != driver.ErrExists {
+			return err
+		}
+	}
 	return nil
 }

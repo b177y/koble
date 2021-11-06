@@ -18,7 +18,10 @@ var lstartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting labbb...")
+		err := nk.LabStart()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

@@ -33,6 +33,14 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	}
 	log.Debug("defaults", m)
 
+	for _, n := range networks {
+		fmt.Printf("Starting network %s\n", n)
+		err := nk.StartNetwork(n)
+		if err != nil && err != driver.ErrExists {
+			return err
+		}
+	}
+
 	// Add options from lab
 	for _, lm := range nk.Lab.Machines {
 		if lm.Name == m.Name {

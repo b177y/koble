@@ -114,21 +114,29 @@ func getFilters(machine, lab string, all bool) map[string][]string {
 
 func (pd *PodmanDriver) MachineExists(name, lab string) (exists bool,
 	err error) {
-	exists, err = containers.Exists(pd.conn, name, nil)
+	nk_fullname := getName(name, lab)
+	exists, err = containers.Exists(pd.conn, nk_fullname, nil)
 	if err != nil {
-		return exists, driver.NewDriverError(err, pd.Name, "MachineExists")
+		return exists, driver.ErrExists
 	}
 	return exists, nil
 }
 
 func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, err error) {
+	exists, err := pd.MachineExists(m.Name, lab)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return "", driver.ErrExists
+	}
 	nk_fullname := getName(m.Name, lab)
 	log.Debug("Starting machine", m)
-	exists, err := images.Exists(pd.conn, m.Image, nil)
+	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return "", driver.NewDriverError(err, pd.Name, "StartMachine")
 	}
-	if !exists {
+	if !imExists {
 		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
 		_, err = images.Pull(pd.conn, m.Image, nil)
 		if err != nil {
@@ -140,7 +148,9 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	s.Hostname = m.Name
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
-	s.CNINetworks = m.Networks
+	for _, n := range m.Networks {
+		s.CNINetworks = append(s.CNINetworks, getName(n, lab))
+	}
 	s.Terminal = true
 	s.Labels = getLabels(m.Name, lab)
 	fmt.Println("Volumes:", m.Volumes)

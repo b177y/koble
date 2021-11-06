@@ -2,10 +2,15 @@
 package driver
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/cri-o/ocicni/pkg/ocicni"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
+)
+
+var (
+	ErrExists = errors.New("Already exists")
 )
 
 type Machine struct {

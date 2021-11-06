@@ -10,6 +10,13 @@ import (
 
 func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (id string,
 	err error) {
+	exists, err := pd.NetworkExists(n.Name, lab)
+	if err != nil {
+		return "", err
+	}
+	if exists {
+		return "", driver.ErrExists
+	}
 	opts := new(network.CreateOptions)
 	opts.WithName(getName(n.Name, lab))
 	opts.WithLabels(getLabels(n.Name, lab))
