@@ -16,6 +16,8 @@ var networkGateway net.IP
 var networkSubnet net.IPNet
 var networkIpv6 bool
 
+var nListAll bool
+
 var netCmd = &cobra.Command{
 	Use:   "net",
 	Short: "The 'net' subcommand is used to view and manage netkit networks",
@@ -33,7 +35,10 @@ var nlistCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list netkit networks",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("getting machine info...")
+		err := nk.ListNetworks(nListAll)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
@@ -60,4 +65,5 @@ func init() {
 	var ipNet net.IPNet
 	naddCmd.Flags().IPNetVar(&networkSubnet, "subnet", ipNet, "subnet in CIDR format")
 	naddCmd.Flags().BoolVar(&networkIpv6, "ipv6", false, "enable ipv6 networking")
+	nlistCmd.Flags().BoolVarP(&nListAll, "all", "a", false, "List all networks (from all labs / non-labs)")
 }

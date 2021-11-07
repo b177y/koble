@@ -32,6 +32,19 @@ type MachineState struct {
 	ExitCode  int32
 }
 
+type NetworkState struct {
+	Running bool
+}
+
+type NetInfo struct {
+	Name      string
+	Lab       string
+	Interface string
+	External  bool
+	Gateway   string
+	Subnet    string
+}
+
 func (m *Machine) Fullname() string {
 	name := "netkit_" + m.Name
 	if m.Lab != "" {
@@ -65,6 +78,14 @@ type Network struct {
 	IPv6     string
 }
 
+func (n *Network) Fullname() string {
+	name := "netkit_" + n.Name
+	if n.Lab != "" {
+		name += "_" + n.Lab
+	}
+	return name
+}
+
 type Driver interface {
 	GetDefaultImage() string
 	SetupDriver(conf map[string]interface{}) (err error)
@@ -82,13 +103,13 @@ type Driver interface {
 	GetMachineLogs(m Machine, stdoutChan, stderrChan chan string,
 		follow bool, tail int) (err error)
 
-	ListNetworks(lab string, all bool) error
-	NetworkExists(name, lab string) (exists bool, err error)
-	CreateNetwork(net Network, lab string) (err error)
-	StartNetwork(name, lab string) (err error)
-	StopNetwork(name, lab string) (err error)
-	RemoveNetwork(name, lab string) (err error)
-	GetNetworkState(name, lab string) (state string, err error)
+	ListNetworks(lab string, all bool) (networks []NetInfo, err error)
+	NetworkExists(net Network) (exists bool, err error)
+	CreateNetwork(net Network) (err error)
+	StartNetwork(net Network) (err error)
+	StopNetwork(net Network) (err error)
+	RemoveNetwork(net Network) (err error)
+	GetNetworkState(net Network) (state NetworkState, err error)
 }
 
 type DriverError struct {

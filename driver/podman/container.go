@@ -63,14 +63,6 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	return nil
 }
 
-func getName(name, lab string) string {
-	name = "netkit_" + name
-	if lab != "" {
-		name += "_" + lab
-	}
-	return name
-}
-
 func getLabels(name, lab string) map[string]string {
 	labels := make(map[string]string)
 	labels["netkit"] = "true"
@@ -155,7 +147,11 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
 	for _, n := range m.Networks {
-		s.CNINetworks = append(s.CNINetworks, getName(n, m.Lab))
+		net := driver.Network{
+			Name: n,
+			Lab:  m.Lab,
+		}
+		s.CNINetworks = append(s.CNINetworks, net.Fullname())
 	}
 	s.Terminal = true
 	s.Labels = getLabels(m.Name, m.Lab)
@@ -290,8 +286,6 @@ func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
 func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
 	opts := new(containers.ListOptions)
-	if lab == "" {
-	}
 	filters := getFilters("", lab, all)
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)

@@ -41,6 +41,13 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		if err != nil && err != driver.ErrExists {
 			return err
 		}
+		_, err = nk.Driver.GetNetworkState(driver.Network{
+			Name: n,
+			Lab:  nk.Lab.Name,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	// Add options from lab
@@ -127,13 +134,10 @@ func (nk *Netkit) ListMachines(all bool) error {
 		}
 	}
 	machines, err := nk.Driver.ListMachines(nk.Lab.Name, all)
-	var mlist [][]string
-	var headers []string
-	if all {
-		mlist, headers = MachineInfoToStringArr(machines, true)
-	} else {
-		mlist, headers = MachineInfoToStringArr(machines, false)
+	if err != nil {
+		return err
 	}
+	mlist, headers := MachineInfoToStringArr(machines, all)
 	RenderTable(headers, mlist)
-	return err
+	return nil
 }

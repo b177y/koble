@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/b177y/netkit/driver"
@@ -135,6 +136,32 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showLab bool) (mlist 
 		mlist = append(mlist, minfo)
 	}
 	return mlist, headers
+}
+
+func NetInfoToStringArr(networks []driver.NetInfo, showLab bool) (nlist [][]string, headers []string) {
+	headers = append(headers, "name")
+	if showLab {
+		headers = append(headers, "lab")
+	}
+	headers = append(headers, "interface")
+	headers = append(headers, "external")
+	headers = append(headers, "gateway")
+	headers = append(headers, "subnet")
+
+	for _, n := range networks {
+		var ninfo []string
+		ninfo = append(ninfo, n.Name)
+		if showLab {
+			ninfo = append(ninfo, n.Lab)
+		}
+		ninfo = append(ninfo, n.Interface)
+		ninfo = append(ninfo, strconv.FormatBool(n.External))
+		ninfo = append(ninfo, n.Gateway)
+		ninfo = append(ninfo, n.Subnet)
+		// Add net info to list of networks
+		nlist = append(nlist, ninfo)
+	}
+	return nlist, headers
 }
 
 func (nk *Netkit) getTerm() (term Terminal, err error) {

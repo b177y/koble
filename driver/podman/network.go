@@ -8,8 +8,8 @@ import (
 	"github.com/containers/podman/v3/pkg/bindings/network"
 )
 
-func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (err error) {
-	exists, err := pd.NetworkExists(n.Name, lab)
+func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
+	exists, err := pd.NetworkExists(n)
 	if err != nil {
 		return err
 	}
@@ -17,8 +17,8 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (err error) 
 		return driver.ErrExists
 	}
 	opts := new(network.CreateOptions)
-	opts.WithName(getName(n.Name, lab))
-	opts.WithLabels(getLabels(n.Name, lab))
+	opts.WithName(n.Fullname())
+	opts.WithLabels(getLabels(n.Name, n.Lab))
 	if n.Subnet != "" && n.Gateway != "" {
 		_, sn, err := net.ParseCIDR(n.Subnet)
 		if err != nil {
@@ -36,33 +36,81 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (err error) 
 	return err
 }
 
-func (pd *PodmanDriver) StartNetwork(name, lab string) (err error) {
+func (pd *PodmanDriver) StartNetwork(net driver.Network) (err error) {
+	// podman network doesn't need manual starting
 	return nil
 }
 
-func (pd *PodmanDriver) RemoveNetwork(name, lab string) (err error) {
-	nk_fullname := getName(name, lab)
-	_, err = network.Remove(pd.conn, nk_fullname, nil)
+func (pd *PodmanDriver) RemoveNetwork(net driver.Network) (err error) {
+	_, err = network.Remove(pd.conn, net.Fullname(), nil)
 	return err
 }
 
-func (pd *PodmanDriver) StopNetwork(name, lab string) (err error) {
+func (pd *PodmanDriver) StopNetwork(net driver.Network) (err error) {
+	// podman network doesn't need manual stopping
 	return nil
 }
 
-func (pd *PodmanDriver) GetNetworkState(name, lab string) (state string,
+func (pd *PodmanDriver) GetNetworkState(net driver.Network) (state driver.NetworkState,
 	err error) {
-	nk_fullname := getName(name, lab)
-	network, err := network.Inspect(pd.conn, nk_fullname, nil)
-	fmt.Println("NETWORK INCLUDES", network)
-	return "bruh", err
+	state.Running, err = pd.NetworkExists(net)
+	return state, err
 }
 
-func (pd *PodmanDriver) ListNetworks(lab string, all bool) error {
-	return nil
+func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.NetInfo, err error) {
+	opts := new(network.ListOptions)
+	filters := getFilters("", lab, all)
+	opts.WithFilters(filters)
+	nets, err := network.List(pd.conn, opts)
+	if err != nil {
+		return networks, err
+	}
+	for _, n := range nets {
+		name, lab := getInfoFromLabels(n.Labels)
+		n := driver.Network{
+			Name: name,
+			Lab:  lab,
+		}
+		info, err := network.Inspect(pd.conn, n.Fullname(), nil)
+		if err != nil {
+			return networks, err
+		}
+		nw := driver.NetInfo{
+			Name: name,
+			Lab:  lab,
+		}
+		// this is currently very cursed due to podman bindings at v3.4
+		// returning map[string]interface{}
+		// future bindings will return
+		// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
+		// update this code to make it cleaner when this is released :)
+		if v, ok := info[0]["plugins"]; ok {
+			parsed := v.([]interface{})
+			basicInfo := parsed[0].(map[string]interface{})
+			if v, ok := basicInfo["bridge"]; ok {
+				nw.Interface = v.(string)
+			}
+			if v, ok := basicInfo["ipam"]; ok {
+				ipamParsed := v.(map[string]interface{})
+				if v, ok := ipamParsed["isGateway"]; ok {
+					nw.External = v.(bool)
+				}
+				if v, ok := ipamParsed["ranges"]; ok {
+					rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
+					if v, ok := rangesMap["gateway"]; ok {
+						nw.Gateway = v.(string)
+					}
+					if v, ok := rangesMap["subnet"]; ok {
+						nw.Subnet = v.(string)
+					}
+				}
+			}
+		}
+		networks = append(networks, nw)
+	}
+	return networks, nil
 }
 
-func (pd *PodmanDriver) NetworkExists(name, lab string) (bool, error) {
-	nk_fullname := getName(name, lab)
-	return network.Exists(pd.conn, nk_fullname, nil)
+func (pd *PodmanDriver) NetworkExists(net driver.Network) (bool, error) {
+	return network.Exists(pd.conn, net.Fullname(), nil)
 }
