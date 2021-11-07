@@ -15,6 +15,7 @@ var (
 
 type Machine struct {
 	Name     string
+	Lab      string
 	Hostlab  string
 	Hosthome bool `default:"false"`
 	Networks []string
@@ -39,6 +40,7 @@ type MachineInfo struct {
 
 type Network struct {
 	Name     string
+	Lab      string
 	External bool
 	Gateway  string
 	IpRange  string
@@ -51,8 +53,8 @@ type Driver interface {
 	SetupDriver(conf map[string]interface{}) (err error)
 
 	StartMachine(m Machine, lab string) (id string, err error)
-	StopMachine(name string) (err error)
-	CrashMachine(name string) (err error)
+	HaltMachine(m Machine, force bool) (err error)
+	RemoveMachine(m Machine) (err error)
 
 	ListMachines(lab string, all bool) ([]MachineInfo, error)
 	MachineExists(name string, lab string) (exists bool, err error)

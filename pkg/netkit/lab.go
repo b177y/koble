@@ -216,3 +216,41 @@ func (nk *Netkit) LabStart() error {
 	}
 	return nil
 }
+
+func (nk *Netkit) LabClean(machines []string, all bool) error {
+	err := nk.LabHalt(machines, true, all)
+	if err != nil {
+		return err
+	}
+	if all {
+		err := nk.Driver.RemoveMachines([]string{}, "")
+		if err != nil {
+			return err
+		}
+	}
+	if nk.Lab.Name == "" && len(machines) == 0 {
+		return errors.New("You are not in a lab. Use --all or specify machines to clean with --machines")
+	}
+	err = nk.Driver.RemoveMachines(machines, nk.Lab.Name)
+	// TODO cleanup networks
+	return err
+}
+
+func (nk *Netkit) LabHalt(machines []string,
+	force, all bool) error {
+	if all {
+		err := nk.Driver.HaltMachines([]string{}, "", force)
+		if err != nil {
+			return err
+		}
+	}
+	if nk.Lab.Name == "" && len(machines) == 0 {
+		return errors.New("You are not in a lab. Use --all or specify machines to halt with --machines")
+	}
+	err := nk.Driver.HaltMachines(machines, nk.Lab.Name, force)
+	return err
+}
+
+func (nk *Netkit) LabRestart() error {
+	return nil
+}

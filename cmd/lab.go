@@ -29,7 +29,11 @@ var lcleanCmd = &cobra.Command{
 	Use:   "clean",
 	Short: "Clean up a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Cleaning lab")
+		// TODO get force, all and machines from cmdline
+		err := nk.LabClean([]string{}, false)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

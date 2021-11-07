@@ -175,14 +175,51 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	return createResponse.ID, nil
 }
 
-func (pd *PodmanDriver) StopMachine(name string) error {
-	err := containers.Stop(pd.conn, name, nil)
-	return err
+func (pd *PodmanDriver) getMachineList(machines []string, lab string) (names []string, err error) {
+	if len(machines) == 0 {
+		all, err := pd.ListMachines(lab, (lab == ""))
+		if err != nil {
+			return names, err
+		}
+		for _, m := range all {
+			names = append(names, getName(m.Name, m.Lab))
+		}
+	} else {
+		for _, m := range machines {
+			names = append(names, getName(m, lab))
+		}
+	}
+	return names, nil
 }
 
-func (pd *PodmanDriver) CrashMachine(name string) error {
-	err := containers.Kill(pd.conn, name, nil)
-	return err
+func (pd *PodmanDriver) HaltMachines(machines driver.Machine, force bool) error {
+	//err := containers.Stop(pd.conn, name, nil)
+	//toStop, err := pd.getMachineList(machines, lab)
+	// if err != nil {
+	// 	return err
+	// }
+	// if force {
+	// 	for _, m := range toStop {
+	// 		err := containers.Kill(pd.conn, m, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// } else {
+	// 	for _, m := range toStop {
+	// 		err := containers.Stop(pd.conn, m, nil)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	return nil
+}
+
+func (pd *PodmanDriver) RemoveMachines(machine driver.Machine) error {
+	//err := containers.Kill(pd.conn, name, nil)
+	return nil
 }
 
 func (pd *PodmanDriver) GetMachineStatus(name string) (data interface{}, err error) {
