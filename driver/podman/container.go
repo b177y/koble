@@ -121,24 +121,32 @@ func (pd *PodmanDriver) MachineExists(m driver.Machine) (exists bool,
 	return exists, nil
 }
 
-func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
+func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 	exists, err := pd.MachineExists(m)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if exists {
-		return "", driver.ErrExists
+		state, err := pd.GetMachineState(m)
+		if err != nil {
+			return err
+		}
+		if state.Running {
+			return nil
+		} else {
+			return containers.Start(pd.conn, m.Fullname(), nil)
+		}
 	}
 	log.Debug("Starting machine", m)
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
-		return "", driver.NewDriverError(err, pd.Name, "StartMachine")
+		return driver.NewDriverError(err, pd.Name, "StartMachine")
 	}
 	if !imExists {
 		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
 		_, err = images.Pull(pd.conn, m.Image, nil)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 	s := specgen.NewSpecGenerator(m.Image, false)
@@ -151,7 +159,6 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 	}
 	s.Terminal = true
 	s.Labels = getLabels(m.Name, m.Lab)
-	fmt.Println("Volumes:", m.Volumes)
 	for _, mnt := range m.Volumes {
 		if mnt.Type == "" {
 			mnt.Type = "bind"
@@ -160,32 +167,57 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
 	}
 	createResponse, err := containers.CreateWithSpec(pd.conn, s, nil)
 	if err != nil {
-		return "", err
+		return err
 	}
 	err = pd.CopyInFiles(m, m.Hostlab)
 	if err != nil {
-		return "", err
+		return err
 	}
+	// temporary fix to https://github.com/containers/podman/issues/12204
+	prev := log.GetLevel()
+	log.SetLevel(log.ErrorLevel)
 	err = containers.Start(pd.conn, createResponse.ID, nil)
-	if err != nil {
-		return createResponse.ID, err
-	}
-	return createResponse.ID, nil
+	log.SetLevel(prev)
+	return err
 }
 
 func (pd *PodmanDriver) HaltMachine(m driver.Machine, force bool) error {
-	err := containers.Stop(pd.conn, m.Fullname(), nil)
+	exists, err := pd.MachineExists(m)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist", m.Name)
+	}
+	state, err := pd.GetMachineState(m)
+	if err != nil {
+		return err
+	}
+	if !state.Running {
+		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
+	}
+	err = containers.Stop(pd.conn, m.Fullname(), nil)
 	return err
 }
 
 func (pd *PodmanDriver) RemoveMachine(m driver.Machine) error {
-	err := containers.Kill(pd.conn, m.Fullname(), nil)
+	err := containers.Remove(pd.conn, m.Fullname(), nil)
 	return err
 }
 
-func (pd *PodmanDriver) GetMachineState(m driver.Machine) (state string, err error) {
-	_, err = containers.Inspect(pd.conn, m.Fullname(), nil)
-	return "", err
+func (pd *PodmanDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
+	s, err := containers.Inspect(pd.conn, m.Fullname(), nil)
+	if err != nil {
+		return state, err
+	}
+	state = driver.MachineState{
+		Pid:       s.State.Pid,
+		Status:    s.State.Status,
+		Running:   s.State.Running,
+		StartedAt: s.State.StartedAt,
+		ExitCode:  s.State.ExitCode,
+	}
+	return state, nil
 }
 
 func (pd *PodmanDriver) AttachToMachine(m driver.Machine) (err error) {

@@ -8,14 +8,13 @@ import (
 	"github.com/containers/podman/v3/pkg/bindings/network"
 )
 
-func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (id string,
-	err error) {
+func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (err error) {
 	exists, err := pd.NetworkExists(n.Name, lab)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if exists {
-		return "", driver.ErrExists
+		return driver.ErrExists
 	}
 	opts := new(network.CreateOptions)
 	opts.WithName(getName(n.Name, lab))
@@ -23,18 +22,18 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network, lab string) (id string,
 	if n.Subnet != "" && n.Gateway != "" {
 		_, sn, err := net.ParseCIDR(n.Subnet)
 		if err != nil {
-			return "", err
+			return err
 		}
 		gw := net.ParseIP(n.Gateway)
 		if gw == nil {
-			return "", fmt.Errorf("Could not parse IP %s as Gateway", n.Gateway)
+			return fmt.Errorf("Could not parse IP %s as Gateway", n.Gateway)
 		}
 		opts.WithGateway(gw)
 		opts.WithSubnet(*sn)
 	}
 	opts.WithInternal(!n.External)
 	_, err = network.Create(pd.conn, opts)
-	return id, err
+	return err
 }
 
 func (pd *PodmanDriver) StartNetwork(name, lab string) (err error) {

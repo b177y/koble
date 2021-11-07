@@ -18,7 +18,7 @@ func (nk *Netkit) StartNetwork(name string) error {
 	n := driver.Network{
 		Name: name,
 	}
-	_, err := nk.Driver.CreateNetwork(n, nk.Lab.Name)
+	err := nk.Driver.CreateNetwork(n, nk.Lab.Name)
 	if err != nil {
 		return err
 	}

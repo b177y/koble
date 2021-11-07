@@ -206,34 +206,68 @@ func (nk *Netkit) LabStart() error {
 	fmt.Println("Email(s):       <unknown>")       // TODO
 	fmt.Println("Web(s):       <unknown>")         // TODO
 	fmt.Println("Description(s):       <unknown>") // TODO
-	fmt.Println("=================================================================")
+	fmt.Printf("=================================================================\n\n")
 	for _, m := range nk.Lab.Machines {
 		fmt.Printf("Starting %s...\n", m.Name)
 		err := nk.StartMachine(m.Name, m.Image, m.Networks)
-		if err != nil && err != driver.ErrExists {
+		if err == driver.ErrExists {
+			fmt.Printf("Machine %s already exists.\n", m.Name)
+		} else if err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (nk *Netkit) LabClean(machines []string, all bool) error {
-	// err := nk.LabHalt(machines, true, all)
-	// if err != nil {
-	// 	return err
-	// }
-	// if all {
-	// 	err := nk.Driver.RemoveMachines([]string{}, "")
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// if nk.Lab.Name == "" && len(machines) == 0 {
-	// 	return errors.New("You are not in a lab. Use --all or specify machines to clean with --machines")
-	// }
-	// err = nk.Driver.RemoveMachines(machines, nk.Lab.Name)
-	// // TODO cleanup networks
-	// return err
+func contains(arr []string, item string) bool {
+	for _, v := range arr {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (nk *Netkit) GetMachineList(mlist []string,
+	all bool) (machines []driver.Machine, err error) {
+	empty := len(mlist) == 0
+	if empty && nk.Lab.Name == "" && !all {
+		return machines, errors.New("You are not in a lab. Use --all or specify machines to clean with --machines")
+	}
+	output, err := nk.Driver.ListMachines(nk.Lab.Name, all)
+	for _, m := range output {
+		if empty {
+			machines = append(machines, driver.Machine{
+				Name: m.Name,
+				Lab:  m.Lab,
+			})
+		} else if contains(mlist, m.Name) {
+			machines = append(machines, driver.Machine{
+				Name: m.Name,
+				Lab:  m.Lab,
+			})
+		}
+	}
+	return machines, nil
+}
+
+func (nk *Netkit) LabClean(mlist []string, all bool) error {
+	machines, err := nk.GetMachineList(mlist, all)
+	if err != nil {
+		return err
+	}
+	for _, m := range machines {
+		fmt.Printf("Halting machine %s...\n", m.Name)
+		err := nk.Driver.HaltMachine(m, true)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("\rRemoving machine %s...\n", m.Name)
+		err = nk.Driver.RemoveMachine(m)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 	return nil
 }
 

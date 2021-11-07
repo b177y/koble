@@ -4,6 +4,7 @@ package driver
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/cri-o/ocicni/pkg/ocicni"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
@@ -21,6 +22,14 @@ type Machine struct {
 	Networks []string
 	Volumes  []spec.Mount
 	Image    string
+}
+
+type MachineState struct {
+	Pid       int
+	Status    string
+	Running   bool
+	StartedAt time.Time
+	ExitCode  int32
 }
 
 func (m *Machine) Fullname() string {
@@ -60,13 +69,13 @@ type Driver interface {
 	GetDefaultImage() string
 	SetupDriver(conf map[string]interface{}) (err error)
 
-	StartMachine(m Machine) (id string, err error)
+	StartMachine(m Machine) (err error)
 	HaltMachine(m Machine, force bool) (err error)
 	RemoveMachine(m Machine) (err error)
 
 	ListMachines(lab string, all bool) ([]MachineInfo, error)
 	MachineExists(m Machine) (exists bool, err error)
-	GetMachineState(m Machine) (state string, err error)
+	GetMachineState(m Machine) (state MachineState, err error)
 	AttachToMachine(m Machine) (err error)
 	MachineExecShell(m Machine, command, user string,
 		detach bool, workdir string) (err error)
@@ -75,7 +84,7 @@ type Driver interface {
 
 	ListNetworks(lab string, all bool) error
 	NetworkExists(name, lab string) (exists bool, err error)
-	CreateNetwork(net Network, lab string) (id string, err error)
+	CreateNetwork(net Network, lab string) (err error)
 	StartNetwork(name, lab string) (err error)
 	StopNetwork(name, lab string) (err error)
 	RemoveNetwork(name, lab string) (err error)
