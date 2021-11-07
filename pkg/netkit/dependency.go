@@ -3,6 +3,7 @@ package netkit
 
 import (
 	"errors"
+	"fmt"
 )
 
 type graph struct {
@@ -19,13 +20,27 @@ func newGraph() graph {
 	}
 }
 
-func (g *graph) addEdge(machine, dependency string) {
-	_, ok := g.edges[machine]
-	if !ok {
+func (g *graph) hasNode(node string) bool {
+	for _, n := range g.vertices {
+		if n == node {
+			return true
+		}
+	}
+	return false
+}
+
+func (g *graph) addEdge(machine, dependency string) error {
+	if !g.hasNode(machine) {
+		return fmt.Errorf("Machine %s has not been added as a node.", machine)
+	} else if !g.hasNode(dependency) {
+		return fmt.Errorf("Dependency %s has not been added as a node.", dependency)
+	}
+	if _, ok := g.edges[machine]; !ok {
 		g.edges[machine] = []string{dependency}
 	} else {
 		g.edges[machine] = append(g.edges[machine], dependency)
 	}
+	return nil
 }
 
 func (g *graph) addNode(machine string) {
@@ -68,5 +83,10 @@ func (g *graph) sort() ([]string, error) {
 	if index != n {
 		return []string{}, errors.New("Graph is not Directed Acyclic Graph :(")
 	}
-	return order, nil
+	reversed := []string{}
+	for i := range order {
+		index = n - 1 - i
+		reversed = append(reversed, order[index])
+	}
+	return reversed, nil
 }

@@ -46,6 +46,10 @@ func getLab(lab *Lab) (exists bool, err error) {
 	if err != nil {
 		return true, err
 	}
+	lab.Machines, err = orderMachines(lab.Machines)
+	if err != nil {
+		return true, err
+	}
 	lab.Name = filepath.Base(dir)
 	lab.Directory = dir
 	return true, nil
@@ -176,4 +180,32 @@ func (nk *Netkit) LaunchInTerm() error {
 	cmd := exec.Command(term.Command[0], args...)
 	err = cmd.Start()
 	return err
+}
+
+func orderMachines(machines []Machine) (ordered []Machine,
+	err error) {
+	dg := newGraph()
+	mappedMachines := map[string]Machine{}
+	for _, m := range machines {
+		mappedMachines[m.Name] = m
+	}
+	for _, m := range machines {
+		dg.addNode(m.Name)
+		for _, d := range m.Dependencies {
+			if d == m.Name {
+				return ordered, fmt.Errorf("Machine %s cannot depend on itself!", m.Name)
+			} else if _, ok := mappedMachines[d]; !ok {
+				return ordered, fmt.Errorf("Machine %s does not exist!", d)
+			}
+			dg.addEdge(m.Name, d)
+		}
+	}
+	sorted, err := dg.sort()
+	if err != nil {
+		return ordered, err
+	}
+	for _, m := range sorted {
+		ordered = append(ordered, mappedMachines[m])
+	}
+	return ordered, nil
 }

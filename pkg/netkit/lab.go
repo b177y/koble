@@ -16,8 +16,8 @@ import (
 )
 
 type Lab struct {
-	Name          string             `yaml:"omitempty" validate:"alphanum,max=30"`
-	Directory     string             `yaml:"omitempty"`
+	Name          string             `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	Directory     string             `yaml:"dir,omitempty"`
 	CreatedAt     string             `yaml:"created_at,omitempty" validate:"datetime"`
 	NetkitVersion string             `yaml:"netkit_version,omitempty"`
 	Description   string             `yaml:"description,omitempty"`

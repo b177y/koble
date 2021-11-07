@@ -14,12 +14,13 @@ type PodmanMachineExtra struct {
 }
 
 type Machine struct {
-	Name        string             `yaml:"name" validate:"alphanum,max=30"`
-	Networks    []string           `yaml:"networks,omitempty" validate:"alphanum,max=30"`
-	Image       string             `yaml:"image,omitempty"`
-	Volumes     []spec.Mount       `yaml:"volumes,omitempty"`
-	HostHome    bool               `yaml:"hosthome,omitempty"`
-	PodmanExtra PodmanMachineExtra `yaml:"podman_extra,omitempty"`
+	Name         string             `yaml:"name" validate:"alphanum,max=30"`
+	Networks     []string           `yaml:"networks,omitempty" validate:"alphanum,max=30"`
+	Image        string             `yaml:"image,omitempty"`
+	Volumes      []spec.Mount       `yaml:"volumes,omitempty"`
+	Dependencies []string           `yaml:"depends_on,omitempty"`
+	HostHome     bool               `yaml:"hosthome,omitempty"`
+	PodmanExtra  PodmanMachineExtra `yaml:"podman_extra,omitempty"`
 }
 
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
