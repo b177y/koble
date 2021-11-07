@@ -27,6 +27,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
 	m := driver.Machine{
 		Name:     name,
+		Lab:      nk.Lab.Name,
 		Hostlab:  nk.Lab.Directory,
 		Hosthome: false,
 		Networks: []string{},
@@ -73,7 +74,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Destination: "/hostlab",
 	})
 	log.Debug("cli", m)
-	_, err := nk.Driver.StartMachine(m, nk.Lab.Name)
+	_, err := nk.Driver.StartMachine(m)
 	return err
 }
 
@@ -106,8 +107,12 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 			fmt.Println(recv)
 		}
 	}()
-	err := nk.Driver.GetMachineLogs(machine, nk.Lab.Name,
-		stdoutChan, stderrChan, follow, tail)
+	m := driver.Machine{
+		Name: machine,
+		Lab:  nk.Lab.Name,
+	}
+	err := nk.Driver.GetMachineLogs(m, stdoutChan,
+		stderrChan, follow, tail)
 	return err
 }
 

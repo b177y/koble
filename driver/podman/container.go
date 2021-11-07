@@ -112,25 +112,23 @@ func getFilters(machine, lab string, all bool) map[string][]string {
 	return filters
 }
 
-func (pd *PodmanDriver) MachineExists(name, lab string) (exists bool,
+func (pd *PodmanDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
-	nk_fullname := getName(name, lab)
-	exists, err = containers.Exists(pd.conn, nk_fullname, nil)
+	exists, err = containers.Exists(pd.conn, m.Fullname(), nil)
 	if err != nil {
 		return exists, driver.ErrExists
 	}
 	return exists, nil
 }
 
-func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, err error) {
-	exists, err := pd.MachineExists(m.Name, lab)
+func (pd *PodmanDriver) StartMachine(m driver.Machine) (id string, err error) {
+	exists, err := pd.MachineExists(m)
 	if err != nil {
 		return "", err
 	}
 	if exists {
 		return "", driver.ErrExists
 	}
-	nk_fullname := getName(m.Name, lab)
 	log.Debug("Starting machine", m)
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
@@ -144,15 +142,15 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 		}
 	}
 	s := specgen.NewSpecGenerator(m.Image, false)
-	s.Name = nk_fullname
+	s.Name = m.Fullname()
 	s.Hostname = m.Name
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
 	for _, n := range m.Networks {
-		s.CNINetworks = append(s.CNINetworks, getName(n, lab))
+		s.CNINetworks = append(s.CNINetworks, getName(n, m.Lab))
 	}
 	s.Terminal = true
-	s.Labels = getLabels(m.Name, lab)
+	s.Labels = getLabels(m.Name, m.Lab)
 	fmt.Println("Volumes:", m.Volumes)
 	for _, mnt := range m.Volumes {
 		if mnt.Type == "" {
@@ -164,7 +162,7 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	if err != nil {
 		return "", err
 	}
-	err = pd.CopyInFiles(m.Name, lab, m.Hostlab)
+	err = pd.CopyInFiles(m, m.Hostlab)
 	if err != nil {
 		return "", err
 	}
@@ -175,83 +173,44 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine, lab string) (id string, e
 	return createResponse.ID, nil
 }
 
-func (pd *PodmanDriver) getMachineList(machines []string, lab string) (names []string, err error) {
-	if len(machines) == 0 {
-		all, err := pd.ListMachines(lab, (lab == ""))
-		if err != nil {
-			return names, err
-		}
-		for _, m := range all {
-			names = append(names, getName(m.Name, m.Lab))
-		}
-	} else {
-		for _, m := range machines {
-			names = append(names, getName(m, lab))
-		}
-	}
-	return names, nil
-}
-
-func (pd *PodmanDriver) HaltMachines(machines driver.Machine, force bool) error {
-	//err := containers.Stop(pd.conn, name, nil)
-	//toStop, err := pd.getMachineList(machines, lab)
-	// if err != nil {
-	// 	return err
-	// }
-	// if force {
-	// 	for _, m := range toStop {
-	// 		err := containers.Kill(pd.conn, m, nil)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// } else {
-	// 	for _, m := range toStop {
-	// 		err := containers.Stop(pd.conn, m, nil)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-
-	return nil
-}
-
-func (pd *PodmanDriver) RemoveMachines(machine driver.Machine) error {
-	//err := containers.Kill(pd.conn, name, nil)
-	return nil
-}
-
-func (pd *PodmanDriver) GetMachineStatus(name string) (data interface{}, err error) {
-	data, err = containers.Inspect(pd.conn, name, nil)
-	return data, err
-}
-
-func (pd *PodmanDriver) AttachToMachine(name, lab string) (err error) {
-	name = getName(name, lab)
-	exists, err := pd.MachineExists(name, lab)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return fmt.Errorf("Machine %s does not exist.", name)
-	}
-	opts := new(containers.AttachOptions)
-	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", name)
-	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	err = containers.Attach(pd.conn, name, os.Stdin, os.Stdout, os.Stderr, nil, opts)
+func (pd *PodmanDriver) HaltMachine(m driver.Machine, force bool) error {
+	err := containers.Stop(pd.conn, m.Fullname(), nil)
 	return err
 }
 
-func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
-	detach bool, workdir string) (err error) {
-	exists, err := pd.MachineExists(name, lab)
+func (pd *PodmanDriver) RemoveMachine(m driver.Machine) error {
+	err := containers.Kill(pd.conn, m.Fullname(), nil)
+	return err
+}
+
+func (pd *PodmanDriver) GetMachineState(m driver.Machine) (state string, err error) {
+	_, err = containers.Inspect(pd.conn, m.Fullname(), nil)
+	return "", err
+}
+
+func (pd *PodmanDriver) AttachToMachine(m driver.Machine) (err error) {
+	exists, err := pd.MachineExists(m)
 	if err != nil {
 		return err
 	}
-	nk_fullname := getName(name, lab)
 	if !exists {
-		return fmt.Errorf("Machine %s does not exist.", name)
+		return fmt.Errorf("Machine %s does not exist.", m.Name)
+	}
+	opts := new(containers.AttachOptions)
+	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
+	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
+	err = containers.Attach(pd.conn, m.Fullname(), os.Stdin, os.Stdout, os.Stderr, nil, opts)
+	return err
+}
+
+func (pd *PodmanDriver) MachineExecShell(m driver.Machine, command,
+	user string, detach bool, workdir string) (err error) {
+	exists, err := pd.MachineExists(m)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist.", m.Name)
 	}
 	ec := new(handlers.ExecCreateConfig)
 	ec.Cmd = strings.Fields(command)
@@ -262,7 +221,7 @@ func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	ec.AttachStdin = true
 	ec.AttachStdout = true
 	ec.Tty = true
-	exId, err := containers.ExecCreate(pd.conn, nk_fullname, ec)
+	exId, err := containers.ExecCreate(pd.conn, m.Fullname(), ec)
 	if err != nil {
 		return err
 	}
@@ -277,23 +236,22 @@ func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	return err
 }
 
-func (pd *PodmanDriver) GetMachineLogs(name, lab string,
+func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
 	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
-	name = getName(name, lab)
-	exists, err := pd.MachineExists(name, lab)
+	exists, err := pd.MachineExists(m)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("Machine %s does not exist.", name)
+		return fmt.Errorf("Machine %s does not exist.", m.Name)
 	}
 	opts := new(containers.LogOptions)
 	opts.WithStdout(true)
 	opts.WithStderr(true)
 	opts.WithTail(fmt.Sprint(tail))
 	opts.WithFollow(follow)
-	err = containers.Logs(pd.conn, name, opts, stdoutChan, stderrChan)
+	err = containers.Logs(pd.conn, m.Fullname(), opts, stdoutChan, stderrChan)
 	return err
 }
 
@@ -328,22 +286,17 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 	return machines, nil
 }
 
-func (pd *PodmanDriver) GetMachineState(name, lab string) (state string, err error) {
-	return "", nil
-}
-
-func (pd *PodmanDriver) CopyInFiles(machine, lab, hostlab string) error {
-	name := getName(machine, lab)
-	machineDir := filepath.Join(hostlab, machine)
+func (pd *PodmanDriver) CopyInFiles(m driver.Machine, hostlab string) error {
+	machineDir := filepath.Join(hostlab, m.Name)
 	mDirInfo, err := os.Stat(machineDir)
 	if os.IsNotExist(err) {
-		log.Warnf("Machine directory %s doesn't exist, creating machine %s without mounting custom files.\n", machineDir, machine)
+		log.Warnf("Machine directory %s doesn't exist, creating machine %s without mounting custom files.\n", machineDir, m.Name)
 		return nil
 	} else if err != nil {
 		return err
 	}
 	if !mDirInfo.IsDir() {
-		return fmt.Errorf("%s is a file when it should be the machine directory for %s.", machineDir, machine)
+		return fmt.Errorf("%s is a file when it should be the machine directory for %s.", machineDir, m.Name)
 	}
 	opts := new(containers.CopyOptions)
 	reader, writer := io.Pipe()
@@ -355,7 +308,7 @@ func (pd *PodmanDriver) CopyInFiles(machine, lab, hostlab string) error {
 			log.Fatal(err)
 		}
 	}()
-	cp, err := containers.CopyFromArchiveWithOptions(pd.conn, name, "/", reader, opts)
+	cp, err := containers.CopyFromArchiveWithOptions(pd.conn, m.Fullname(), "/", reader, opts)
 	if err != nil {
 		return err
 	}

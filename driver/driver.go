@@ -23,6 +23,14 @@ type Machine struct {
 	Image    string
 }
 
+func (m *Machine) Fullname() string {
+	name := "netkit_" + m.Name
+	if m.Lab != "" {
+		name += "_" + m.Lab
+	}
+	return name
+}
+
 type MachineInfo struct {
 	Name     string
 	Lab      string
@@ -52,17 +60,17 @@ type Driver interface {
 	GetDefaultImage() string
 	SetupDriver(conf map[string]interface{}) (err error)
 
-	StartMachine(m Machine, lab string) (id string, err error)
+	StartMachine(m Machine) (id string, err error)
 	HaltMachine(m Machine, force bool) (err error)
 	RemoveMachine(m Machine) (err error)
 
 	ListMachines(lab string, all bool) ([]MachineInfo, error)
-	MachineExists(name string, lab string) (exists bool, err error)
-	GetMachineState(name string, lab string) (state string, err error)
-	AttachToMachine(name string, lab string) (err error)
-	MachineExecShell(name, lab, command, user string,
+	MachineExists(m Machine) (exists bool, err error)
+	GetMachineState(m Machine) (state string, err error)
+	AttachToMachine(m Machine) (err error)
+	MachineExecShell(m Machine, command, user string,
 		detach bool, workdir string) (err error)
-	GetMachineLogs(name, lab string, stdoutChan, stderrChan chan string,
+	GetMachineLogs(m Machine, stdoutChan, stderrChan chan string,
 		follow bool, tail int) (err error)
 
 	ListNetworks(lab string, all bool) error
