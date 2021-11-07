@@ -208,11 +208,11 @@ func (pd *PodmanDriver) AttachToMachine(name, lab string) (err error) {
 
 func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	detach bool, workdir string) (err error) {
-	name = getName(name, lab)
 	exists, err := pd.MachineExists(name, lab)
 	if err != nil {
 		return err
 	}
+	nk_fullname := getName(name, lab)
 	if !exists {
 		return fmt.Errorf("Machine %s does not exist.", name)
 	}
@@ -225,7 +225,7 @@ func (pd *PodmanDriver) MachineExecShell(name, lab, command, user string,
 	ec.AttachStdin = true
 	ec.AttachStdout = true
 	ec.Tty = true
-	exId, err := containers.ExecCreate(pd.conn, name, ec)
+	exId, err := containers.ExecCreate(pd.conn, nk_fullname, ec)
 	if err != nil {
 		return err
 	}
@@ -313,7 +313,7 @@ func (pd *PodmanDriver) CopyInFiles(machine, lab, hostlab string) error {
 	var copts copier.GetOptions
 	go func() {
 		defer writer.Close()
-		err := copier.Get("/", "", copts, []string{hostlab}, writer)
+		err := copier.Get("/", "", copts, []string{machineDir}, writer)
 		if err != nil {
 			log.Fatal(err)
 		}
