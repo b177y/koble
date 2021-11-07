@@ -208,7 +208,6 @@ func (nk *Netkit) LabStart() error {
 	fmt.Println("Description(s):       <unknown>") // TODO
 	fmt.Printf("=================================================================\n\n")
 	for _, m := range nk.Lab.Machines {
-		fmt.Printf("Starting %s...\n", m.Name)
 		err := nk.StartMachine(m.Name, m.Image, m.Networks)
 		if err == driver.ErrExists {
 			fmt.Printf("Machine %s already exists.\n", m.Name)
@@ -271,22 +270,18 @@ func (nk *Netkit) LabClean(mlist []string, all bool) error {
 	return nil
 }
 
-func (nk *Netkit) LabHalt(machines []string,
+func (nk *Netkit) LabHalt(mlist []string,
 	force, all bool) error {
-	// if all {
-	// 	err := nk.Driver.HaltMachines([]string{}, "", force)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// if nk.Lab.Name == "" && len(machines) == 0 {
-	// 	return errors.New("You are not in a lab. Use --all or specify machines to halt with --machines")
-	// }
-	// err := nk.Driver.HaltMachines(machines, nk.Lab.Name, force)
-	// return err
-	return nil
-}
-
-func (nk *Netkit) LabRestart() error {
+	machines, err := nk.GetMachineList(mlist, all)
+	if err != nil {
+		return err
+	}
+	for _, m := range machines {
+		fmt.Printf("Halting machine %s...\n", m.Name)
+		err := nk.Driver.HaltMachine(m, force)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 	return nil
 }

@@ -126,7 +126,11 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 		if state.Running {
 			return nil
 		} else {
-			return containers.Start(pd.conn, m.Fullname(), nil)
+			prev := log.GetLevel()
+			log.SetLevel(log.ErrorLevel)
+			err = containers.Start(pd.conn, m.Fullname(), nil)
+			log.SetLevel(prev)
+			return err
 		}
 	}
 	log.Debug("Starting machine", m)

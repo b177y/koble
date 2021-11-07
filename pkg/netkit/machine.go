@@ -80,7 +80,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	log.Debug("cli", m)
+	fmt.Printf("Starting %s...\n", m.Name)
 	err := nk.Driver.StartMachine(m)
 	return err
 }
