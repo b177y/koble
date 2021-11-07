@@ -294,11 +294,26 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 	}
 	for _, c := range ctrs {
 		name, lab := getInfoFromLabels(c.Labels)
+		var mNetworks []string
+		for _, n := range c.Networks {
+			s := strings.Index(n, "netkit_")
+			if s == -1 {
+				mNetworks = append(mNetworks, n)
+			} else {
+				s = s + 7 // s should be 0, + 7 accounts for netkit_
+				e := strings.Index(n[s:], "_")
+				if e == -1 {
+					mNetworks = append(mNetworks, n)
+				} else {
+					mNetworks = append(mNetworks, n[s:s+e])
+				}
+			}
+		}
 		machines = append(machines, driver.MachineInfo{
 			Name:     name,
 			Lab:      lab,
 			Image:    c.Image,
-			Networks: c.Networks,
+			Networks: mNetworks,
 			State:    c.State,
 			Uptime:   c.Status,
 			Exited:   c.Exited,
