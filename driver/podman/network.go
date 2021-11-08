@@ -6,6 +6,7 @@ import (
 
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/bindings/network"
+	"github.com/containers/podman/v3/pkg/domain/entities"
 )
 
 func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
@@ -116,5 +117,52 @@ func (pd *PodmanDriver) NetworkExists(net driver.Network) (bool, error) {
 }
 
 func (pd *PodmanDriver) NetInfo(net driver.Network) (nInfo driver.NetInfo, err error) {
+	exists, err := pd.NetworkExists(net)
+	if err != nil {
+		return nInfo, err
+	}
+	if !exists {
+		return nInfo, driver.ErrNotExists
+	}
+	info, err := network.Inspect(pd.conn, net.Fullname(), nil)
+	if err != nil {
+		return nInfo, err
+	}
+	nInfo, err = netInfoFromInspect(net, info)
 	return nInfo, err
+}
+
+func netInfoFromInspect(nw driver.Network, insp []entities.NetworkInspectReport) (netInfo driver.NetInfo, err error) {
+	// this is currently very cursed due to podman bindings at v3.4
+	// returning map[string]interface{}
+	// future bindings will return
+	// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
+	// update this code to make it cleaner when this is released :)
+	netInfo = driver.NetInfo{
+		Name: nw.Name,
+		Lab:  nw.Lab,
+	}
+	if v, ok := insp[0]["plugins"]; ok {
+		parsed := v.([]interface{})
+		basicInfo := parsed[0].(map[string]interface{})
+		if v, ok := basicInfo["bridge"]; ok {
+			netInfo.Interface = v.(string)
+		}
+		if v, ok := basicInfo["ipam"]; ok {
+			ipamParsed := v.(map[string]interface{})
+			if v, ok := ipamParsed["isGateway"]; ok {
+				netInfo.External = v.(bool)
+			}
+			if v, ok := ipamParsed["ranges"]; ok {
+				rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
+				if v, ok := rangesMap["gateway"]; ok {
+					netInfo.Gateway = v.(string)
+				}
+				if v, ok := rangesMap["subnet"]; ok {
+					netInfo.Subnet = v.(string)
+				}
+			}
+		}
+	}
+	return netInfo, err
 }

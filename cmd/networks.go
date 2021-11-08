@@ -28,7 +28,10 @@ var ninfoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "Get info about a netkit network",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("getting machine info...")
+		err := nk.NetworkInfo(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
