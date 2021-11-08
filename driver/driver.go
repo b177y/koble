@@ -15,13 +15,15 @@ var (
 )
 
 type Machine struct {
-	Name     string
-	Lab      string
-	Hostlab  string
-	Hosthome bool `default:"false"`
-	Networks []string
-	Volumes  []spec.Mount
-	Image    string
+	Name         string `yaml:"name" validate:"alphanum,max=30"`
+	Lab          string
+	Hostlab      string
+	Dependencies []string               `yaml:"depends_on,omitempty"`
+	HostHome     bool                   `yaml:"hosthome,omitempty"`
+	Networks     []string               `yaml:"networks,omitempty" validate:"alphanum,max=30"`
+	Volumes      []spec.Mount           `yaml:"volumes,omitempty"`
+	Image        string                 `yaml:"image,omitempty"`
+	DriverExtra  map[string]interface{} `yaml:"driver_extra,omitempty"`
 }
 
 type MachineState struct {

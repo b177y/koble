@@ -15,7 +15,7 @@ var detachMode bool
 var workDir string
 
 var shellCmd = &cobra.Command{
-	Use:   "shell [MACHINE]",
+	Use:   "shell [options] MACHINE",
 	Short: "The 'shell' subcommand is used to connect to a shell on a netkit machine",
 	Args:  cobra.ExactArgs(1),
 	PreRun: func(cmd *cobra.Command, args []string) {

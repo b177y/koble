@@ -16,18 +16,17 @@ import (
 )
 
 type Lab struct {
-	Name          string             `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	Directory     string             `yaml:"dir,omitempty"`
-	CreatedAt     string             `yaml:"created_at,omitempty" validate:"datetime"`
-	NetkitVersion string             `yaml:"netkit_version,omitempty"`
-	Description   string             `yaml:"description,omitempty"`
-	Authors       []string           `yaml:"authors,omitempty"`
-	Emails        []string           `yaml:"emails,omitempty" validate:"email"`
-	Web           []string           `yaml:"web,omitempty" validate:"url"`
-	Machines      []Machine          `yaml:"machines,omitempty"`
-	Networks      []Network          `yaml:"networks,omitempty"`
-	DefaultImage  string             `yaml:"default_image,omitempty"`
-	PodmanExtra   PodmanMachineExtra `yaml:"podman_extra,omitempty"`
+	Name          string           `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	Directory     string           `yaml:"dir,omitempty"`
+	CreatedAt     string           `yaml:"created_at,omitempty" validate:"datetime"`
+	NetkitVersion string           `yaml:"netkit_version,omitempty"`
+	Description   string           `yaml:"description,omitempty"`
+	Authors       []string         `yaml:"authors,omitempty"`
+	Emails        []string         `yaml:"emails,omitempty" validate:"email"`
+	Web           []string         `yaml:"web,omitempty" validate:"url"`
+	Machines      []driver.Machine `yaml:"machines,omitempty"`
+	Networks      []Network        `yaml:"networks,omitempty"`
+	DefaultImage  string           `yaml:"default_image,omitempty"`
 }
 
 func InitLab(name string, description string, authors []string, emails []string, web []string) error {
@@ -131,7 +130,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 			return fmt.Errorf("A machine with the name %s already exists.", name)
 		}
 	}
-	lab.Machines = append(lab.Machines, Machine{
+	lab.Machines = append(lab.Machines, driver.Machine{
 		Name:     name,
 		Image:    image,
 		Networks: networks,
@@ -195,7 +194,7 @@ func (nk *Netkit) Validate() error {
 	return nil
 }
 
-func (nk *Netkit) LabStart() error {
+func (nk *Netkit) LabStart(mlist []string) error {
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
@@ -207,7 +206,8 @@ func (nk *Netkit) LabStart() error {
 	fmt.Println("Web(s):       <unknown>")         // TODO
 	fmt.Println("Description(s):       <unknown>") // TODO
 	fmt.Printf("=================================================================\n\n")
-	for _, m := range nk.Lab.Machines {
+	machines := filterMachines(nk.Lab.Machines, mlist)
+	for _, m := range machines {
 		err := nk.StartMachine(m.Name, m.Image, m.Networks)
 		if err == driver.ErrExists {
 			fmt.Printf("Machine %s already exists.\n", m.Name)
@@ -227,26 +227,35 @@ func contains(arr []string, item string) bool {
 	return false
 }
 
+func filterMachines(machines []driver.Machine,
+	filter []string) (mList []driver.Machine) {
+	// if no machines in filter then all machines are included
+	if len(filter) == 0 {
+		return machines
+	}
+	// only keep machines which are in the filter list
+	for _, m := range machines {
+		if contains(filter, m.Name) {
+			mList = append(mList, m)
+		}
+	}
+	return mList
+}
 func (nk *Netkit) GetMachineList(mlist []string,
 	all bool) (machines []driver.Machine, err error) {
-	empty := len(mlist) == 0
-	if empty && nk.Lab.Name == "" && !all {
-		return machines, errors.New("You are not in a lab. Use --all or specify machines to clean with --machines")
+	if len(mlist) == 0 && nk.Lab.Name == "" && !all {
+		return machines, errors.New("You are not in a lab. Use --all or specify machines.")
+	} else if all && len(mlist) != 0 {
+		return machines, errors.New("You cannot specify machines when using --all")
 	}
 	output, err := nk.Driver.ListMachines(nk.Lab.Name, all)
 	for _, m := range output {
-		if empty {
-			machines = append(machines, driver.Machine{
-				Name: m.Name,
-				Lab:  m.Lab,
-			})
-		} else if contains(mlist, m.Name) {
-			machines = append(machines, driver.Machine{
-				Name: m.Name,
-				Lab:  m.Lab,
-			})
-		}
+		machines = append(machines, driver.Machine{
+			Name: m.Name,
+			Lab:  m.Lab,
+		})
 	}
+	machines = filterMachines(machines, mlist)
 	return machines, nil
 }
 

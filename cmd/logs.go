@@ -9,7 +9,7 @@ var logsFollow bool
 var logsTail int
 
 var logsCmd = &cobra.Command{
-	Use:   "logs [MACHINE]",
+	Use:   "logs [options] MACHINE",
 	Short: "The 'logs' subcommand is used to get logs from a netkit",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

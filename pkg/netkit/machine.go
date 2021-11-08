@@ -9,27 +9,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type PodmanMachineExtra struct {
-	Caps []string `yaml:"caps,omitempty"`
-}
-
-type Machine struct {
-	Name         string             `yaml:"name" validate:"alphanum,max=30"`
-	Networks     []string           `yaml:"networks,omitempty" validate:"alphanum,max=30"`
-	Image        string             `yaml:"image,omitempty"`
-	Volumes      []spec.Mount       `yaml:"volumes,omitempty"`
-	Dependencies []string           `yaml:"depends_on,omitempty"`
-	HostHome     bool               `yaml:"hosthome,omitempty"`
-	PodmanExtra  PodmanMachineExtra `yaml:"podman_extra,omitempty"`
-}
-
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
 	m := driver.Machine{
 		Name:     name,
 		Lab:      nk.Lab.Name,
 		Hostlab:  nk.Lab.Directory,
-		Hosthome: false,
+		HostHome: false,
 		Networks: []string{},
 		Image:    nk.Driver.GetDefaultImage(),
 	}
@@ -54,7 +40,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	for _, lm := range nk.Lab.Machines {
 		if lm.Name == m.Name {
 			m.Volumes = lm.Volumes
-			m.Hosthome = lm.HostHome
+			m.HostHome = lm.HostHome
 			if lm.Image != "" {
 				m.Image = lm.Image
 			}
@@ -66,7 +52,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	if image != "" {
 		m.Image = image
 	}
-	if m.Hosthome {
+	if m.HostHome {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err

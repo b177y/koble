@@ -15,14 +15,13 @@ var labEmails []string
 var labWeb []string
 
 var labHaltForce bool
-var labMachines []string
 var labAllMachines bool
 
 var lstartCmd = &cobra.Command{
-	Use:   "start",
+	Use:   "start [options] MACHINE [MACHINE...]",
 	Short: "Start a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.LabStart()
+		err := nk.LabStart(args)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -30,10 +29,10 @@ var lstartCmd = &cobra.Command{
 }
 
 var lcleanCmd = &cobra.Command{
-	Use:   "clean",
+	Use:   "clean [options] MACHINE [MACHINE...]",
 	Short: "Clean up a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.LabClean(labMachines, labAllMachines)
+		err := nk.LabClean(args, labAllMachines)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -41,10 +40,10 @@ var lcleanCmd = &cobra.Command{
 }
 
 var lhaltCmd = &cobra.Command{
-	Use:   "halt",
+	Use:   "halt [options] MACHINE [MACHINE...]",
 	Short: "Halt a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.LabHalt(labMachines, labHaltForce, labAllMachines)
+		err := nk.LabHalt(args, labHaltForce, labAllMachines)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -100,9 +99,7 @@ func init() {
 	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{}, "Comma separated list of lab author emails.")
 	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{}, "Comma separated list of lab web resource URLs.")
 
-	lcleanCmd.Flags().StringArrayVar(&labMachines, "machines", []string{}, "Comma separated list of lab machines to clean.")
 	lcleanCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Clean all Netkit machines, including those not in the current lab.")
-	lhaltCmd.Flags().StringArrayVar(&labMachines, "machines", []string{}, "Comma separated list of lab machines to halt.")
 	lhaltCmd.Flags().BoolVarP(&labHaltForce, "force", "f", false, "Force halt machines.")
 	lhaltCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Halt all Netkit machines, including those not in the current lab.")
 }

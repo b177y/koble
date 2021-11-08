@@ -209,10 +209,10 @@ func (nk *Netkit) LaunchInTerm() error {
 	return err
 }
 
-func orderMachines(machines []Machine) (ordered []Machine,
+func orderMachines(machines []driver.Machine) (ordered []driver.Machine,
 	err error) {
 	dg := newGraph()
-	mappedMachines := map[string]Machine{}
+	mappedMachines := map[string]driver.Machine{}
 	for _, m := range machines {
 		mappedMachines[m.Name] = m
 	}
