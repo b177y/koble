@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrExists    = errors.New("Already exists")
-	ErrNotExists = errors.New("Doesn't exist")
+	ErrExists         = errors.New("Already exists")
+	ErrNotExists      = errors.New("Doesn't exist")
+	ErrNotImplemented = errors.New("Not implemented by current driver")
 )
 
 type Machine struct {

@@ -27,10 +27,6 @@ type PodmanDriver struct {
 	URI          string
 }
 
-type PDConf struct {
-	URI string
-}
-
 func (pd *PodmanDriver) GetDefaultImage() string {
 	return pd.DefaultImage
 }
