@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	log "github.com/sirupsen/logrus"
 
 	"github.com/b177y/netkit/pkg/netkit"
@@ -54,7 +52,10 @@ var linfoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "View lab info",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("lab info")
+		err := nk.LabInfo()
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

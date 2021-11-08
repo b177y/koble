@@ -110,15 +110,6 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 }
 
 func (nk *Netkit) ListMachines(all bool) error {
-	if !all {
-		if nk.Lab.Name == "" {
-			fmt.Println("Listing all machines which are not associated with a lab.")
-			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
-		} else {
-			fmt.Printf("Listing all machines within this lab (%s).\n", nk.Lab.Name)
-			fmt.Printf("To see all machines use `netkit machine list --all`\n\n")
-		}
-	}
 	machines, err := nk.Driver.ListMachines(nk.Lab.Name, all)
 	if err != nil {
 		return err

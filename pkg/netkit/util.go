@@ -96,7 +96,7 @@ func NewError(err error, from, doing, extra string) NetkitError {
 	}
 }
 
-func RenderTable(headers []string, mlist [][]string) {
+func RenderTable(headers []string, list [][]string) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(headers)
 	table.SetAutoWrapText(false)
@@ -110,7 +110,7 @@ func RenderTable(headers []string, mlist [][]string) {
 	table.SetBorder(false)
 	table.SetTablePadding("\t")
 	table.SetNoWhiteSpace(true)
-	table.AppendBulk(mlist)
+	table.AppendBulk(list)
 	table.Render()
 }
 
@@ -235,4 +235,14 @@ func orderMachines(machines []driver.Machine) (ordered []driver.Machine,
 		ordered = append(ordered, mappedMachines[m])
 	}
 	return ordered, nil
+}
+
+func multiHeading(heading string, list []string) (header string, value string) {
+	if len(list) > 1 {
+		header = heading + "(s)"
+	} else {
+		header = heading
+	}
+	value = strings.Join(list, ",")
+	return header, value
 }

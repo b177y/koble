@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 
@@ -35,6 +36,15 @@ var nlistCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list netkit networks",
 	Run: func(cmd *cobra.Command, args []string) {
+		if !nListAll {
+			if nk.Lab.Name == "" {
+				fmt.Fprintln(os.Stderr, "Listing all networks which are not associated with a lab.")
+				fmt.Fprintf(os.Stderr, "To see all machines use `netkit net list --all`\n\n")
+			} else {
+				fmt.Fprintf(os.Stderr, "Listing all networks within this lab (%s).\n", nk.Lab.Name)
+				fmt.Fprintf(os.Stderr, "To see all machines use `netkit net list --all`\n\n")
+			}
+		}
 		err := nk.ListNetworks(nListAll)
 		if err != nil {
 			log.Fatal(err)

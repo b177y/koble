@@ -1,7 +1,6 @@
 package netkit
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/b177y/netkit/driver"
@@ -29,20 +28,11 @@ func (nk *Netkit) StartNetwork(name string) error {
 }
 
 func (nk *Netkit) ListNetworks(all bool) error {
-	if !all {
-		if nk.Lab.Name == "" {
-			fmt.Println("Listing all networks which are not associated with a lab.")
-			fmt.Printf("To see all machines use `netkit net list --all`\n\n")
-		} else {
-			fmt.Printf("Listing all networks within this lab (%s).\n", nk.Lab.Name)
-			fmt.Printf("To see all machines use `netkit net list --all`\n\n")
-		}
-		networks, err := nk.Driver.ListNetworks(nk.Lab.Name, all)
-		if err != nil {
-			return err
-		}
-		nlist, headers := NetInfoToStringArr(networks, all)
-		RenderTable(headers, nlist)
+	networks, err := nk.Driver.ListNetworks(nk.Lab.Name, all)
+	if err != nil {
+		return err
 	}
+	nlist, headers := NetInfoToStringArr(networks, all)
+	RenderTable(headers, nlist)
 	return nil
 }

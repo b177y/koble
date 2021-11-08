@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 
@@ -35,19 +36,19 @@ var mstartCmd = &cobra.Command{
 	},
 }
 
-var mcrashCmd = &cobra.Command{
-	Use:   "crash",
-	Short: "Crash a netkit machine",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Crashing machine...")
-	},
-}
-
 var mhaltCmd = &cobra.Command{
 	Use:   "halt",
 	Short: "Halt a netkit machine",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Halting machine...")
+	},
+}
+
+var mcleanCmd = &cobra.Command{
+	Use:   "clean",
+	Short: "Destroy a netkit machine",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("Crashing machine...")
 	},
 }
 
@@ -74,6 +75,15 @@ var mlistCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List netkit machines",
 	Run: func(cmd *cobra.Command, args []string) {
+		if !mListAll {
+			if nk.Lab.Name == "" {
+				fmt.Fprintln(os.Stderr, "Listing all machines which are not associated with a lab.")
+				fmt.Fprintf(os.Stderr, "To see all machines use `netkit machine list --all`\n\n")
+			} else {
+				fmt.Fprintf(os.Stderr, "Listing all machines within this lab (%s).\n", nk.Lab.Name)
+				fmt.Fprintf(os.Stderr, "To see all machines use `netkit machine list --all`\n\n")
+			}
+		}
 		err := nk.ListMachines(mListAll)
 		if err != nil {
 			log.Fatal(err)
@@ -83,7 +93,7 @@ var mlistCmd = &cobra.Command{
 
 func init() {
 	machineCmd.AddCommand(mstartCmd)
-	machineCmd.AddCommand(mcrashCmd)
+	machineCmd.AddCommand(mcleanCmd)
 	machineCmd.AddCommand(mhaltCmd)
 	machineCmd.AddCommand(minfoCmd)
 	machineCmd.AddCommand(maddCmd)

@@ -290,6 +290,7 @@ func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
 func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
 	opts := new(containers.ListOptions)
+	opts.WithAll(true)
 	filters := getFilters("", lab, all)
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)

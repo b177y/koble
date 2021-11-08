@@ -294,3 +294,32 @@ func (nk *Netkit) LabHalt(mlist []string,
 	}
 	return nil
 }
+
+func (nk *Netkit) LabInfo() error {
+	if nk.Lab.Name == "" {
+		return errors.New("You are not in a lab right now...")
+	}
+	fmt.Println("============================ Lab ===============================")
+	var info [][]string
+	info = append(info, []string{"Name", nk.Lab.Name})
+	info = append(info, []string{"Directory", nk.Lab.Directory})
+	info = append(info, []string{"Created At", nk.Lab.CreatedAt})
+	info = append(info, []string{"Netkit Version", nk.Lab.NetkitVersion})
+	authorHeading, authors := multiHeading("Author", nk.Lab.Authors)
+	info = append(info, []string{authorHeading, authors})
+	emailHeading, emails := multiHeading("Email", nk.Lab.Emails)
+	info = append(info, []string{emailHeading, emails})
+	webHeading, web := multiHeading("URL", nk.Lab.Web)
+	info = append(info, []string{webHeading, web})
+	info = append(info, []string{"Description", nk.Lab.Description})
+	RenderTable([]string{}, info)
+	fmt.Printf("================================================================\n\n")
+	err := nk.ListMachines(false)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\n")
+	err = nk.ListNetworks(false)
+	fmt.Printf("\n")
+	return err
+}
