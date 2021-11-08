@@ -24,6 +24,7 @@ var lstartCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+	DisableFlagsInUseLine: true,
 }
 
 var lcleanCmd = &cobra.Command{
@@ -35,6 +36,7 @@ var lcleanCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+	DisableFlagsInUseLine: true,
 }
 
 var lhaltCmd = &cobra.Command{
@@ -46,6 +48,7 @@ var lhaltCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+	DisableFlagsInUseLine: true,
 }
 
 var linfoCmd = &cobra.Command{

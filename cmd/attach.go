@@ -36,6 +36,7 @@ var attachCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+	DisableFlagsInUseLine: true,
 }
 
 func init() {
