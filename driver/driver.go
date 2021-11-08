@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	ErrExists = errors.New("Already exists")
+	ErrExists    = errors.New("Already exists")
+	ErrNotExists = errors.New("Doesn't exist")
 )
 
 type Machine struct {
@@ -99,6 +100,7 @@ type Driver interface {
 	ListMachines(lab string, all bool) ([]MachineInfo, error)
 	MachineExists(m Machine) (exists bool, err error)
 	GetMachineState(m Machine) (state MachineState, err error)
+	MachineInfo(m Machine) (info MachineInfo, err error)
 	AttachToMachine(m Machine) (err error)
 	MachineExecShell(m Machine, command, user string,
 		detach bool, workdir string) (err error)
@@ -106,6 +108,7 @@ type Driver interface {
 		follow bool, tail int) (err error)
 
 	ListNetworks(lab string, all bool) (networks []NetInfo, err error)
+	NetInfo(n Network) (info NetInfo, err error)
 	NetworkExists(net Network) (exists bool, err error)
 	CreateNetwork(net Network) (err error)
 	StartNetwork(net Network) (err error)

@@ -53,10 +53,14 @@ var mcleanCmd = &cobra.Command{
 }
 
 var minfoCmd = &cobra.Command{
-	Use:   "info",
+	Use:   "info [options] MACHINE",
 	Short: "Get info about a netkit machine",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("getting machine info...")
+		err := nk.MachineInfo(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

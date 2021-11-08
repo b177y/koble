@@ -3,6 +3,7 @@ package netkit
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/b177y/netkit/driver"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
@@ -83,7 +84,52 @@ func DestroyMachine() error {
 	return nil
 }
 
-func MachineInfo() error {
+func (nk *Netkit) MachineInfo(name string) error {
+	m := driver.Machine{
+		Name: name,
+		Lab:  nk.Lab.Name,
+	}
+	var infoTable [][]string
+	infoTable = append(infoTable, []string{"Name", m.Name})
+	if nk.Lab.Name != "" {
+		for _, lm := range nk.Lab.Machines {
+			if lm.Name == m.Name {
+				lm.Lab = m.Lab
+				m = lm
+				if lm.Image != "" {
+					infoTable = append(infoTable,
+						[]string{"Image", lm.Image})
+				}
+				if len(lm.Dependencies) != 0 {
+					infoTable = append(infoTable,
+						[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
+				}
+				if len(lm.Networks) != 0 {
+					infoTable = append(infoTable,
+						[]string{"Networks", strings.Join(lm.Networks, ",")})
+				}
+				if len(lm.Volumes) != 0 {
+					var vols []string
+					for _, v := range lm.Volumes {
+						vols = append(vols, v.Source+":"+v.Destination)
+					}
+					infoTable = append(infoTable,
+						[]string{"Volumes", strings.Join(vols, ",")})
+				}
+			}
+		}
+	}
+	info, err := nk.Driver.MachineInfo(m)
+	if err != nil && err != driver.ErrNotExists {
+		return err
+	}
+	if info.Image != "" && m.Image == "" {
+		infoTable = append(infoTable, []string{"Image", info.Image})
+	}
+	if info.State != "" {
+		infoTable = append(infoTable, []string{"State", info.State})
+	}
+	RenderTable([]string{}, infoTable)
 	return nil
 }
 

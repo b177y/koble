@@ -114,3 +114,7 @@ func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.Ne
 func (pd *PodmanDriver) NetworkExists(net driver.Network) (bool, error) {
 	return network.Exists(pd.conn, net.Fullname(), nil)
 }
+
+func (pd *PodmanDriver) NetInfo(net driver.Network) (nInfo driver.NetInfo, err error) {
+	return nInfo, err
+}

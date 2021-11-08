@@ -108,7 +108,7 @@ func (pd *PodmanDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
 	exists, err = containers.Exists(pd.conn, m.Fullname(), nil)
 	if err != nil {
-		return exists, driver.ErrExists
+		return exists, err
 	}
 	return exists, nil
 }
@@ -133,7 +133,6 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 			return err
 		}
 	}
-	log.Debug("Starting machine", m)
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return driver.NewDriverError(err, pd.Name, "StartMachine")
@@ -330,6 +329,23 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 		})
 	}
 	return machines, nil
+}
+
+func (pd *PodmanDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
+	exists, err := pd.MachineExists(m)
+	if err != nil {
+		return info, err
+	} else if !exists {
+		return info, driver.ErrNotExists
+	}
+	inspect, err := containers.Inspect(pd.conn, m.Fullname(), nil)
+	if err != nil {
+		return info, err
+	}
+	info.Name = m.Name
+	info.Image = inspect.ImageName
+	info.State = inspect.State.Status
+	return info, err
 }
 
 func (pd *PodmanDriver) CopyInFiles(m driver.Machine, hostlab string) error {
