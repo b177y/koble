@@ -62,7 +62,7 @@ func NewNetkit(namespace string) (*Netkit, error) {
 	} else {
 		nk.Namespace = "GLOBAL"
 	}
-	err = validator.New().Var(nk.Namespace, "alphanum,max=63")
+	err = validator.New().Var(nk.Namespace, "alphanum,max=64")
 	if err != nil {
 		return nil, err
 	}
