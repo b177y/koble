@@ -1,21 +1,24 @@
 package netkit
 
 import (
+	"crypto/sha256"
 	"fmt"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/podman"
+	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 type Netkit struct {
-	Lab    Lab
-	Config Config
-	Driver driver.Driver
+	Lab       Lab
+	Config    Config
+	Namespace string
+	Driver    driver.Driver
 }
 
-func NewNetkit() (*Netkit, error) {
+func NewNetkit(namespace string) (*Netkit, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.config/netkit")
@@ -32,7 +35,7 @@ func NewNetkit() (*Netkit, error) {
 	lab := Lab{
 		Name: "",
 	}
-	_, err = getLab(&lab)
+	labExists, err := getLab(&lab)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +53,18 @@ func NewNetkit() (*Netkit, error) {
 		Lab:    lab,
 		Driver: d,
 		Config: config,
+	}
+	if namespace != "" {
+		nk.Namespace = namespace
+	} else if labExists {
+		nk.Namespace = fmt.Sprintf("%x",
+			sha256.Sum256([]byte(lab.Directory)))
+	} else {
+		nk.Namespace = "GLOBAL"
+	}
+	err = validator.New().Var(nk.Namespace, "alphanum,max=63")
+	if err != nil {
+		return nil, err
 	}
 	return nk, nil
 }

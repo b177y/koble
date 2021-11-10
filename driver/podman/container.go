@@ -58,7 +58,7 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	log.Debug("Attempting to connect to podman socket.")
 	pd.conn, err = bindings.NewConnection(context.Background(), pd.URI)
 	if err != nil {
-		return driver.NewDriverError(err, pd.Name, "SetupDriver")
+		return err
 	}
 	return nil
 }
@@ -135,7 +135,7 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 	}
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
-		return driver.NewDriverError(err, pd.Name, "StartMachine")
+		return err
 	}
 	if !imExists {
 		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
