@@ -11,6 +11,7 @@ import (
 var nk *netkit.Netkit
 var verbose bool
 var quiet bool
+var namespace string
 
 var NetkitCLI = &cobra.Command{
 	Use:   "netkit",
@@ -27,7 +28,7 @@ var NetkitCLI = &cobra.Command{
 			log.SetLevel(log.InfoLevel)
 		}
 		var err error
-		nk, err = netkit.NewNetkit()
+		nk, err = netkit.NewNetkit(namespace)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -49,6 +50,7 @@ func init() {
 	NetkitCLI.AddCommand(logsCmd)
 	NetkitCLI.AddCommand(machineCmd)
 	NetkitCLI.AddCommand(netCmd)
+	NetkitCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
 	NetkitCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	NetkitCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
 }

@@ -13,12 +13,13 @@ import (
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
 	m := driver.Machine{
-		Name:     name,
-		Lab:      nk.Lab.Name,
-		Hostlab:  nk.Lab.Directory,
-		HostHome: false,
-		Networks: []string{},
-		Image:    nk.Driver.GetDefaultImage(),
+		Name:      name,
+		Lab:       nk.Lab.Name,
+		Namespace: nk.Namespace,
+		Hostlab:   nk.Lab.Directory,
+		HostHome:  false,
+		Networks:  []string{},
+		Image:     nk.Driver.GetDefaultImage(),
 	}
 	log.Debug("defaults", m)
 
@@ -29,8 +30,9 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 			return err
 		}
 		_, err = nk.Driver.GetNetworkState(driver.Network{
-			Name: n,
-			Lab:  nk.Lab.Name,
+			Name:      n,
+			Namespace: nk.Namespace,
+			Lab:       nk.Lab.Name,
 		})
 		if err != nil {
 			return err
@@ -86,8 +88,9 @@ func DestroyMachine() error {
 
 func (nk *Netkit) MachineInfo(name string) error {
 	m := driver.Machine{
-		Name: name,
-		Lab:  nk.Lab.Name,
+		Name:      name,
+		Namespace: nk.Namespace,
+		Lab:       nk.Lab.Name,
 	}
 	var infoTable [][]string
 	infoTable = append(infoTable, []string{"Name", m.Name})
@@ -147,8 +150,9 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 		}
 	}()
 	m := driver.Machine{
-		Name: machine,
-		Lab:  nk.Lab.Name,
+		Name:      machine,
+		Namespace: nk.Namespace,
+		Lab:       nk.Lab.Name,
 	}
 	err := nk.Driver.GetMachineLogs(m, stdoutChan,
 		stderrChan, follow, tail)

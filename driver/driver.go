@@ -3,7 +3,6 @@ package driver
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/cri-o/ocicni/pkg/ocicni"
@@ -19,6 +18,7 @@ var (
 type Machine struct {
 	Name         string `yaml:"name" validate:"alphanum,max=30"`
 	Lab          string
+	Namespace    string
 	Hostlab      string
 	Dependencies []string               `yaml:"depends_on,omitempty"`
 	HostHome     bool                   `yaml:"hosthome,omitempty"`
@@ -50,11 +50,7 @@ type NetInfo struct {
 }
 
 func (m *Machine) Fullname() string {
-	name := "netkit_" + m.Name
-	if m.Lab != "" {
-		name += "_" + m.Lab
-	}
-	return name
+	return "netkit_" + m.Name + "_" + m.Namespace
 }
 
 type MachineInfo struct {
@@ -73,21 +69,18 @@ type MachineInfo struct {
 }
 
 type Network struct {
-	Name     string
-	Lab      string
-	External bool
-	Gateway  string
-	IpRange  string
-	Subnet   string
-	IPv6     string
+	Name      string
+	Lab       string
+	Namespace string
+	External  bool
+	Gateway   string
+	IpRange   string
+	Subnet    string
+	IPv6      string
 }
 
 func (n *Network) Fullname() string {
-	name := "netkit_" + n.Name
-	if n.Lab != "" {
-		name += "_" + n.Lab
-	}
-	return name
+	return "netkit_" + n.Name + "_" + n.Namespace
 }
 
 type Driver interface {
@@ -116,22 +109,4 @@ type Driver interface {
 	StopNetwork(net Network) (err error)
 	RemoveNetwork(net Network) (err error)
 	GetNetworkState(net Network) (state NetworkState, err error)
-}
-
-type DriverError struct {
-	Function string
-	Driver   string
-	Err      error
-}
-
-func (e *DriverError) Error() string {
-	return fmt.Sprintf("Driver Error [%s] In %s: %v", e.Driver, e.Function, e.Err)
-}
-
-func NewDriverError(err error, driver, function string) *DriverError {
-	return &DriverError{
-		Function: function,
-		Driver:   driver,
-		Err:      err,
-	}
 }

@@ -54,7 +54,7 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	log.Debug("Attempting to connect to podman socket.")
 	pd.conn, err = bindings.NewConnection(context.Background(), pd.URI)
 	if err != nil {
-		return driver.NewDriverError(err, pd.Name, "SetupDriver")
+		return err
 	}
 	return nil
 }
@@ -68,7 +68,6 @@ func getLabels(name, lab string) map[string]string {
 	} else {
 		labels["netkit:nolab"] = "true"
 	}
-
 	return labels
 }
 
@@ -84,10 +83,11 @@ func getInfoFromLabels(labels map[string]string) (name, lab string) {
 	return name, lab
 }
 
-func getFilters(machine, lab string, all bool) map[string][]string {
+func getFilters(machine, lab, namespace string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
 	labelFilters = append(labelFilters, "netkit=true")
+	labelFilters = append(labelFilters, "netkit:namespace="+namespace)
 	if lab != "" && !all {
 		labelFilters = append(labelFilters, "netkit:lab="+lab)
 	} else if !all {
@@ -129,9 +129,12 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 			return err
 		}
 	}
+	if m.Image == "" {
+		m.Image = pd.DefaultImage
+	}
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
-		return driver.NewDriverError(err, pd.Name, "StartMachine")
+		return err
 	}
 	if !imExists {
 		fmt.Println("Image", m.Image, "does not already exist, attempting to pull...")
@@ -286,7 +289,7 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 	var machines []driver.MachineInfo
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
-	filters := getFilters("", lab, all)
+	filters := getFilters("", lab, "GLOBAL", all) // TODO get namespace here
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)
 	if err != nil {
