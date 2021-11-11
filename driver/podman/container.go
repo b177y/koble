@@ -133,6 +133,9 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 			return err
 		}
 	}
+	if m.Image == "" {
+		m.Image = pd.DefaultImage
+	}
 	imExists, err := images.Exists(pd.conn, m.Image, nil)
 	if err != nil {
 		return err
