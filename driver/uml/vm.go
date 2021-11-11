@@ -1,4 +1,4 @@
-package podman
+package uml
 
 import (
 	"fmt"
@@ -7,17 +7,17 @@ import (
 	"github.com/b177y/netkit/driver"
 )
 
-type UmlDriver struct {
+type UMLDriver struct {
 	Name         string
 	DefaultImage string
 	Kernel       string
 }
 
-func (ud *UmlDriver) GetDefaultImage() string {
+func (ud *UMLDriver) GetDefaultImage() string {
 	return ud.DefaultImage
 }
 
-func (ud *UmlDriver) SetupDriver(conf map[string]interface{}) (err error) {
+func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	ud.Name = "UserMode Linux"
 	homedir, err := os.UserHomeDir()
 	if err != nil {
@@ -43,12 +43,12 @@ func (ud *UmlDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	return nil
 }
 
-func (ud *UmlDriver) MachineExists(m driver.Machine) (exists bool,
+func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
 	return exists, nil
 }
 
-func (ud *UmlDriver) StartMachine(m driver.Machine) (err error) {
+func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (ud *UmlDriver) StartMachine(m driver.Machine) (err error) {
 	return err
 }
 
-func (ud *UmlDriver) HaltMachine(m driver.Machine, force bool) error {
+func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return err
@@ -110,16 +110,16 @@ func (ud *UmlDriver) HaltMachine(m driver.Machine, force bool) error {
 	return err
 }
 
-func (ud *UmlDriver) RemoveMachine(m driver.Machine) error {
+func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 	// err := containers.Remove(ud.conn, m.Fullname(), nil)
 	return nil
 }
 
-func (ud *UmlDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
+func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
 	return state, nil
 }
 
-func (ud *UmlDriver) AttachToMachine(m driver.Machine) (err error) {
+func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return err
@@ -133,18 +133,18 @@ func (ud *UmlDriver) AttachToMachine(m driver.Machine) (err error) {
 	return err
 }
 
-func (ud *UmlDriver) MachineExecShell(m driver.Machine, command,
+func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
 	user string, detach bool, workdir string) (err error) {
 	return driver.ErrNotImplemented
 }
 
-func (ud *UmlDriver) GetMachineLogs(m driver.Machine,
+func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
 	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
 	return driver.ErrNotImplemented
 }
 
-func (ud *UmlDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
+func (ud *UMLDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
 	// ctrs, err := containers.List(ud.conn, opts)
 	// if err != nil {
@@ -153,7 +153,7 @@ func (ud *UmlDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, e
 	return machines, nil
 }
 
-func (ud *UmlDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
+func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return info, err

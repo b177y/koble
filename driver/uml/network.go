@@ -1,4 +1,4 @@
-package podman
+package uml
 
 import (
 	"github.com/b177y/netkit/driver"
