@@ -72,7 +72,6 @@ func getLabels(name, lab string) map[string]string {
 	} else {
 		labels["netkit:nolab"] = "true"
 	}
-
 	return labels
 }
 
@@ -91,6 +90,7 @@ func getInfoFromLabels(labels map[string]string) (name, lab string) {
 func getFilters(machine, lab string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
+	// TODO add filter of namespace
 	labelFilters = append(labelFilters, "netkit=true")
 	if lab != "" && !all {
 		labelFilters = append(labelFilters, "netkit:lab="+lab)
