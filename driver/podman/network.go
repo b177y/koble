@@ -60,7 +60,7 @@ func (pd *PodmanDriver) GetNetworkState(net driver.Network) (state driver.Networ
 
 func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.NetInfo, err error) {
 	opts := new(network.ListOptions)
-	filters := getFilters("", lab, all)
+	filters := getFilters("", lab, "GLOBAL", all)
 	opts.WithFilters(filters)
 	nets, err := network.List(pd.conn, opts)
 	if err != nil {

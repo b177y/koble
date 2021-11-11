@@ -87,11 +87,11 @@ func getInfoFromLabels(labels map[string]string) (name, lab string) {
 	return name, lab
 }
 
-func getFilters(machine, lab string, all bool) map[string][]string {
+func getFilters(machine, lab, namespace string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
-	// TODO add filter of namespace
 	labelFilters = append(labelFilters, "netkit=true")
+	labelFilters = append(labelFilters, "netkit:namespace="+namespace)
 	if lab != "" && !all {
 		labelFilters = append(labelFilters, "netkit:lab="+lab)
 	} else if !all {
@@ -290,7 +290,7 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 	var machines []driver.MachineInfo
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
-	filters := getFilters("", lab, all)
+	filters := getFilters("", lab, "GLOBAL", all) // TODO get namespace here
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)
 	if err != nil {
