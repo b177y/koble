@@ -66,7 +66,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		}
 	}
 	if err != nil {
-		return driver.NewDriverError(err, ud.Name, "StartMachine")
+		return err
 	}
 	for _, n := range m.Networks {
 		net := driver.Network{
