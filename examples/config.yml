@@ -1,10 +1,10 @@
 terminal: alacritty
 driver:
-  name: podman
+  # name: podman
   # # Use custom podman URI (e.g. remote socket, run under different user)
   # uri: "unix://run/user/1000/podman/podman.sock"
   # # Use uml driver instead of default podman
-  # name: uml
+  name: uml
   # storage: ~/.local/share/netkit/uml
   # kernel: netkit-kernel-5.4
   # fs: netkit-fs-focal

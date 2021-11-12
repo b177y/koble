@@ -6,6 +6,7 @@ import (
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/podman"
+	"github.com/b177y/netkit/driver/uml"
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -42,6 +43,12 @@ func NewNetkit(namespace string) (*Netkit, error) {
 	var d driver.Driver
 	if config.Driver.Name == "podman" {
 		d = new(podman.PodmanDriver)
+		err = d.SetupDriver(config.Driver.ExtraConf)
+		if err != nil {
+			return nil, err
+		}
+	} else if config.Driver.Name == "uml" {
+		d = new(uml.UMLDriver)
 		err = d.SetupDriver(config.Driver.ExtraConf)
 		if err != nil {
 			return nil, err

@@ -3,6 +3,8 @@ package uml
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/b177y/netkit/driver"
 )
@@ -11,6 +13,8 @@ type UMLDriver struct {
 	Name         string
 	DefaultImage string
 	Kernel       string
+	RunDir       string
+	StorageDir   string
 }
 
 func (ud *UMLDriver) GetDefaultImage() string {
@@ -25,6 +29,8 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	}
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
 	ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/netkit-fs", homedir)
+	ud.RunDir = fmt.Sprintf("/run/user/%s/netkit/uml", fmt.Sprint(os.Getuid()))
+	ud.StorageDir = fmt.Sprintf("%s/.local/share/netkit/uml", homedir)
 	// override kernel with config option
 	if val, ok := conf["kernel"]; ok {
 		if str, ok := val.(string); ok {
@@ -40,6 +46,20 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 			return fmt.Errorf("Driver 'default_image' in config must be a string.")
 		}
 	}
+	if val, ok := conf["run_dir"]; ok {
+		if str, ok := val.(string); ok {
+			ud.RunDir = str
+		} else {
+			return fmt.Errorf("Driver 'run_dir' in config must be a string.")
+		}
+	}
+	if val, ok := conf["storage_dir"]; ok {
+		if str, ok := val.(string); ok {
+			ud.StorageDir = str
+		} else {
+			return fmt.Errorf("Driver 'storage_dir' in config must be a string.")
+		}
+	}
 	return nil
 }
 
@@ -48,7 +68,45 @@ func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	return exists, nil
 }
 
+func (ud *UMLDriver) getKernelCMD(m driver.Machine) (cmd []string, err error) {
+	cmd = []string{ud.Kernel}
+	cmd = append(cmd, "name="+m.Name)
+	cmd = append(cmd, "title="+m.Name)
+	cmd = append(cmd, "umid="+m.Name)
+	cmd = append(cmd, "mem=132M")
+	diskPath := filepath.Join(ud.StorageDir, "overlay", m.Namespace, m.Name+".disk")
+	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
+	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", diskPath, ud.DefaultImage))
+	cmd = append(cmd, "root=98:0")
+	umlDir := filepath.Join(ud.RunDir, m.Namespace)
+	cmd = append(cmd, "uml_dir="+umlDir)
+	// TODO add networks
+	cmd = append(cmd, "con0=fd:0,fd:1")
+	cmd = append(cmd, "con1=null")
+	if m.HostHome {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return []string{}, err
+		}
+		cmd = append(cmd, "hosthome="+home)
+	}
+	cmd = append(cmd, "SELINUX_INIT=0")
+	return cmd, nil
+}
+
 func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
+	kernelcmd, err := ud.getKernelCMD(m)
+	if err != nil {
+		return err
+	}
+	fmt.Println(kernelcmd)
+	cmd := exec.Command(kernelcmd[0], kernelcmd[1:]...)
+	fmt.Println("Made cmd")
+	err = cmd.Start()
+	fmt.Println("Started command")
+	if err != nil {
+		return err
+	}
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return err
@@ -62,6 +120,11 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 			return nil
 		} else {
 			// err = containers.Start(ud.conn, m.Fullname(), nil)
+			kernelcmd, err := ud.getKernelCMD(m)
+			if err != nil {
+				return err
+			}
+			fmt.Println(kernelcmd)
 			return err
 		}
 	}
@@ -79,13 +142,6 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		if mnt.Type == "" {
 			mnt.Type = "bind"
 		}
-	}
-	// createResponse, err := containers.CreateWithSpec(ud.conn, s, nil)
-	if err != nil {
-		return err
-	}
-	if err != nil {
-		return err
 	}
 	// err = containers.Start(ud.conn, createResponse.ID, nil)
 	return err

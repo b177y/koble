@@ -50,7 +50,6 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 			m.Networks = lm.Networks
 		}
 	}
-	log.Debug("lab", m)
 	// Add options from command line flags
 	if image != "" {
 		m.Image = image
@@ -69,7 +68,6 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	fmt.Printf("Starting %s...\n", m.Name)
 	err := nk.Driver.StartMachine(m)
 	return err
 }
