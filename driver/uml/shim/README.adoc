@@ -1,0 +1,40 @@
+= UML Shim PoC
+
+== Overview
+
+This code is for testing the use of a golang wrapper around UserMode Linux
+for making stdin, stdout and stderr available to attach, detach
+and reattach to from the host using Unix sockets.
+
+Multiple sessions should be able to attach at once and share a synced
+pty session.
+
+== Usage
+
+NOTE: for testing, the running process is bash as UserMode Linux
+takes a while to boot.
+
+To run the server:
+
+[source,sh]
+----
+go run shim/shim.go
+----
+
+To connect to the session:
+
+[source,sh]
+----
+go run client/client.go
+----
+
+== Problems
+
+When multiple clients are connected, output often goes to only one client.
+
+== Todo
+
+* fix multi client problems
+* work out detach sequences
+* add process monitor to get exit code if process exits
+To test this

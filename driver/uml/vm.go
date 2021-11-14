@@ -3,10 +3,12 @@ package uml
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/b177y/netkit/driver"
+	"github.com/b177y/netkit/driver/uml/shim"
+	"github.com/docker/docker/pkg/reexec"
 )
 
 type UMLDriver struct {
@@ -65,7 +67,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 
 func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
-	return exists, nil
+	return true, nil
 }
 
 func (ud *UMLDriver) getKernelCMD(m driver.Machine) (cmd []string, err error) {
@@ -94,16 +96,25 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine) (cmd []string, err error) {
 	return cmd, nil
 }
 
+func runInShim(sockPath string, kernelCmd []string) error {
+	_ = shim.IMPORT
+	c := reexec.Command("umlShim")
+	c.Args = append(c.Args, sockPath)
+	c.Args = append(c.Args, kernelCmd...)
+	c.SysProcAttr = &syscall.SysProcAttr{
+		Setsid: true,
+	}
+	// c.Stdout = os.Stdout
+	// c.Stderr = os.Stderr
+	return c.Start()
+}
+
 func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	kernelcmd, err := ud.getKernelCMD(m)
 	if err != nil {
 		return err
 	}
-	fmt.Println(kernelcmd)
-	cmd := exec.Command(kernelcmd[0], kernelcmd[1:]...)
-	fmt.Println("Made cmd")
-	err = cmd.Start()
-	fmt.Println("Started command")
+	err = runInShim(filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime"), kernelcmd)
 	if err != nil {
 		return err
 	}
@@ -186,7 +197,7 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	// fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
 	// fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
 	// err = containers.Attach(ud.conn, m.Fullname(), os.Stdin, os.Stdout, os.Stderr, nil, opts)
-	return err
+	return shim.Attach(filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime", "attach.sock"))
 }
 
 func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
