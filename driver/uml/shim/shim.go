@@ -54,27 +54,32 @@ func shimLog(msg, dir string, err error) error {
 		return err
 	}
 	defer f.Close()
-	_, err = f.WriteString(msg)
+	_, err = f.WriteString(msg + "\n")
 	return err
 }
 
 func runShim() {
 	dir := os.Args[1]
 	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		shimLog("Failed to make dir: ", dir, err)
+		log.Fatal(err)
+	}
 	kern := os.Args[2]
 	kernArgs := os.Args[3:]
 	cmd := exec.Command(kern, kernArgs...)
+	// cmd := exec.Command("/bin/bash")
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
-		log.Fatal(err)
 		shimLog("Failed to start pty command: ", dir, err)
+		log.Fatal(err)
 	}
 	// TODO set DIR/status to booting
 	sockpath := filepath.Join(dir, "attach.sock")
 	l, err := net.Listen("unix", sockpath)
 	if err != nil {
-		log.Fatal(err)
 		shimLog(fmt.Sprintf("Failed to start listen on sock (%s) ", sockpath), dir, err)
+		log.Fatal(err)
 	}
 	cIn := make(chan []byte)
 	bc := new(Broadcaster)
@@ -85,6 +90,7 @@ func runShim() {
 			buf := make([]byte, 1)
 			io.ReadAtLeast(ptmx, buf, 1)
 			bc.SendAll(buf)
+			shimLog(fmt.Sprintf("[STDOUT] %s", string(buf)), dir, nil)
 		}
 	}()
 	go func() {
@@ -101,6 +107,7 @@ func runShim() {
 				log.Fatal(err)
 			}
 			fmt.Printf("[INFO] New connection from %s.\n", fd.LocalAddr())
+			shimLog(fmt.Sprintf("[INFO] New connection from %s", fd.LocalAddr()), dir, nil)
 			newChan := make(chan []byte)
 			bc.AddClient(newChan)
 			go handleConnection(fd, newChan, cIn)
