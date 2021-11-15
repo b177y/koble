@@ -1,6 +1,10 @@
 package shim
 
+// https://programmerall.com/article/88412125350/
+// https://github.com/moby/moby/blob/master/container/stream/streams.go
+
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -16,9 +20,43 @@ import (
 
 var IMPORT = ""
 
+// Custom io.WriteCloser to check for netkit ready status
+type ReadyChecker struct {
+	Dir string
+}
+
+func (rc *ReadyChecker) Write(p []byte) (n int, err error) {
+	if bytes.Contains(p, []byte("Welcome to Netkit")) {
+		err := updateState(rc.Dir, "running", 0)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return len(p), nil
+}
+
+func (rc *ReadyChecker) Close() error {
+	return nil
+}
+
+func updateState(dir, state string, exitCode int) error {
+	err := os.WriteFile(filepath.Join(dir, "state"), []byte(state), 0600)
+	if err != nil {
+		return err
+	}
+	if state == "exitted" {
+		ec := []byte(fmt.Sprint(exitCode))
+		err := os.WriteFile(filepath.Join(dir, "exitcode"), ec, 0600)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func shimLog(msg, dir string, err error) error {
 	fn := filepath.Join(dir, "umlshim.log")
-	f, err := os.OpenFile(fn, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
@@ -42,22 +80,28 @@ func runShim() {
 		shimLog("Failed to start pty command: ", dir, err)
 		log.Fatal(err)
 	}
-	// TODO set DIR/status to booting
+	updateState(dir, "booting", 0)
 	sockpath := filepath.Join(dir, "attach.sock")
 	l, err := net.Listen("unix", sockpath)
 	if err != nil {
 		shimLog(fmt.Sprintf("Failed to start listen on sock (%s) ", sockpath), dir, err)
 		log.Fatal(err)
 	}
+	logFile, err := os.OpenFile(filepath.Join(dir, "machine.log"),
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	stdOutBr := new(broadcaster.Unbuffered)
-	// TODO add logger chan, to send to MACHINE.log
-	// if "Welcome To Netkit" seen, change machine status to running
+	stdOutBr.Add(logFile)
+	rc := &ReadyChecker{
+		Dir: dir,
+	}
+	stdOutBr.Add(rc)
 	go io.Copy(stdOutBr, ptmx)
 	go func() {
 		for {
 			c, err := l.Accept()
 			if err != nil {
-				log.Fatal(err)
+				c.Close()
+				continue
 			}
 			fmt.Printf("[INFO] New connection from %s.\n", c.LocalAddr())
 			shimLog(fmt.Sprintf("[INFO] New connection from %s", c.LocalAddr()), dir, nil)
@@ -73,8 +117,7 @@ func runShim() {
 		log.Println("Error running uml", err)
 		shimLog("Command wait() error", dir, err)
 	}
-	// ec := cmd.ProcessState.ExitCode()
-	// TODO write exit code to a file
+	updateState(dir, "exitted", cmd.ProcessState.ExitCode())
 }
 
 func init() {
