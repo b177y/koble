@@ -131,11 +131,11 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 			return nil
 		} else {
 			// err = containers.Start(ud.conn, m.Fullname(), nil)
-			kernelcmd, err := ud.getKernelCMD(m)
+			_, err := ud.getKernelCMD(m)
 			if err != nil {
 				return err
 			}
-			fmt.Println(kernelcmd)
+			// fmt.Println(kernelcmd)
 			return err
 		}
 	}
@@ -194,9 +194,8 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	if !exists {
 		return fmt.Errorf("Machine %s does not exist.", m.Name)
 	}
-	// fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
-	// fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	// err = containers.Attach(ud.conn, m.Fullname(), os.Stdin, os.Stdout, os.Stderr, nil, opts)
+	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
+	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
 	err = shim.Attach(filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime", "attach.sock"))
 	if err.Error() == "read escape sequence" {
 		return nil
