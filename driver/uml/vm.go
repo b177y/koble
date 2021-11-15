@@ -197,7 +197,12 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	// fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
 	// fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
 	// err = containers.Attach(ud.conn, m.Fullname(), os.Stdin, os.Stdout, os.Stderr, nil, opts)
-	return shim.Attach(filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime", "attach.sock"))
+	err = shim.Attach(filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime", "attach.sock"))
+	if err.Error() == "read escape sequence" {
+		return nil
+	} else {
+		return err
+	}
 }
 
 func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
