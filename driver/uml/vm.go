@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"syscall"
 
 	"github.com/b177y/netkit/driver"
@@ -67,6 +68,12 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 
 func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
+	mDir := filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime")
+	if _, err := os.Stat(mDir); os.IsNotExist(err) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
 	return true, nil
 }
 
@@ -231,9 +238,24 @@ func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err
 	} else if !exists {
 		return info, driver.ErrNotExists
 	}
-	// inspect, err := containers.Inspect(ud.conn, m.Fullname(), nil)
-	if err != nil {
-		return info, err
+	info.Name = m.Name
+	info.Lab = m.Lab
+	mDir := filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime")
+	if p, err := os.ReadFile(filepath.Join(mDir, "state")); err == nil {
+		state := string(p)
+		if state == "booting" || state == "running" || state == "exitted" {
+			info.State = state
+		}
+		if state == "exitted" {
+			if p, err := os.ReadFile(filepath.Join(mDir, "exitcode")); err == nil {
+				ec, err := strconv.ParseInt(string(p), 10, 32)
+				if err != nil {
+					fmt.Println("error here (ec)")
+					info.ExitCode = int32(ec)
+				}
+			}
+		}
 	}
-	return info, err
+	// TODO use shirou/gopsutil to get process create_time and work out uptime
+	return info, nil
 }
