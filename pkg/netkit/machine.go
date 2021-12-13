@@ -121,6 +121,7 @@ func (nk *Netkit) MachineInfo(name string) error {
 		}
 	}
 	info, err := nk.Driver.MachineInfo(m)
+	fmt.Println(info)
 	if err != nil && err != driver.ErrNotExists {
 		return err
 	}
@@ -158,7 +159,7 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 }
 
 func (nk *Netkit) ListMachines(all bool) error {
-	machines, err := nk.Driver.ListMachines(nk.Lab.Name, all)
+	machines, err := nk.Driver.ListMachines(nk.Namespace, all)
 	if err != nil {
 		return err
 	}

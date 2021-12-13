@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/b177y/netkit/driver"
@@ -186,10 +187,38 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 
 func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 	// err := containers.Remove(ud.conn, m.Fullname(), nil)
+	state, err := ud.GetMachineState(m)
+	if err != nil {
+		return err
+	}
+	if state.Running {
+		return fmt.Errorf("Cannot remove machine %s as it's still running", m.Name)
+	}
 	return nil
 }
 
 func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
+	mDir := filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime")
+	stateFile := filepath.Join(mDir, "state")
+	p, err := os.ReadFile(stateFile)
+	if err != nil {
+		return state, err
+	}
+	state.Running = false
+	state.Status = string(p)
+	if string(p) == "running" {
+		state.Running = true
+	} else if string(p) == "exitted" {
+		ecFile := filepath.Join(mDir, "exitcode")
+		p, err := os.ReadFile(ecFile)
+		if err == nil {
+			ec, err := strconv.ParseInt(string(p), 10, 32)
+			if err == nil {
+				state.ExitCode = int32(ec)
+			}
+		}
+	}
+	// TODO use shirou/gopsutil to get process create_time and work out uptime
 	return state, nil
 }
 
@@ -222,8 +251,27 @@ func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
 	return driver.ErrNotImplemented
 }
 
-func (ud *UMLDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
+func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
+	// TODO if all, look in all subdirs
 	var machines []driver.MachineInfo
+	dir := filepath.Join(ud.RunDir, namespace)
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return machines, err
+	}
+	for _, e := range entries {
+		n := e.Name()
+		if strings.HasSuffix(n, "-runtime") {
+			info, err := ud.MachineInfo(driver.Machine{
+				Name:      strings.TrimSuffix(n, "-runtime"),
+				Namespace: namespace,
+			})
+			if err != nil && err != driver.ErrNotExists {
+				return machines, err
+			}
+			machines = append(machines, info)
+		}
+	}
 	// ctrs, err := containers.List(ud.conn, opts)
 	// if err != nil {
 	// 	return machines, err
@@ -232,30 +280,19 @@ func (ud *UMLDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, e
 }
 
 func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
+	info.Name = m.Name
+	info.Lab = m.Lab
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return info, err
 	} else if !exists {
 		return info, driver.ErrNotExists
 	}
-	info.Name = m.Name
-	info.Lab = m.Lab
-	mDir := filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime")
-	if p, err := os.ReadFile(filepath.Join(mDir, "state")); err == nil {
-		state := string(p)
-		if state == "booting" || state == "running" || state == "exitted" {
-			info.State = state
-		}
-		if state == "exitted" {
-			if p, err := os.ReadFile(filepath.Join(mDir, "exitcode")); err == nil {
-				ec, err := strconv.ParseInt(string(p), 10, 32)
-				if err != nil {
-					fmt.Println("error here (ec)")
-					info.ExitCode = int32(ec)
-				}
-			}
-		}
+	state, err := ud.GetMachineState(m)
+	if err != nil {
+		return info, err
 	}
-	// TODO use shirou/gopsutil to get process create_time and work out uptime
+	info.State = state.Status
+	info.ExitCode = state.ExitCode
 	return info, nil
 }

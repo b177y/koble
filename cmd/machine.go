@@ -80,11 +80,11 @@ var mlistCmd = &cobra.Command{
 	Short: "List netkit machines",
 	Run: func(cmd *cobra.Command, args []string) {
 		if !mListAll {
-			if nk.Lab.Name == "" {
-				fmt.Fprintln(os.Stderr, "Listing all machines which are not associated with a lab.")
+			if nk.Namespace == "" {
+				fmt.Fprintln(os.Stderr, "Listing all machines in the GLOBAL namespace.")
 				fmt.Fprintf(os.Stderr, "To see all machines use `netkit machine list --all`\n\n")
 			} else {
-				fmt.Fprintf(os.Stderr, "Listing all machines within this lab (%s).\n", nk.Lab.Name)
+				fmt.Fprintf(os.Stderr, "Listing all machines within the namespace (%s).\n", nk.Namespace)
 				fmt.Fprintf(os.Stderr, "To see all machines use `netkit machine list --all`\n\n")
 			}
 		}
