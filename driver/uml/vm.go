@@ -114,8 +114,6 @@ func runInShim(sockPath string, kernelCmd []string) error {
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Setsid: true,
 	}
-	// c.Stdout = os.Stdout
-	// c.Stderr = os.Stderr
 	return c.Start()
 }
 
@@ -183,8 +181,23 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	if !state.Running {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
 	}
-	// err = containers.Stop(ud.conn, m.Fullname(), nil)
-	return err
+	// TODO get PID from file
+	pidFile := filepath.Join(ud.RunDir, m.Namespace, m.Name, "pid")
+	fmt.Println("Reading pid from", pidFile)
+	pidBytes, err := os.ReadFile(pidFile)
+	if err != nil {
+		return err
+	}
+	pid, err := strconv.Atoi(strings.TrimSuffix(string(pidBytes), "\n"))
+	if err != nil {
+		return err
+	}
+	// Send shutdown signal to UML instance
+	sig := syscall.SIGTERM
+	if force {
+		sig = syscall.SIGKILL
+	}
+	return syscall.Kill(pid, sig)
 }
 
 func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
@@ -301,10 +314,6 @@ func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineI
 			machines = append(machines, info)
 		}
 	}
-	// ctrs, err := containers.List(ud.conn, opts)
-	// if err != nil {
-	// 	return machines, err
-	// }
 	return machines, nil
 }
 

@@ -135,6 +135,16 @@ func (nk *Netkit) MachineInfo(name string) error {
 	return nil
 }
 
+func (nk *Netkit) HaltMachine(machine string) error {
+	m := driver.Machine{
+		Name:      machine,
+		Namespace: nk.Namespace,
+		Lab:       nk.Lab.Name,
+	}
+	log.Println(m)
+	return nk.Driver.HaltMachine(m, false)
+}
+
 func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 	m := driver.Machine{
 		Name:      machine,

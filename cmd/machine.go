@@ -37,10 +37,14 @@ var mstartCmd = &cobra.Command{
 }
 
 var mhaltCmd = &cobra.Command{
-	Use:   "halt",
-	Short: "Halt a netkit machine",
+	Use:                   "halt [options] MACHINE",
+	Short:                 "Halt a netkit machine",
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Halting machine...")
+		err := nk.HaltMachine(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
