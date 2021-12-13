@@ -3,11 +3,21 @@ module github.com/b177y/netkit
 go 1.17
 
 require (
+	github.com/containers/buildah v1.23.1
 	github.com/containers/podman/v3 v3.4.0
+	github.com/creack/pty v1.1.17
 	github.com/cri-o/ocicni v0.2.1-0.20210621164014-d0acc7862283
+	github.com/docker/docker v20.10.10+incompatible
 	github.com/go-playground/validator/v10 v10.9.0
+	github.com/hpcloud/tail v1.0.0
+	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
+	github.com/olekukonko/tablewriter v0.0.5
+	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.9.0
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -25,11 +35,9 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/containerd/cgroups v1.0.1 // indirect
 	github.com/containerd/containerd v1.5.7 // indirect
-	github.com/containerd/fifo v1.0.0 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.8.0 // indirect
 	github.com/containernetworking/cni v0.8.1 // indirect
 	github.com/containernetworking/plugins v0.9.1 // indirect
-	github.com/containers/buildah v1.23.1 // indirect
 	github.com/containers/common v0.44.2 // indirect
 	github.com/containers/image/v5 v5.16.0 // indirect
 	github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b // indirect
@@ -37,11 +45,9 @@ require (
 	github.com/containers/psgo v1.7.1 // indirect
 	github.com/containers/storage v1.36.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
-	github.com/creack/pty v1.1.17 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/disiqueira/gotree/v3 v3.0.2 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
-	github.com/docker/docker v20.10.10+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
@@ -61,7 +67,6 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.3.2 // indirect
@@ -82,15 +87,12 @@ require (
 	github.com/mistifyio/go-zfs v2.1.2-0.20190413222219-f784269be439+incompatible // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect
 	github.com/moby/sys/mountinfo v0.4.1 // indirect
-	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/mtrmac/gpgme v0.1.2 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2-0.20210819154149-5ad6f50d6283 // indirect
 	github.com/opencontainers/runc v1.0.2 // indirect
-	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417 // indirect
 	github.com/opencontainers/runtime-tools v0.9.0 // indirect
 	github.com/opencontainers/selinux v1.8.5 // indirect
 	github.com/ostreedev/ostree-go v0.0.0-20190702140239-759a8c1ac913 // indirect
@@ -105,7 +107,6 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.9.0 // indirect
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20201008174630-78d3cae3a980 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
@@ -123,8 +124,6 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
