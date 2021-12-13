@@ -98,7 +98,7 @@ type Driver interface {
 	AttachToMachine(m Machine) (err error)
 	MachineExecShell(m Machine, command, user string,
 		detach bool, workdir string) (err error)
-	GetMachineLogs(m Machine, stdoutChan, stderrChan chan string,
+	GetMachineLogs(m Machine,
 		follow bool, tail int) (err error)
 
 	ListNetworks(lab string, all bool) (networks []NetInfo, err error)

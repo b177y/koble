@@ -1,6 +1,7 @@
 package uml
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/shim"
 	"github.com/docker/docker/pkg/reexec"
+	ht "github.com/hpcloud/tail"
 )
 
 type UMLDriver struct {
@@ -246,9 +248,36 @@ func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
 }
 
 func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
-	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
-	return driver.ErrNotImplemented
+	fn := filepath.Join(ud.RunDir, m.Namespace, m.Name+"-runtime", "machine.log")
+	if follow {
+		t, err := ht.TailFile(fn, ht.Config{Follow: true})
+		if err != nil {
+			return err
+		}
+		for line := range t.Lines {
+			fmt.Println(line.Text)
+		}
+	} else {
+		f, err := os.Open(fn)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		scanner := bufio.NewScanner(f)
+		var lines []string
+		for scanner.Scan() {
+			lines = append(lines, scanner.Text())
+		}
+		startLine := 0
+		if tail >= 0 && tail < len(lines) {
+			startLine = len(lines) - tail
+		}
+		for i := startLine; i < len(lines); i++ {
+			fmt.Println(lines[i])
+		}
+	}
+	return nil
 }
 
 func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {

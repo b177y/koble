@@ -267,7 +267,6 @@ func (pd *PodmanDriver) MachineExecShell(m driver.Machine, command,
 }
 
 func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
-	stdoutChan, stderrChan chan string,
 	follow bool, tail int) (err error) {
 	exists, err := pd.MachineExists(m)
 	if err != nil {
@@ -281,6 +280,18 @@ func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
 	opts.WithStderr(true)
 	opts.WithTail(fmt.Sprint(tail))
 	opts.WithFollow(follow)
+	stdoutChan := make(chan string)
+	stderrChan := make(chan string)
+	go func() {
+		for recv := range stdoutChan {
+			fmt.Println(recv)
+		}
+	}()
+	go func() {
+		for recv := range stderrChan {
+			fmt.Println(recv)
+		}
+	}()
 	err = containers.Logs(pd.conn, m.Fullname(), opts, stdoutChan, stderrChan)
 	return err
 }

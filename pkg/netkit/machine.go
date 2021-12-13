@@ -136,25 +136,12 @@ func (nk *Netkit) MachineInfo(name string) error {
 }
 
 func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
-	stdoutChan := make(chan string)
-	stderrChan := make(chan string)
-	go func() {
-		for recv := range stdoutChan {
-			fmt.Println(recv)
-		}
-	}()
-	go func() {
-		for recv := range stderrChan {
-			fmt.Println(recv)
-		}
-	}()
 	m := driver.Machine{
 		Name:      machine,
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
-	err := nk.Driver.GetMachineLogs(m, stdoutChan,
-		stderrChan, follow, tail)
+	err := nk.Driver.GetMachineLogs(m, follow, tail)
 	return err
 }
 
