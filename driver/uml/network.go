@@ -2,6 +2,7 @@ package uml
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -55,13 +56,12 @@ func (ud *UMLDriver) NetworkExists(n driver.Network) (bool, error) {
 	nHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(n.Name+"-"+n.Namespace)))
 	hubPath := filepath.Join(ud.RunDir, "network", nHash, "hub.cnct")
-	_, err := os.Stat(hubPath)
-	if err != nil && err != os.ErrNotExist {
-		return false, err
-	} else if err == os.ErrNotExist {
+	if _, err := os.Stat(hubPath); err == nil {
+		return true, nil
+	} else if errors.Is(err, os.ErrNotExist) {
 		return false, nil
 	} else {
-		return true, nil
+		return false, err
 	}
 }
 

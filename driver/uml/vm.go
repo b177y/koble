@@ -95,7 +95,7 @@ func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	return true, nil
 }
 
-func (ud *UMLDriver) getKernelCMD(m driver.Machine) (cmd []string, err error) {
+func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []string, err error) {
 	cmd = []string{ud.Kernel}
 	cmd = append(cmd, "name="+m.Name)
 	cmd = append(cmd, "title="+m.Name)
@@ -112,6 +112,7 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine) (cmd []string, err error) {
 	// TODO add networks
 	cmd = append(cmd, "con0=fd:0,fd:1")
 	cmd = append(cmd, "con1=null")
+	cmd = append(cmd, networks...)
 	if m.HostHome {
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -135,9 +136,18 @@ func runInShim(sockPath string, kernelCmd []string) error {
 }
 
 func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
-	kernelcmd, err := ud.getKernelCMD(m)
+	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return err
+	}
+	if exists {
+		state, err := ud.GetMachineState(m)
+		if err != nil {
+			return err
+		}
+		if state.Running {
+			return nil
+		}
 	}
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
@@ -170,47 +180,28 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil {
 		return err
 	}
-	err = runInShim(mDir, kernelcmd)
-	if err != nil {
-		return err
+	var networks []string
+	for i, n := range m.Networks {
+		nHash := fmt.Sprintf("%x",
+			sha256.Sum256([]byte(n+"-"+m.Namespace)))
+		hubPath := filepath.Join(ud.RunDir, "network", nHash, "hub.cnct")
+		cmd := fmt.Sprintf("eth%d=daemon,,,%s", i, hubPath)
+		networks = append(networks, cmd)
 	}
-	// exists, err := ud.MachineExists(m)
-	// if err != nil {
-	// 	return err
-	// }
-	// if exists {
-	// 	state, err := ud.GetMachineState(m)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	if state.Running {
-	// 		return nil
-	// 	} else {
-	// 		// err = containers.Start(ud.conn, m.Fullname(), nil)
-	// 		_, err := ud.getKernelCMD(m)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		// fmt.Println(kernelcmd)
-	// 		return err
-	// 	}
-	// }
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, n := range m.Networks {
-	// 	net := driver.Network{
-	// 		Name: n,
-	// 		Lab:  m.Lab,
-	// 	}
-	// 	fmt.Println("use", net)
-	// }
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {
 	// 		mnt.Type = "bind"
 	// 	}
 	// }
-	// err = containers.Start(ud.conn, createResponse.ID, nil)
+	kernelcmd, err := ud.getKernelCMD(m, networks)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Got kernelcmd", kernelcmd)
+	err = runInShim(mDir, kernelcmd)
+	if err != nil {
+		return err
+	}
 	return err
 }
 

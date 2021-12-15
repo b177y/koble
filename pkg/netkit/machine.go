@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/b177y/netkit/driver"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
@@ -19,7 +18,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Namespace: nk.Namespace,
 		Hostlab:   nk.Lab.Directory,
 		HostHome:  false,
-		Networks:  []string{},
+		Networks:  networks,
 		Image:     nk.Driver.GetDefaultImage(),
 	}
 	log.Debug("defaults", m)
@@ -148,12 +147,12 @@ func (nk *Netkit) DestroyMachine(machine string) error {
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
-	err := nk.CrashMachine(machine)
-	if err != nil {
-		return err
-	}
+	nk.CrashMachine(machine)
+	// if err != nil {
+	// 	return err
+	// }
 	// TODO workout best way to delay until machine stopped
-	time.Sleep(time.Second)
+	// time.Sleep(time.Second)
 	return nk.Driver.RemoveMachine(m)
 }
 

@@ -17,8 +17,9 @@ type Network struct {
 
 func (nk *Netkit) StartNetwork(name string) error {
 	n := driver.Network{
-		Name: name,
-		Lab:  nk.Lab.Name,
+		Name:      name,
+		Lab:       nk.Lab.Name,
+		Namespace: nk.Namespace,
 	}
 	err := nk.Driver.CreateNetwork(n)
 	if err != nil {
