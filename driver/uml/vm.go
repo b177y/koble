@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -70,6 +71,10 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 		}
 	}
 	err = os.MkdirAll(filepath.Join(ud.StorageDir, "overlay"), 0744)
+	if err != nil && err != os.ErrExist {
+		return err
+	}
+	err = os.MkdirAll(filepath.Join(ud.RunDir, "ns", "GLOBAL"), 0744)
 	if err != nil && err != os.ErrExist {
 		return err
 	}
@@ -235,12 +240,25 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	if err != nil {
 		return err
 	}
-	// Send shutdown signal to UML instance
-	sig := syscall.SIGTERM
-	if force {
-		sig = syscall.SIGKILL
+	// Check if process exists
+	killErr := syscall.Kill(pid, 0)
+	if killErr == nil {
+		// Send shutdown signal to UML instance
+		sig := syscall.SIGTERM
+		if force {
+			sig = syscall.SIGKILL
+		}
+		err = syscall.Kill(pid, sig)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = os.WriteFile(filepath.Join(ud.RunDir, "machine", mHash, "state"), []byte("killed"), 0600)
+		if err != nil {
+			return err
+		}
 	}
-	return syscall.Kill(pid, sig)
+	return nil
 }
 
 func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
@@ -249,9 +267,21 @@ func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 		return err
 	}
 	if state.Running {
-		return fmt.Errorf("Cannot remove machine %s as it's still running", m.Name)
+		return errors.New("Machine can't be removed as it's running")
 	}
-	return nil
+	mHash := fmt.Sprintf("%x",
+		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace, m.Name)
+	mDir := filepath.Join(ud.RunDir, "machine", mHash)
+	err = os.RemoveAll(mDir)
+	if err != nil {
+		return err
+	}
+	err = os.RemoveAll(nsMdir)
+	if err != nil {
+		return err
+	}
+	return os.Remove(filepath.Join(ud.StorageDir, "overlay", mHash+".disk"))
 }
 
 func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {

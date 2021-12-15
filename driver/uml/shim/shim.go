@@ -44,7 +44,7 @@ func updateState(dir, state string, exitCode int) error {
 	if err != nil {
 		return err
 	}
-	if state == "exitted" {
+	if state == "exited" {
 		ec := []byte(fmt.Sprint(exitCode))
 		err := os.WriteFile(filepath.Join(dir, "exitcode"), ec, 0600)
 		if err != nil {
@@ -117,7 +117,7 @@ func runShim() {
 		log.Println("Error running uml", err)
 		shimLog("Command wait() error", dir, err)
 	}
-	updateState(dir, "exitted", cmd.ProcessState.ExitCode())
+	updateState(dir, "exited", cmd.ProcessState.ExitCode())
 }
 
 func init() {

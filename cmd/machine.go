@@ -13,7 +13,6 @@ import (
 var machineNetworks []string
 var machineImage string
 
-var addMachineName string
 var addMachineNetworks []string
 var addMachineImage string
 
@@ -50,18 +49,24 @@ var mhaltCmd = &cobra.Command{
 	},
 }
 
-var mcleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "Destroy a netkit machine",
+var mdestroyCmd = &cobra.Command{
+	Use:                   "destroy [options] MACHINE",
+	Short:                 "Destroy a netkit machine",
+	Args:                  cobra.ExactArgs(1),
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Crashing machine...")
+		err := nk.DestroyMachine(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
 var minfoCmd = &cobra.Command{
-	Use:   "info [options] MACHINE",
-	Short: "Get info about a netkit machine",
-	Args:  cobra.ExactArgs(1),
+	Use:                   "info [options] MACHINE",
+	Short:                 "Get info about a netkit machine",
+	Args:                  cobra.ExactArgs(1),
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.MachineInfo(args[0])
 		if err != nil {
@@ -71,10 +76,12 @@ var minfoCmd = &cobra.Command{
 }
 
 var maddCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add a new machine to a lab",
+	Use:                   "add [options] MACHINENAME",
+	Short:                 "Add a new machine to a lab",
+	Args:                  cobra.ExactArgs(1),
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.AddMachineToLab(addMachineName, machineNetworks, machineImage)
+		err := netkit.AddMachineToLab(args[0], machineNetworks, machineImage)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,7 +110,7 @@ var mlistCmd = &cobra.Command{
 
 func init() {
 	machineCmd.AddCommand(mstartCmd)
-	machineCmd.AddCommand(mcleanCmd)
+	machineCmd.AddCommand(mdestroyCmd)
 	machineCmd.AddCommand(mhaltCmd)
 	machineCmd.AddCommand(minfoCmd)
 	machineCmd.AddCommand(maddCmd)
@@ -112,8 +119,6 @@ func init() {
 	mstartCmd.Flags().StringVar(&machineImage, "image", "", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
 
-	maddCmd.Flags().StringVar(&addMachineName, "name", "", "Name for new machine.")
-	maddCmd.MarkFlagRequired("name")
 	maddCmd.Flags().StringVar(&addMachineImage, "image", "", "Image to use for new machine.")
 	maddCmd.Flags().StringArrayVar(&addMachineNetworks, "networks", []string{}, "Networks to add to new machine.")
 

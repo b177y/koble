@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/b177y/netkit/driver"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
@@ -72,18 +73,6 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	return err
 }
 
-func CrashMachine() error {
-	return nil
-}
-
-func HaltMachine() error {
-	return nil
-}
-
-func DestroyMachine() error {
-	return nil
-}
-
 func (nk *Netkit) MachineInfo(name string) error {
 	m := driver.Machine{
 		Name:      name,
@@ -141,8 +130,31 @@ func (nk *Netkit) HaltMachine(machine string) error {
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
-	log.Println(m)
 	return nk.Driver.HaltMachine(m, false)
+}
+
+func (nk *Netkit) CrashMachine(machine string) error {
+	m := driver.Machine{
+		Name:      machine,
+		Namespace: nk.Namespace,
+		Lab:       nk.Lab.Name,
+	}
+	return nk.Driver.HaltMachine(m, true)
+}
+
+func (nk *Netkit) DestroyMachine(machine string) error {
+	m := driver.Machine{
+		Name:      machine,
+		Namespace: nk.Namespace,
+		Lab:       nk.Lab.Name,
+	}
+	err := nk.CrashMachine(machine)
+	if err != nil {
+		return err
+	}
+	// TODO workout best way to delay until machine stopped
+	time.Sleep(time.Second)
+	return nk.Driver.RemoveMachine(m)
 }
 
 func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
@@ -151,8 +163,7 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
-	err := nk.Driver.GetMachineLogs(m, follow, tail)
-	return err
+	return nk.Driver.GetMachineLogs(m, follow, tail)
 }
 
 func (nk *Netkit) ListMachines(all bool) error {
