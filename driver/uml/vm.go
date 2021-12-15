@@ -3,7 +3,9 @@ package uml
 import (
 	"bufio"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -148,6 +150,14 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil && err != os.ErrExist {
 		return err
 	}
+	configBytes, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(mDir, "config.json"), configBytes, 0644)
+	if err != nil {
+		return err
+	}
 	err = runInShim(mDir, kernelcmd)
 	if err != nil {
 		return err
@@ -208,7 +218,9 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
 	}
 	// TODO get PID from file
-	pidFile := filepath.Join(ud.RunDir, "ns", m.Namespace, m.Name, "pid")
+	mHash := fmt.Sprintf("%x",
+		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+	pidFile := filepath.Join(ud.RunDir, "machine", mHash, m.Name, "pid")
 	fmt.Println("Reading pid from", pidFile)
 	pidBytes, err := os.ReadFile(pidFile)
 	if err != nil {
@@ -362,7 +374,7 @@ func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineI
 
 func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
 	info.Name = m.Name
-	info.Lab = m.Lab
+	info.Namespace = m.Namespace
 	exists, err := ud.MachineExists(m)
 	if err != nil {
 		return info, err
@@ -375,5 +387,17 @@ func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err
 	}
 	info.State = state.Status
 	info.ExitCode = state.ExitCode
+	mHash := fmt.Sprintf("%x",
+		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+	mDir := filepath.Join(ud.RunDir, "machine", mHash)
+	content, err := ioutil.ReadFile(filepath.Join(mDir, "config.json"))
+	var mConfig driver.Machine
+	err = json.Unmarshal(content, &mConfig)
+	if err != nil {
+		return info, err
+	}
+	info.Networks = mConfig.Networks
+	info.Image = mConfig.Image
+	info.Lab = mConfig.Lab
 	return info, nil
 }

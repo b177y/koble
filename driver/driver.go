@@ -54,18 +54,19 @@ func (m *Machine) Fullname() string {
 }
 
 type MachineInfo struct {
-	Name     string
-	Lab      string
-	Networks []string
-	Image    string
-	State    string
-	Uptime   string
-	ExitCode int32
-	Exited   bool
-	ExitedAt int64
-	Mounts   []string
-	HostPid  int
-	Ports    []ocicni.PortMapping
+	Name      string
+	Namespace string
+	Lab       string
+	Networks  []string
+	Image     string
+	State     string
+	Uptime    string
+	ExitCode  int32
+	Exited    bool
+	ExitedAt  int64
+	Mounts    []string
+	HostPid   int
+	Ports     []ocicni.PortMapping
 }
 
 type Network struct {
