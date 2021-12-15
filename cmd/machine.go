@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var machineName string
 var machineNetworks []string
 var machineImage string
 
@@ -26,10 +25,12 @@ var machineCmd = &cobra.Command{
 }
 
 var mstartCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start a netkit machine",
+	Use:                   "start [options] MACHINENAME",
+	Short:                 "Start a netkit machine",
+	Args:                  cobra.ExactArgs(1),
+	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.StartMachine(machineName, machineImage, machineNetworks)
+		err := nk.StartMachine(args[0], machineImage, machineNetworks)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -39,6 +40,7 @@ var mstartCmd = &cobra.Command{
 var mhaltCmd = &cobra.Command{
 	Use:                   "halt [options] MACHINE",
 	Short:                 "Halt a netkit machine",
+	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.HaltMachine(args[0])
@@ -107,8 +109,6 @@ func init() {
 	machineCmd.AddCommand(maddCmd)
 	machineCmd.AddCommand(mlistCmd)
 
-	mstartCmd.Flags().StringVar(&machineName, "name", "", "Name to give machine")
-	mstartCmd.MarkFlagRequired("name")
 	mstartCmd.Flags().StringVar(&machineImage, "image", "", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
 

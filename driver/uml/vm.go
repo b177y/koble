@@ -146,8 +146,15 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil && err != os.ErrExist {
 		return err
 	}
+	// Remove symlink if it already exists
+	if _, err := os.Stat(filepath.Join(nsMdir, m.Name)); err == nil {
+		err = os.Remove(filepath.Join(nsMdir, m.Name))
+		if err != nil {
+			return err
+		}
+	}
 	err = os.Symlink(mDir, filepath.Join(nsMdir, m.Name))
-	if err != nil && err != os.ErrExist {
+	if err != nil {
 		return err
 	}
 	configBytes, err := json.Marshal(m)
@@ -217,11 +224,9 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	if !state.Running {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
 	}
-	// TODO get PID from file
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
 	pidFile := filepath.Join(ud.RunDir, "machine", mHash, m.Name, "pid")
-	fmt.Println("Reading pid from", pidFile)
 	pidBytes, err := os.ReadFile(pidFile)
 	if err != nil {
 		return err
@@ -239,7 +244,6 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 }
 
 func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
-	// err := containers.Remove(ud.conn, m.Fullname(), nil)
 	state, err := ud.GetMachineState(m)
 	if err != nil {
 		return err
@@ -263,7 +267,7 @@ func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineStat
 	state.Status = string(p)
 	if string(p) == "running" {
 		state.Running = true
-	} else if string(p) == "exitted" {
+	} else if string(p) == "exited" {
 		ecFile := filepath.Join(mDir, "exitcode")
 		p, err := os.ReadFile(ecFile)
 		if err == nil {
