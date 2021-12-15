@@ -26,7 +26,7 @@ func fileExists(name string) (exists bool, err error) {
 	}
 }
 
-func getLab(lab *Lab) (exists bool, err error) {
+func GetLab(lab *Lab) (exists bool, err error) {
 	exists, err = fileExists("lab.yml")
 	if err != nil {
 		// not necessarily false, so check err before exists
@@ -56,7 +56,7 @@ func getLab(lab *Lab) (exists bool, err error) {
 	return true, nil
 }
 
-func saveLab(lab *Lab) error {
+func SaveLab(lab *Lab) error {
 	lab.Name = ""
 	lab.Directory = ""
 	labYaml, err := yaml.Marshal(lab)
@@ -65,35 +65,6 @@ func saveLab(lab *Lab) error {
 	}
 	err = os.WriteFile("lab.yml", labYaml, 0644)
 	return err
-}
-
-type NetkitError struct {
-	Err   error
-	From  string
-	Doing string
-	Extra string
-}
-
-func (ne NetkitError) Error() string {
-	errString := ""
-	if ne.From != "" {
-		errString += fmt.Sprintf("[%s] :", ne.From)
-	}
-	errString += ne.Err.Error()
-	if ne.Doing != "" {
-		errString += fmt.Sprintf("\nWhile doing: %s\n", ne.Doing)
-	}
-	errString += ne.Extra
-	return errString
-}
-
-func NewError(err error, from, doing, extra string) NetkitError {
-	return NetkitError{
-		Err:   err,
-		From:  from,
-		Doing: doing,
-		Extra: extra,
-	}
 }
 
 func RenderTable(headers []string, list [][]string) {

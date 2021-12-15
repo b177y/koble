@@ -81,7 +81,6 @@ func InitLab(name string, description string, authors []string, emails []string,
 		Web:           web,
 	}
 	lab.CreatedAt = time.Now().Format("02-01-2006")
-	fmt.Print(lab)
 	bytes, err := yaml.Marshal(lab)
 	if err != nil {
 		return err
@@ -102,7 +101,7 @@ func InitLab(name string, description string, authors []string, emails []string,
 
 func AddMachineToLab(name string, networks []string, image string) error {
 	lab := Lab{}
-	exists, err := getLab(&lab)
+	exists, err := GetLab(&lab)
 	if err != nil {
 		return err
 	}
@@ -135,7 +134,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 		Image:    image,
 		Networks: networks,
 	})
-	err = saveLab(&lab)
+	err = SaveLab(&lab)
 	// TODO print help for getting started with machine
 	if err != nil {
 		return err
@@ -153,7 +152,7 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		}
 	}
 	lab := Lab{}
-	exists, err := getLab(&lab)
+	exists, err := GetLab(&lab)
 	if err != nil {
 		return err
 	}
@@ -181,7 +180,7 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		net.Subnet = ""
 	}
 	lab.Networks = append(lab.Networks, net)
-	err = saveLab(&lab)
+	err = SaveLab(&lab)
 	if err != nil {
 		return err
 	}
@@ -259,7 +258,7 @@ func (nk *Netkit) GetMachineList(mlist []string,
 	return machines, nil
 }
 
-func (nk *Netkit) LabClean(mlist []string, all bool) error {
+func (nk *Netkit) LabDestroy(mlist []string, all bool) error {
 	machines, err := nk.GetMachineList(mlist, all)
 	if err != nil {
 		return err

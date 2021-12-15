@@ -82,12 +82,22 @@ func GetMachineState(t *testing.T, d driver.Driver) {
 	}
 }
 
-func AttachToMachine(t *testing.T, d driver.Driver) {}
+func AttachToMachine(t *testing.T, d driver.Driver) {
+	t.Errorf("Test not made")
+}
 
-func MachineShell(t *testing.T, d driver.Driver) {}
+func MachineShell(t *testing.T, d driver.Driver) {
+	t.Errorf("Test not made")
+}
 
-func MachineLogs(t *testing.T, d driver.Driver) {}
+func MachineLogs(t *testing.T, d driver.Driver) {
+	t.Errorf("Test not made")
+}
 
-func ListMachines(t *testing.T, d driver.Driver) {}
+func ListMachines(t *testing.T, d driver.Driver) {
+	t.Errorf("Test not made")
+}
 
-func MachineInfo(t *testing.T, d driver.Driver) {}
+func MachineInfo(t *testing.T, d driver.Driver) {
+	t.Errorf("Test not made")
+}

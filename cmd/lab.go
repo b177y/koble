@@ -28,10 +28,10 @@ var lstartCmd = &cobra.Command{
 }
 
 var lcleanCmd = &cobra.Command{
-	Use:   "clean [options] MACHINE [MACHINE...]",
+	Use:   "destroy [options] MACHINE [MACHINE...]",
 	Short: "Clean up a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.LabClean(args, labAllMachines)
+		err := nk.LabDestroy(args, labAllMachines)
 		if err != nil {
 			log.Fatal(err)
 		}

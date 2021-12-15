@@ -36,7 +36,7 @@ func NewNetkit(namespace string) (*Netkit, error) {
 	lab := Lab{
 		Name: "",
 	}
-	labExists, err := getLab(&lab)
+	labExists, err := GetLab(&lab)
 	if err != nil {
 		return nil, err
 	}
