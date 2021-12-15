@@ -120,6 +120,9 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 		}
 		cmd = append(cmd, "hosthome="+home)
 	}
+	if m.Hostlab != "" {
+		cmd = append(cmd, "hostlab="+m.Hostlab)
+	}
 	cmd = append(cmd, "SELINUX_INIT=0")
 	return cmd, nil
 }

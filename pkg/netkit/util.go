@@ -128,7 +128,11 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 		var minfo []string
 		minfo = append(minfo, m.Name)
 		if showNS {
-			minfo = append(minfo, m.Namespace[:8])
+			if len(m.Namespace) >= 8 {
+				minfo = append(minfo, m.Namespace[:8])
+			} else {
+				minfo = append(minfo, m.Namespace)
+			}
 		}
 		minfo = append(minfo, m.Lab)
 		minfo = append(minfo, filepath.Base(m.Image))
