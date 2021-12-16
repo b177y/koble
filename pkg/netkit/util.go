@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/b177y/netkit/driver"
+	"github.com/b177y/netkit/util/topsort"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -188,23 +189,23 @@ func (nk *Netkit) LaunchInTerm() error {
 
 func orderMachines(machines []driver.Machine) (ordered []driver.Machine,
 	err error) {
-	dg := newGraph()
+	dg := topsort.NewGraph()
 	mappedMachines := map[string]driver.Machine{}
 	for _, m := range machines {
 		mappedMachines[m.Name] = m
 	}
 	for _, m := range machines {
-		dg.addNode(m.Name)
+		dg.AddNode(m.Name)
 		for _, d := range m.Dependencies {
 			if d == m.Name {
 				return ordered, fmt.Errorf("Machine %s cannot depend on itself!", m.Name)
 			} else if _, ok := mappedMachines[d]; !ok {
 				return ordered, fmt.Errorf("Machine %s does not exist!", d)
 			}
-			dg.addEdge(m.Name, d)
+			dg.AddEdge(m.Name, d)
 		}
 	}
-	sorted, err := dg.sort()
+	sorted, err := dg.Sort()
 	if err != nil {
 		return ordered, err
 	}

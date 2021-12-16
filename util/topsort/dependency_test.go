@@ -1,25 +1,27 @@
-package netkit
+package topsort_test
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/b177y/netkit/util/topsort"
 )
 
 func TestTopographicalSort(t *testing.T) {
-	digraph := newGraph()
-	digraph.addNode("dns")
-	digraph.addNode("router")
-	digraph.addNode("client")
-	err := digraph.addEdge("dns", "router")
+	digraph := topsort.NewGraph()
+	digraph.AddNode("dns")
+	digraph.AddNode("router")
+	digraph.AddNode("client")
+	err := digraph.AddEdge("dns", "router")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = digraph.addEdge("client", "dns")
+	err = digraph.AddEdge("client", "dns")
 	if err != nil {
 		t.Fatal(err)
 	}
-	order, err := digraph.sort()
+	order, err := digraph.Sort()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,43 +33,43 @@ func TestTopographicalSort(t *testing.T) {
 }
 
 func TestTopographicalCyclic(t *testing.T) {
-	digraph := newGraph()
-	digraph.addNode("dns")
-	digraph.addNode("router")
-	digraph.addNode("client")
-	err := digraph.addEdge("dns", "router")
+	digraph := topsort.NewGraph()
+	digraph.AddNode("dns")
+	digraph.AddNode("router")
+	digraph.AddNode("client")
+	err := digraph.AddEdge("dns", "router")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = digraph.addEdge("client", "dns")
+	err = digraph.AddEdge("client", "dns")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = digraph.addEdge("router", "client")
+	err = digraph.AddEdge("router", "client")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = digraph.sort()
+	_, err = digraph.Sort()
 	if err == nil {
 		t.Fatal(fmt.Errorf("Graph has cycle so should error."))
 	}
 }
 
 func TestTopographicalNonExistentMachine(t *testing.T) {
-	digraph := newGraph()
-	digraph.addNode("dns")
-	digraph.addNode("router")
-	err := digraph.addEdge("client", "dns")
+	digraph := topsort.NewGraph()
+	digraph.AddNode("dns")
+	digraph.AddNode("router")
+	err := digraph.AddEdge("client", "dns")
 	if err == nil {
 		t.Fatal(fmt.Errorf("Node client doesn't exist, addEdge should fail"))
 	}
 }
 
 func TestTopographicalNonExistentDependency(t *testing.T) {
-	digraph := newGraph()
-	digraph.addNode("dns")
-	digraph.addNode("router")
-	err := digraph.addEdge("dns", "client")
+	digraph := topsort.NewGraph()
+	digraph.AddNode("dns")
+	digraph.AddNode("router")
+	err := digraph.AddEdge("dns", "client")
 	if err == nil {
 		t.Fatal(fmt.Errorf("Dependency client doesn't exist, addEdge should fail"))
 	}

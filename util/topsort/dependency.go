@@ -1,5 +1,5 @@
 // https://www.youtube.com/watch?v=cIBFEhD77b4
-package netkit
+package topsort
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ type graph struct {
 	sorted   []string
 }
 
-func newGraph() graph {
+func NewGraph() graph {
 	return graph{
 		vertices: []string{},
 		edges:    make(map[string][]string),
@@ -20,7 +20,7 @@ func newGraph() graph {
 	}
 }
 
-func (g *graph) hasNode(node string) bool {
+func (g *graph) HasNode(node string) bool {
 	for _, n := range g.vertices {
 		if n == node {
 			return true
@@ -29,10 +29,10 @@ func (g *graph) hasNode(node string) bool {
 	return false
 }
 
-func (g *graph) addEdge(machine, dependency string) error {
-	if !g.hasNode(machine) {
+func (g *graph) AddEdge(machine, dependency string) error {
+	if !g.HasNode(machine) {
 		return fmt.Errorf("Machine %s has not been added as a node.", machine)
-	} else if !g.hasNode(dependency) {
+	} else if !g.HasNode(dependency) {
 		return fmt.Errorf("Dependency %s has not been added as a node.", dependency)
 	}
 	if _, ok := g.edges[machine]; !ok {
@@ -43,11 +43,11 @@ func (g *graph) addEdge(machine, dependency string) error {
 	return nil
 }
 
-func (g *graph) addNode(machine string) {
+func (g *graph) AddNode(machine string) {
 	g.vertices = append(g.vertices, machine)
 }
 
-func (g *graph) sort() ([]string, error) {
+func (g *graph) Sort() ([]string, error) {
 	n := len(g.vertices)
 	// Make indegree as map of ints, counting connected vertices
 	in_degree := make(map[string]int)
