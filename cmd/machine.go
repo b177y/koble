@@ -28,7 +28,7 @@ var mstartCmd = &cobra.Command{
 	Short:                 "Start a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
-	ValidArgsFunction:     autocompMachine,
+	ValidArgsFunction:     autocompNonRunningMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.StartMachine(args[0], machineImage, machineNetworks)
 		if err != nil {
@@ -41,6 +41,7 @@ var mhaltCmd = &cobra.Command{
 	Use:                   "halt [options] MACHINE",
 	Short:                 "Halt a netkit machine",
 	Args:                  cobra.ExactArgs(1),
+	ValidArgsFunction:     autocompRunningMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.HaltMachine(args[0])
@@ -54,6 +55,7 @@ var mdestroyCmd = &cobra.Command{
 	Use:                   "destroy [options] MACHINE",
 	Short:                 "Destroy a netkit machine",
 	Args:                  cobra.ExactArgs(1),
+	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.DestroyMachine(args[0])
@@ -67,6 +69,7 @@ var minfoCmd = &cobra.Command{
 	Use:                   "info [options] MACHINE",
 	Short:                 "Get info about a netkit machine",
 	Args:                  cobra.ExactArgs(1),
+	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.MachineInfo(args[0])

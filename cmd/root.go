@@ -65,6 +65,36 @@ func autocompMachine(cmd *cobra.Command, args []string,
 	return machines, cobra.ShellCompDirectiveNoFileComp
 }
 
+func autocompRunningMachine(cmd *cobra.Command, args []string,
+	toComplete string) ([]string, cobra.ShellCompDirective) {
+	machineList, err := nk.Driver.ListMachines("", true)
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError
+	}
+	var machines []string
+	for _, m := range machineList {
+		if m.State == "running" {
+			machines = append(machines, m.Name)
+		}
+	}
+	return machines, cobra.ShellCompDirectiveNoFileComp
+}
+
+func autocompNonRunningMachine(cmd *cobra.Command, args []string,
+	toComplete string) ([]string, cobra.ShellCompDirective) {
+	machineList, err := nk.Driver.ListMachines("", true)
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError
+	}
+	var machines []string
+	for _, m := range machineList {
+		if m.State != "running" {
+			machines = append(machines, m.Name)
+		}
+	}
+	return machines, cobra.ShellCompDirectiveNoFileComp
+}
+
 func init() {
 	NetkitCLI.AddCommand(labCmd)
 	NetkitCLI.AddCommand(shellCmd)

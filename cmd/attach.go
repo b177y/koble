@@ -12,7 +12,7 @@ var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
 	Short:             "The 'attach' subcommand is used to attach to the main tty on a netkit machine",
 	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: autocompMachine,
+	ValidArgsFunction: autocompRunningMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
