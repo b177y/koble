@@ -1,4 +1,4 @@
-package uml
+package mock
 
 import (
 	"github.com/b177y/netkit/driver"

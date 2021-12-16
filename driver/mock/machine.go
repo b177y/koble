@@ -1,4 +1,4 @@
-package uml
+package mock
 
 import (
 	"github.com/b177y/netkit/driver"
@@ -13,6 +13,10 @@ func (md *MockDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	md.Name = "Mock Driver"
 	md.DefaultImage = "MockImage"
 	return nil
+}
+
+func (md *MockDriver) GetDefaultImage() string {
+	return "mock-image"
 }
 
 func (md *MockDriver) MachineExists(m driver.Machine) (exists bool,
