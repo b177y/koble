@@ -110,4 +110,6 @@ type Driver interface {
 	StopNetwork(net Network) (err error)
 	RemoveNetwork(net Network) (err error)
 	GetNetworkState(net Network) (state NetworkState, err error)
+
+	ListAllNamespaces() ([]string, error)
 }

@@ -429,3 +429,7 @@ func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err
 	info.Lab = mConfig.Lab
 	return info, nil
 }
+
+func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
+	return namespaces, nil
+}

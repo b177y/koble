@@ -80,10 +80,11 @@ func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.Ne
 		return networks, err
 	}
 	for _, n := range nets {
-		name, lab := getInfoFromLabels(n.Labels)
+		name, namespace, lab := getInfoFromLabels(n.Labels)
 		n := driver.Network{
-			Name: name,
-			Lab:  lab,
+			Name:      name,
+			Namespace: namespace,
+			Lab:       lab,
 		}
 		info, err := network.Inspect(pd.conn, n.Fullname(), nil)
 		if err != nil {

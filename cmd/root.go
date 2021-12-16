@@ -43,6 +43,15 @@ var useCon bool
 var machine string
 var labName string
 
+func autocompNamespace(cmd *cobra.Command, args []string,
+	toComplete string) ([]string, cobra.ShellCompDirective) {
+	namespaces, err := nk.Driver.ListAllNamespaces()
+	if err != nil {
+		return []string{}, cobra.ShellCompDirectiveError
+	}
+	return namespaces, cobra.ShellCompDirectiveNoFileComp
+}
+
 func init() {
 	NetkitCLI.AddCommand(labCmd)
 	NetkitCLI.AddCommand(shellCmd)
@@ -53,4 +62,5 @@ func init() {
 	NetkitCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
 	NetkitCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	NetkitCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
+	NetkitCLI.RegisterFlagCompletionFunc("namespace", autocompNamespace)
 }

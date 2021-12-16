@@ -61,3 +61,7 @@ func (md *MockDriver) ListMachines(namespace string, all bool) ([]driver.Machine
 func (md *MockDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
 	return info, nil
 }
+
+func (md *MockDriver) ListAllNamespaces() (namespaces []string, err error) {
+	return namespaces, nil
+}

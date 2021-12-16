@@ -70,16 +70,17 @@ func getLabels(m driver.Machine) map[string]string {
 	return labels
 }
 
-func getInfoFromLabels(labels map[string]string) (name, lab string) {
+func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
 	if val, ok := labels["netkit:name"]; ok {
 		name = val
 	}
-	if val, ok := labels["netkit:nolab"]; ok && val == "true" {
-		lab = ""
-	} else if val, ok := labels["netkit:lab"]; ok {
+	if val, ok := labels["netkit:lab"]; ok {
 		lab = val
 	}
-	return name, lab
+	if val, ok := labels["netkit:namespace"]; ok {
+		namespace = val
+	}
+	return name, namespace, lab
 }
 
 func getFilters(machine, lab, namespace string, all bool) map[string][]string {
@@ -309,7 +310,7 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 		return machines, err
 	}
 	for _, c := range ctrs {
-		name, lab := getInfoFromLabels(c.Labels)
+		name, _, lab := getInfoFromLabels(c.Labels)
 		var mNetworks []string
 		for _, n := range c.Networks {
 			s := strings.Index(n, "netkit_")
@@ -391,4 +392,29 @@ func (pd *PodmanDriver) CopyInFiles(m driver.Machine, hostlab string) error {
 		return err
 	}
 	return nil
+}
+
+func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
+	opts := new(containers.ListOptions)
+	opts.WithAll(true)
+	filters := getFilters("", "", "", true)
+	opts.WithFilters(filters)
+	ctrs, err := containers.List(pd.conn, opts)
+	if err != nil {
+		return namespaces, err
+	}
+	for _, c := range ctrs {
+		_, ns, _ := getInfoFromLabels(c.Labels)
+		found := false
+		for _, n := range namespaces {
+			if ns == n {
+				found = true
+			}
+		}
+		if !found {
+			namespaces = append(namespaces, ns)
+		}
+
+	}
+	return namespaces, err
 }
