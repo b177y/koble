@@ -85,6 +85,7 @@ console-common	console-data/keymap/ignored	note
 console-data	console-data/keymap/ignored	note	
 # Reboot recommended
 resolvconf	resolvconf/downup-interfaces	note	
+resolvconf resolvconf/linkify-resolvconf boolean false
 # State or province name for the X.509 certificate request:
 strongswan-starter	strongswan/x509_state_name	string	
 # Dummy template
