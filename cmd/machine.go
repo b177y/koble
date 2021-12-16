@@ -28,6 +28,7 @@ var mstartCmd = &cobra.Command{
 	Short:                 "Start a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
+	ValidArgsFunction:     autocompMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.StartMachine(args[0], machineImage, machineNetworks)
 		if err != nil {

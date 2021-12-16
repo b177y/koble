@@ -9,9 +9,10 @@ var logsFollow bool
 var logsTail int
 
 var logsCmd = &cobra.Command{
-	Use:   "logs [options] MACHINE",
-	Short: "The 'logs' subcommand is used to get logs from a netkit machine",
-	Args:  cobra.ExactArgs(1),
+	Use:               "logs [options] MACHINE",
+	Short:             "The 'logs' subcommand is used to get logs from a netkit machine",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: autocompMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		machine := args[0]
 		err := nk.MachineLogs(machine, logsFollow, logsTail)

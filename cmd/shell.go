@@ -15,9 +15,10 @@ var detachMode bool
 var workDir string
 
 var shellCmd = &cobra.Command{
-	Use:   "shell [options] MACHINE",
-	Short: "The 'shell' subcommand is used to connect to a shell on a netkit machine",
-	Args:  cobra.ExactArgs(1),
+	Use:               "shell [options] MACHINE",
+	Short:             "The 'shell' subcommand is used to connect to a shell on a netkit machine",
+	Args:              cobra.ExactArgs(1),
+	ValidArgsFunction: autocompMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
