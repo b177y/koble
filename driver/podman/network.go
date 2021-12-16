@@ -9,6 +9,19 @@ import (
 	"github.com/containers/podman/v3/pkg/domain/entities"
 )
 
+func getNetLabels(n driver.Network) map[string]string {
+	labels := make(map[string]string)
+	labels["netkit"] = "true"
+	labels["netkit:name"] = n.Name
+	if n.Lab != "" {
+		labels["netkit:lab"] = n.Lab
+	} else {
+		labels["netkit:nolab"] = "true"
+	}
+	labels["netkit:namespace"] = n.Namespace
+	return labels
+}
+
 func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
 	exists, err := pd.NetworkExists(n)
 	if err != nil {
@@ -19,7 +32,7 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
 	}
 	opts := new(network.CreateOptions)
 	opts.WithName(n.Fullname())
-	opts.WithLabels(getLabels(n.Name, n.Lab))
+	opts.WithLabels(getNetLabels(n))
 	if n.Subnet != "" && n.Gateway != "" {
 		_, sn, err := net.ParseCIDR(n.Subnet)
 		if err != nil {

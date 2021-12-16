@@ -59,15 +59,14 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	return nil
 }
 
-func getLabels(name, lab string) map[string]string {
+func getLabels(m driver.Machine) map[string]string {
 	labels := make(map[string]string)
 	labels["netkit"] = "true"
-	labels["netkit:name"] = name
-	if lab != "" {
-		labels["netkit:lab"] = lab
-	} else {
-		labels["netkit:nolab"] = "true"
+	labels["netkit:name"] = m.Name
+	if m.Lab != "" {
+		labels["netkit:lab"] = m.Lab
 	}
+	labels["netkit:namespace"] = m.Namespace
 	return labels
 }
 
@@ -90,9 +89,9 @@ func getFilters(machine, lab, namespace string, all bool) map[string][]string {
 	labelFilters = append(labelFilters, "netkit:namespace="+namespace)
 	if lab != "" && !all {
 		labelFilters = append(labelFilters, "netkit:lab="+lab)
-	} else if !all {
-		labelFilters = append(labelFilters, "netkit:nolab=true")
-	}
+	} // else if !all {
+	//labelFilters = append(labelFilters, "netkit:nolab=true")
+	//}
 	if machine != "" && !all {
 		labelFilters = append(labelFilters, "netkit:name="+machine)
 	}
@@ -148,15 +147,18 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 	s.Hostname = m.Name
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
+	s.NetNS = specgen.Namespace{
+		NSMode: specgen.Bridge,
+	}
 	for _, n := range m.Networks {
 		net := driver.Network{
-			Name: n,
-			Lab:  m.Lab,
+			Name:      n,
+			Namespace: m.Namespace,
 		}
 		s.CNINetworks = append(s.CNINetworks, net.Fullname())
 	}
 	s.Terminal = true
-	s.Labels = getLabels(m.Name, m.Lab)
+	s.Labels = getLabels(m)
 	for _, mnt := range m.Volumes {
 		if mnt.Type == "" {
 			mnt.Type = "bind"
@@ -296,11 +298,11 @@ func (pd *PodmanDriver) GetMachineLogs(m driver.Machine,
 	return err
 }
 
-func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo, error) {
+func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
-	filters := getFilters("", lab, "GLOBAL", all) // TODO get namespace here
+	filters := getFilters("", "", namespace, all) // TODO get namespace here
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)
 	if err != nil {
@@ -326,7 +328,7 @@ func (pd *PodmanDriver) ListMachines(lab string, all bool) ([]driver.MachineInfo
 		machines = append(machines, driver.MachineInfo{
 			Name:     name,
 			Lab:      lab,
-			Image:    c.Image,
+			Image:    c.Image[:strings.IndexByte(c.Image, ':')],
 			Networks: mNetworks,
 			State:    c.State,
 			Uptime:   c.Status,
