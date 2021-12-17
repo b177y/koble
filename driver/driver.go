@@ -92,7 +92,7 @@ type Driver interface {
 	HaltMachine(m Machine, force bool) (err error)
 	RemoveMachine(m Machine) (err error)
 
-	ListMachines(lab string, all bool) ([]MachineInfo, error)
+	ListMachines(namespace string, all bool) ([]MachineInfo, error)
 	MachineExists(m Machine) (exists bool, err error)
 	GetMachineState(m Machine) (state MachineState, err error)
 	MachineInfo(m Machine) (info MachineInfo, err error)
