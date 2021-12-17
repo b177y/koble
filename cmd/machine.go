@@ -44,7 +44,7 @@ var mhaltCmd = &cobra.Command{
 	ValidArgsFunction:     autocompRunningMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.HaltMachine(args[0])
+		err := nk.HaltMachine(args[0], false)
 		if err != nil {
 			log.Fatal(err)
 		}

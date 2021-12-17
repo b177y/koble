@@ -27,7 +27,7 @@ var lstartCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
-var lcleanCmd = &cobra.Command{
+var ldestroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
 	Short: "Clean up a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -91,7 +91,7 @@ var labCmd = &cobra.Command{
 
 func init() {
 	labCmd.AddCommand(lstartCmd)
-	labCmd.AddCommand(lcleanCmd)
+	labCmd.AddCommand(ldestroyCmd)
 	labCmd.AddCommand(lhaltCmd)
 	labCmd.AddCommand(linfoCmd)
 	labCmd.AddCommand(linitCmd)
@@ -103,7 +103,7 @@ func init() {
 	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{}, "Comma separated list of lab author emails.")
 	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{}, "Comma separated list of lab web resource URLs.")
 
-	lcleanCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Clean all Netkit machines, including those not in the current lab.")
+	ldestroyCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Destroy all Netkit machines, including those not in the current lab.")
 	lhaltCmd.Flags().BoolVarP(&labHaltForce, "force", "f", false, "Force halt machines.")
 	lhaltCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Halt all Netkit machines, including those not in the current lab.")
 }

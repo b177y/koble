@@ -240,6 +240,7 @@ func filterMachines(machines []driver.Machine,
 	}
 	return mList
 }
+
 func (nk *Netkit) GetMachineList(mlist []string,
 	all bool) (machines []driver.Machine, err error) {
 	if len(mlist) == 0 && nk.Lab.Name == "" && !all {
@@ -259,18 +260,9 @@ func (nk *Netkit) GetMachineList(mlist []string,
 }
 
 func (nk *Netkit) LabDestroy(mlist []string, all bool) error {
-	machines, err := nk.GetMachineList(mlist, all)
-	if err != nil {
-		return err
-	}
+	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
-		fmt.Printf("Halting machine %s...\n", m.Name)
-		err := nk.Driver.HaltMachine(m, true)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Printf("\rRemoving machine %s...\n", m.Name)
-		err = nk.Driver.RemoveMachine(m)
+		err := nk.DestroyMachine(m.Name)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -280,13 +272,9 @@ func (nk *Netkit) LabDestroy(mlist []string, all bool) error {
 
 func (nk *Netkit) LabHalt(mlist []string,
 	force, all bool) error {
-	machines, err := nk.GetMachineList(mlist, all)
-	if err != nil {
-		return err
-	}
+	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
-		fmt.Printf("Halting machine %s...\n", m.Name)
-		err := nk.Driver.HaltMachine(m, force)
+		err := nk.HaltMachine(m.Name, force)
 		if err != nil {
 			fmt.Println(err)
 		}

@@ -67,8 +67,8 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	err := nk.Driver.StartMachine(m)
-	return err
+	fmt.Println("Starting machine", m.Name)
+	return nk.Driver.StartMachine(m)
 }
 
 func (nk *Netkit) MachineInfo(name string) error {
@@ -122,12 +122,13 @@ func (nk *Netkit) MachineInfo(name string) error {
 	return nil
 }
 
-func (nk *Netkit) HaltMachine(machine string) error {
+func (nk *Netkit) HaltMachine(machine string, force bool) error {
 	m := driver.Machine{
 		Name:      machine,
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
+	fmt.Println("Halting machine", m.Name)
 	return nk.Driver.HaltMachine(m, false)
 }
 
@@ -137,6 +138,7 @@ func (nk *Netkit) CrashMachine(machine string) error {
 		Namespace: nk.Namespace,
 		Lab:       nk.Lab.Name,
 	}
+	fmt.Println("Crashing machine", m.Name)
 	return nk.Driver.HaltMachine(m, true)
 }
 
@@ -152,6 +154,7 @@ func (nk *Netkit) DestroyMachine(machine string) error {
 	// }
 	// TODO workout best way to delay until machine stopped
 	// time.Sleep(time.Second)
+	fmt.Println("Removing machine", m.Name)
 	return nk.Driver.RemoveMachine(m)
 }
 
