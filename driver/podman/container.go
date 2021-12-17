@@ -151,6 +151,8 @@ func (pd *PodmanDriver) StartMachine(m driver.Machine) (err error) {
 	s.NetNS = specgen.Namespace{
 		NSMode: specgen.Bridge,
 	}
+	s.UseImageHosts = true
+	s.UseImageResolvConf = true
 	for _, n := range m.Networks {
 		net := driver.Network{
 			Name:      n,

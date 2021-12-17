@@ -1,8 +1,9 @@
 package podman
 
 import (
-	"fmt"
-	"net"
+	"os"
+	"path/filepath"
+	"text/template"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/bindings/network"
@@ -30,23 +31,39 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
 	if exists {
 		return driver.ErrExists
 	}
-	opts := new(network.CreateOptions)
-	opts.WithName(n.Fullname())
-	opts.WithLabels(getNetLabels(n))
-	if n.Subnet != "" && n.Gateway != "" {
-		_, sn, err := net.ParseCIDR(n.Subnet)
-		if err != nil {
-			return err
-		}
-		gw := net.ParseIP(n.Gateway)
-		if gw == nil {
-			return fmt.Errorf("Could not parse IP %s as Gateway", n.Gateway)
-		}
-		opts.WithGateway(gw)
-		opts.WithSubnet(*sn)
+	// opts := new(network.CreateOptions)
+	// if n.Subnet != "" && n.Gateway != "" {
+	// 	_, sn, err := net.ParseCIDR(n.Subnet)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	gw := net.ParseIP(n.Gateway)
+	// 	if gw == nil {
+	// 		return fmt.Errorf("Could not parse IP %s as Gateway", n.Gateway)
+	// 	}
+	// }
+	// opts.WithName(n.Fullname())
+	// opts.WithLabels(getNetLabels(n))
+	// opts.WithInternal(!n.External)
+	// _, err = network.Create(pd.conn, opts)
+	// if err != nil {
+	// 	return err
+	// }
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
 	}
-	opts.WithInternal(!n.External)
-	_, err = network.Create(pd.conn, opts)
+	// TODO check ~/.config/cni/net.d/cni.lock ??
+	f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Fullname()+".conflist"))
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	tmpl, err := template.New("netconf").Parse(NET)
+	if err != nil {
+		return err
+	}
+	err = tmpl.Execute(f, &n)
 	return err
 }
 
