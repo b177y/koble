@@ -2,7 +2,10 @@ module github.com/b177y/netkit
 
 go 1.17
 
+replace github.com/containernetworking/plugins => github.com/containernetworking/plugins v0.9.1
+
 require (
+	github.com/containernetworking/plugins v0.9.1
 	github.com/containers/buildah v1.23.1
 	github.com/containers/podman/v3 v3.4.0
 	github.com/creack/pty v1.1.17
@@ -14,8 +17,10 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/sirupsen/logrus v1.8.1
+	github.com/songgao/water v0.0.0-20200317203138-2b4b6d7c09d8
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
+	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
 	gopkg.in/yaml.v2 v2.4.0
@@ -37,7 +42,6 @@ require (
 	github.com/containerd/containerd v1.5.7 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.8.0 // indirect
 	github.com/containernetworking/cni v0.8.1 // indirect
-	github.com/containernetworking/plugins v0.9.1 // indirect
 	github.com/containers/common v0.44.2 // indirect
 	github.com/containers/image/v5 v5.16.0 // indirect
 	github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b // indirect
@@ -114,8 +118,7 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/vbauerster/mpb/v7 v7.1.4 // indirect
-	github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852 // indirect
-	github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae // indirect
+	github.com/vishvananda/netns v0.0.0-20210104183010-2eb08e3e575f // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190809123943-df4f5c81cb3b // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
