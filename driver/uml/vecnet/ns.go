@@ -77,12 +77,30 @@ func ExecUserNS(name string) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Cmd{
-		Path: "/proc/self/exe",
-		Args: os.Args[1:],
-		Env:  append(os.Environ(), "UML_NS_PID="+string(pid)),
+	env := os.Environ()
+	env = append(env, "UML_NS_PID="+string(pid))
+	env = append(env, "UML_ORIG_UID="+fmt.Sprint(os.Getuid()))
+	env = append(env, "UML_ORIG_EUID="+fmt.Sprint(os.Geteuid()))
+	env = append(env, "UML_ORIG_GID="+fmt.Sprint(os.Getgid()))
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
 	}
-	return cmd.Run()
+	env = append(env, "UML_ORIG_WD="+wd)
+	cmd := exec.Cmd{
+		Path:   "/proc/self/exe",
+		Args:   os.Args,
+		Env:    env,
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	}
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	os.Exit(0)
+	return nil
 }
 
 func CreateAndEnterUserNS(name string) error {
@@ -100,6 +118,13 @@ func CreateAndEnterUserNS(name string) error {
 		}
 		return ExecUserNS(name)
 	} else {
+		if os.Getenv("UML_ORIG_UID") == "" {
+			return errors.New("environment vairable UML_ORIG_UID has not been set")
+		} else if os.Getenv("UML_ORIG_EUID") == "" {
+			return errors.New("environment vairable UML_ORIG_EUID has not been set")
+		} else if os.Getenv("UML_ORIG_GID") == "" {
+			return errors.New("environment vairable UML_ORIG_GID has not been set")
+		}
 		return NSStatus()
 	}
 }

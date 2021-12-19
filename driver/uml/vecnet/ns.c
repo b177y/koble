@@ -76,5 +76,18 @@ void switchNamespace(void){
     if (err < 0){
         return;
     }
+    // enter uml mount namespace
     nsenter(umlPid, "mnt", CLONE_NEWNS);
+    // change dir to wd of parent
+    const char* origWd = getenv("UML_ORIG_WD");
+    if (origWd == NULL) {
+        setErrMsg("environment variable UML_ORIG_WD is not set");
+        return;
+    }
+    err = chdir(origWd);
+    if (err < 0) {
+        setErrMsg("could not change dir to UML_ORIG_WD (%s) : %s",
+                origWd, strerror(errno));
+        return;
+    }
 }

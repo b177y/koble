@@ -15,6 +15,7 @@ import (
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/shim"
+	"github.com/b177y/netkit/driver/uml/vecnet"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
 )
@@ -32,6 +33,10 @@ func (ud *UMLDriver) GetDefaultImage() string {
 }
 
 func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
+	err = vecnet.CreateAndEnterUserNS("netkit")
+	if err != nil {
+		return err
+	}
 	ud.Name = "UserMode Linux"
 	homedir, err := os.UserHomeDir()
 	if err != nil {
@@ -39,7 +44,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	}
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
 	ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/netkit-fs", homedir)
-	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", fmt.Sprint(os.Getuid()))
+	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", os.Getenv("UML_ORIG_UID"))
 	ud.StorageDir = fmt.Sprintf("%s/.local/share/uml", homedir)
 	// override kernel with config option
 	if val, ok := conf["kernel"]; ok {
