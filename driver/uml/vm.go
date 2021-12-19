@@ -138,8 +138,7 @@ func runInShim(sockPath, namespace string, kernelCmd []string) error {
 		_ = shim.IMPORT
 		c := reexec.Command("umlShim")
 		c.Args = append(c.Args, sockPath)
-		// c.Args = append(c.Args, kernelCmd...)
-		c.Args = append(c.Args, "/bin/bash")
+		c.Args = append(c.Args, kernelCmd...)
 		c.SysProcAttr = &syscall.SysProcAttr{
 			Setsid: true,
 		}
@@ -197,6 +196,9 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	for i, n := range m.Networks {
 		// setup tap
 		err = vecnet.AddHost(m.Namespace, "t_"+m.Name+fmt.Sprint(i), "br_"+n)
+		if err != nil {
+			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name, n, err)
+		}
 		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, "t_"+m.Name+fmt.Sprint(i))
 		// add to networks for cmdline
 		networks = append(networks, cmd)
