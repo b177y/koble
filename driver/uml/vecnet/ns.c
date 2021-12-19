@@ -35,8 +35,8 @@ static void setErrMsg(const char *format, ...){
 }
 
 int nsenter(int pid, char *type, long clonetype){
-    char nsPath[4096];
-    sprintf(nsPath, "/proc/%d/ns/%s", pid, type);
+    char nsPath[PATH_MAX];
+    snprintf(nsPath, PATH_MAX, "/proc/%d/ns/%s", pid, type);
     int fd = open(nsPath, O_RDONLY);
     if (fd < 0) {
         setErrMsg("invalid user ns reference %s: %s",
