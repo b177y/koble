@@ -1,3 +1,4 @@
+//go:build linux && cgo && !gccgo
 // +build linux,cgo,!gccgo
 
 package unshare
@@ -7,4 +8,4 @@ package unshare
 // void __attribute__((constructor)) init(void) {
 //   _containers_unshare();
 // }
-import "C"
+// import "C"
