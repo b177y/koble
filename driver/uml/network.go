@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 
 	"github.com/b177y/netkit/driver"
@@ -22,12 +23,21 @@ func (ud *UMLDriver) CreateNetwork(n driver.Network) (err error) {
 	nHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(n.Name+"-"+n.Namespace)))
 	netPath := filepath.Join(ud.RunDir, "network", nHash)
-	err = os.MkdirAll(netPath, 0744)
-	if err != nil && err != os.ErrExist {
-		return err
+	if n.External {
+		user, err := user.Current()
+		if err != nil {
+			return err
+		}
+		cmd := exec.Command("manage_tuntap", "", user.Username, n.Gateway, n.Gateway, n.Fullname())
+		return cmd.Start()
+	} else {
+		err = os.MkdirAll(netPath, 0744)
+		if err != nil && err != os.ErrExist {
+			return err
+		}
+		cmd := exec.Command("uml_switch", "-hub", "-unix", filepath.Join(netPath, "hub.cnct"))
+		return cmd.Start()
 	}
-	cmd := exec.Command("uml_switch", "-hub", "-unix", filepath.Join(netPath, "hub.cnct"))
-	return cmd.Start()
 }
 
 func (ud *UMLDriver) StartNetwork(net driver.Network) (err error) {
