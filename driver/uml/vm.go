@@ -16,6 +16,7 @@ import (
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/shim"
 	"github.com/b177y/netkit/driver/uml/vecnet"
+	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
 )
@@ -132,15 +133,19 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	return cmd, nil
 }
 
-func runInShim(sockPath string, kernelCmd []string) error {
-	_ = shim.IMPORT
-	c := reexec.Command("umlShim")
-	c.Args = append(c.Args, sockPath)
-	c.Args = append(c.Args, kernelCmd...)
-	c.SysProcAttr = &syscall.SysProcAttr{
-		Setsid: true,
-	}
-	return c.Start()
+func runInShim(sockPath, namespace string, kernelCmd []string) error {
+	return vecnet.WithNetNS(namespace, func(ns.NetNS) error {
+		_ = shim.IMPORT
+		c := reexec.Command("umlShim")
+		c.Args = append(c.Args, sockPath)
+		// c.Args = append(c.Args, kernelCmd...)
+		c.Args = append(c.Args, "/bin/bash")
+		c.SysProcAttr = &syscall.SysProcAttr{
+			Setsid: true,
+		}
+		fmt.Println("Starting kernel with", kernelCmd)
+		return c.Start()
+	})
 }
 
 func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
@@ -190,10 +195,10 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	}
 	var networks []string
 	for i, n := range m.Networks {
-		nHash := fmt.Sprintf("%x",
-			sha256.Sum256([]byte(n+"-"+m.Namespace)))
-		hubPath := filepath.Join(ud.RunDir, "network", nHash, "hub.cnct")
-		cmd := fmt.Sprintf("eth%d=daemon,,,%s", i, hubPath)
+		// setup tap
+		err = vecnet.AddHost(m.Namespace, "t_"+m.Name+fmt.Sprint(i), "br_"+n)
+		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, "t_"+m.Name+fmt.Sprint(i))
+		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
 	// for _, mnt := range m.Volumes {
@@ -205,8 +210,8 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Got kernelcmd", kernelcmd)
-	err = runInShim(mDir, kernelcmd)
+	// fmt.Println("Got kernelcmd", kernelcmd)
+	err = runInShim(mDir, m.Namespace, kernelcmd)
 	if err != nil {
 		return err
 	}

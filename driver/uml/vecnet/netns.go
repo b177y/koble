@@ -15,7 +15,7 @@ import (
 
 func NewNetNS(name string) error {
 	// setup 'rundir'
-	nsDir := "/run/user/1000/uml"
+	nsDir := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", name)
 	err := os.MkdirAll(nsDir, 0755)
 	if err != nil {
 		return err
@@ -30,8 +30,7 @@ func NewNetNS(name string) error {
 	} else if err != nil {
 		return fmt.Errorf("mount --make-rshared %s failed: %q", nsDir, err)
 	}
-	// TODO dont hardcode
-	nsPath := filepath.Join(nsDir, "net-ns")
+	nsPath := filepath.Join(nsDir, "netns.bind")
 	f, err := os.OpenFile(nsPath, os.O_CREATE|os.O_EXCL, 0444)
 	f.Close()
 	// Ensure the mount point is cleaned up on errors; if the namespace
@@ -72,8 +71,14 @@ func NewNetNS(name string) error {
 // fills in the pid for the uml namespace
 // the function toRun will be run within the uml net namespace
 // opened by NewNS()
-func WithNetNS(toRun func(ns.NetNS) error) error {
-	// TODO dont hardcode
-	nsPath := "/run/user/1000/uml/net-ns"
+func WithNetNS(namespace string, toRun func(ns.NetNS) error) error {
+	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
+	// create ns if not exist
+	if ns.IsNSorErr(nsPath) != nil {
+		err := NewNetNS(namespace)
+		if err != nil {
+			return err
+		}
+	}
 	return ns.WithNetNSPath(nsPath, toRun)
 }

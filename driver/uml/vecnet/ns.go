@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"syscall"
 )
 
@@ -28,8 +29,24 @@ func NSStatus() error {
 }
 
 func UserNSExists(name string) (exists bool, err error) {
-	// TODO
-	return false, err
+	pidPath := filepath.Join(NSPID_DIR, name+"-ns.pid")
+	pidBytes, err := ioutil.ReadFile(pidPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("Error checking if pause pid file exists: %w", err)
+	}
+	pid, err := strconv.Atoi(string(pidBytes))
+	if err != nil {
+		return false, fmt.Errorf("uml ns pidfile doesn't contain integer: %s", string(pidBytes))
+	}
+	// if process is not running, remove reference and return ns does not exist
+	err = syscall.Kill(pid, syscall.Signal(0))
+	if err != nil {
+		os.RemoveAll(pidPath)
+		return false, nil
+	}
+	return true, nil
 }
 
 // Creates and persists a new user and mount namespace by running a 'pause' process
