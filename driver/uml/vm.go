@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/shim"
@@ -115,7 +116,6 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	cmd = append(cmd, "root=98:0")
 	umlDir := filepath.Join(ud.RunDir, "machine", mHash)
 	cmd = append(cmd, "uml_dir="+umlDir)
-	// TODO add networks
 	cmd = append(cmd, "con0=fd:0,fd:1")
 	cmd = append(cmd, "con1=null")
 	cmd = append(cmd, networks...)
@@ -194,7 +194,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	var networks []string
 	for i, n := range m.Networks {
 		// setup tap
-		err = vecnet.AddHost(m.Namespace, "t_"+m.Name+fmt.Sprint(i), "br_"+n)
+		err = vecnet.AddHost("t_"+m.Name, "br_"+n, m.Namespace)
 		if err != nil {
 			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name, n, err)
 		}
@@ -257,6 +257,18 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		if err != nil {
 			return err
 		}
+		for i := 0; i < 10; i++ {
+			// wait for kill 0 to give err (shows pid no longer running)
+			err = syscall.Kill(pid, 0)
+			if err != nil {
+				break
+			}
+			time.Sleep(500 * time.Millisecond)
+		}
+		if err == nil {
+			return fmt.Errorf("Could not kill machine %s (%d): %w",
+				m.Name, pid, err)
+		}
 	} else {
 		err = os.WriteFile(filepath.Join(ud.RunDir, "machine", mHash, "state"), []byte("killed"), 0600)
 		if err != nil {
@@ -267,10 +279,8 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 }
 
 func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
-	state, err := ud.GetMachineState(m)
-	if err != nil {
-		return err
-	}
+	// TODO return non fatal errors?
+	state, _ := ud.GetMachineState(m)
 	if state.Running {
 		return errors.New("Machine can't be removed as it's running")
 	}
@@ -278,15 +288,14 @@ func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
 	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace, m.Name)
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
-	err = os.RemoveAll(mDir)
-	if err != nil {
-		return err
+	os.RemoveAll(mDir)
+	os.RemoveAll(nsMdir)
+	for _, n := range m.Networks {
+		fmt.Println("Removing network", n, "for machine", m.Name)
+		vecnet.DelHost("t_"+m.Name, m.Namespace)
 	}
-	err = os.RemoveAll(nsMdir)
-	if err != nil {
-		return err
-	}
-	return os.Remove(filepath.Join(ud.StorageDir, "overlay", mHash+".disk"))
+	os.Remove(filepath.Join(ud.StorageDir, "overlay", mHash+".disk"))
+	return nil
 }
 
 func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {

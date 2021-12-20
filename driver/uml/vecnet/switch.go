@@ -19,10 +19,10 @@ func IfaceExists(namespace, iface string) bool {
 }
 
 // Create a new bridge within specified net namespace
-func NewBridge(namespace string, brname string) error {
+func NewBridge(name, namespace string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		la := netlink.NewLinkAttrs()
-		la.Name = brname
+		la.Name = name
 		la.MTU = 1500
 		la.TxQLen = -1
 		newBr := &netlink.Bridge{
@@ -36,13 +36,22 @@ func NewBridge(namespace string, brname string) error {
 	})
 }
 
-// TODO Remove bridge
+// Remove a bridge from a specified net namespace
+func DelBridge(name, namespace string) error {
+	return WithNetNS(namespace, func(ns.NetNS) error {
+		br, err := netlink.LinkByName(name)
+		if err != nil {
+			return fmt.Errorf("Could not find bridge %s to delete: %w", name, err)
+		}
+		return netlink.LinkDel(br)
+	})
+}
 
-func AddHost(namespace, tapname, bridge string) error {
+func AddHost(tapname, bridge, namespace string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		br, err := netlink.LinkByName(bridge)
 		if err != nil {
-			return fmt.Errorf("Error finding %s: %w", bridge, err)
+			return fmt.Errorf("Error finding bridge %s: %w", bridge, err)
 		}
 		tap := &netlink.Tuntap{
 			LinkAttrs: netlink.LinkAttrs{
@@ -64,7 +73,15 @@ func AddHost(namespace, tapname, bridge string) error {
 	})
 }
 
-// TODO remove host
+func DelHost(tapname, namespace string) error {
+	return WithNetNS(namespace, func(ns.NetNS) error {
+		tap, err := netlink.LinkByName(tapname)
+		if err != nil {
+			return fmt.Errorf("Error finding %s: %w", tapname, err)
+		}
+		return netlink.LinkDel(tap)
+	})
+}
 
 func SetupExternal(iface, network, namespace string) error {
 	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
@@ -103,4 +120,13 @@ func SetupExternal(iface, network, namespace string) error {
 	})
 }
 
-// TODO remove tapout
+func DelExternal(iface, namespace string) error {
+	return WithNetNS(namespace, func(ns.NetNS) error {
+		tap, err := netlink.LinkByName(iface)
+		if err != nil {
+			return fmt.Errorf("Error finding tapout %s: %w", iface, err)
+		}
+		// KILL SLIRP PROCESS
+		return netlink.LinkDel(tap)
+	})
+}
