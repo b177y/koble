@@ -61,6 +61,7 @@ func NewNetNS(name string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		// TODO c=$(cat /proc/sys/net/ipv4/tcp_rmem); echo $c | sed -e s/131072/87380/g > /proc/sys/net/ipv4/tcp_rmem
 	}()
 	wg.Wait()
 	return err
