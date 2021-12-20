@@ -142,7 +142,6 @@ func runInShim(sockPath, namespace string, kernelCmd []string) error {
 		c.SysProcAttr = &syscall.SysProcAttr{
 			Setsid: true,
 		}
-		fmt.Println("Starting kernel with", kernelCmd)
 		return c.Start()
 	})
 }
@@ -399,14 +398,17 @@ func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineI
 			return machines, err
 		}
 		for _, e := range entries {
-			info, err := ud.MachineInfo(driver.Machine{
-				Name:      e.Name(),
-				Namespace: namespace,
-			})
-			if err != nil && err != driver.ErrNotExists {
-				return machines, err
+			// TODO (temp fix)
+			if e.Name() != "netns.bind" {
+				info, err := ud.MachineInfo(driver.Machine{
+					Name:      e.Name(),
+					Namespace: namespace,
+				})
+				if err != nil && err != driver.ErrNotExists {
+					return machines, err
+				}
+				machines = append(machines, info)
 			}
-			machines = append(machines, info)
 		}
 	}
 	return machines, nil

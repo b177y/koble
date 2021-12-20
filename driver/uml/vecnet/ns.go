@@ -69,9 +69,14 @@ func CreateUserNS(name string) error {
 			Cloneflags: syscall.CLONE_NEWNS | syscall.CLONE_NEWUSER, // new mount and user ns
 			UidMappings: []syscall.SysProcIDMap{{
 				ContainerID: 0,
-				HostID:      1000, // TODO use UID
+				HostID:      os.Getuid(),
 				Size:        1,
-			}}, // TODO add GID mapping ?
+			}},
+			GidMappings: []syscall.SysProcIDMap{{
+				ContainerID: 0,
+				HostID:      os.Getgid(),
+				Size:        1,
+			}},
 		},
 	}
 	err := cmd.Start()

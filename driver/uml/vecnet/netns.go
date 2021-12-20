@@ -57,7 +57,6 @@ func NewNetNS(name string) error {
 		}
 
 		defer origNS.Set()
-		fmt.Println("mounting to", nsPath)
 		err = syscall.Mount(fmt.Sprintf("/proc/%d/task/%d/ns/net", os.Getpid(), unix.Gettid()), nsPath, "bind", syscall.MS_BIND, "")
 		if err != nil {
 			log.Fatal(err)
