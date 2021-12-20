@@ -11,16 +11,38 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
-func IfaceExists(namespace, iface string) bool {
-	return WithNetNS(namespace, func(ns.NetNS) error {
-		_, err := netlink.LinkByName(iface)
+func IfaceExists(iface string) (exists bool, err error) {
+	devs, err := netlink.LinkList()
+	if err != nil {
+		return false, err
+	}
+	for _, d := range devs {
+		if d.Attrs().Name == iface {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func IfaceExistsWithNS(namespace, iface string) (exists bool, err error) {
+	err = WithNetNS(namespace, func(ns.NetNS) error {
+		exists, err = IfaceExists(iface)
 		return err
-	}) == nil
+	})
+	return exists, err
 }
 
 // Create a new bridge within specified net namespace
 func NewBridge(name, namespace string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
+		// check if exists
+		exists, err := IfaceExists(name)
+		if err != nil {
+			return err
+		} else if exists {
+			// bridge already exists
+			return nil
+		}
 		la := netlink.NewLinkAttrs()
 		la.Name = name
 		la.MTU = 1500
@@ -28,7 +50,7 @@ func NewBridge(name, namespace string) error {
 		newBr := &netlink.Bridge{
 			LinkAttrs: la,
 		}
-		err := netlink.LinkAdd(newBr)
+		err = netlink.LinkAdd(newBr)
 		if err != nil {
 			return err
 		}
@@ -49,6 +71,13 @@ func DelBridge(name, namespace string) error {
 
 func AddHost(tapname, bridge, namespace string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
+		exists, err := IfaceExists(tapname)
+		if err != nil {
+			return err
+		} else if exists {
+			// tap already exists
+			return nil
+		}
 		br, err := netlink.LinkByName(bridge)
 		if err != nil {
 			return fmt.Errorf("Error finding bridge %s: %w", bridge, err)
@@ -97,6 +126,13 @@ func SetupExternal(iface, network, namespace string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		var tap netlink.Link
 		var err error
+		exists, err := IfaceExists(iface)
+		if err != nil {
+			return err
+		} else if exists {
+			// tapout already exists
+			return nil
+		}
 		// timeout ~5s to wait for slirp4netns to create new tap
 		for i := 0; i < 10; i++ {
 			tap, err = netlink.LinkByName(iface)
