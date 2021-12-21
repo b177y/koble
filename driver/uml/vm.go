@@ -129,6 +129,7 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	if m.Hostlab != "" {
 		cmd = append(cmd, "hostlab="+m.Hostlab)
 	}
+	cmd = append(cmd, "net.ifnames=0")
 	cmd = append(cmd, "SELINUX_INIT=0")
 	return cmd, nil
 }
@@ -454,5 +455,9 @@ func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err
 }
 
 func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
+	nsEntries, err := os.ReadDir(filepath.Join(ud.RunDir, "ns"))
+	for _, n := range nsEntries {
+		namespaces = append(namespaces, n.Name())
+	}
 	return namespaces, nil
 }
