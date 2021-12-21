@@ -203,6 +203,12 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
+	err = vecnet.SetupMgmtIface(m.Name, m.Namespace, filepath.Join(mDir, "slirp.sock"))
+	if err != nil {
+		return err
+	}
+	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s",
+		len(networks)+1, m.Name+"nkmg"))
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {
 	// 		mnt.Type = "bind"
@@ -348,7 +354,7 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 
 func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
 	user string, detach bool, workdir string) (err error) {
-	return driver.ErrNotImplemented
+	return vecnet.ExecCommand(m.Name, user, command, m.Namespace)
 }
 
 func (ud *UMLDriver) GetMachineLogs(m driver.Machine,

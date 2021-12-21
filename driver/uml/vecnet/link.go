@@ -112,12 +112,24 @@ func DelHost(tapname, namespace string) error {
 	})
 }
 
-func SetupExternal(iface, network, namespace string) error {
+func getSlirpArgs(nsPath, iface, subnet, sockpath string) (args []string) {
+	args = []string{"--configure", "--mtu=65520", "--disable-host-loopback",
+		"--disable-dns", "--netns-type=path"}
+	if subnet != "" {
+		args = append(args, "--cidr", subnet)
+	}
+	if sockpath != "" {
+		args = append(args, "--api-socket", sockpath)
+	}
+	args = append(args, nsPath, iface)
+	return args
+}
+
+func SetupExternal(iface, network, namespace, subnet, sockpath string) error {
 	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
 	cmd := exec.Cmd{
 		Path: "/usr/bin/slirp4netns",
-		Args: []string{"--configure", "--mtu=65520", "--disable-host-loopback",
-			"--disable-dns", "--netns-type=path", nsPath, iface},
+		Args: getSlirpArgs(nsPath, iface, subnet, sockpath),
 	}
 	err := cmd.Start()
 	if err != nil {
@@ -162,7 +174,7 @@ func DelExternal(iface, namespace string) error {
 		if err != nil {
 			return fmt.Errorf("Error finding tapout %s: %w", iface, err)
 		}
-		// KILL SLIRP PROCESS
+		// TODO KILL SLIRP PROCESS
 		return netlink.LinkDel(tap)
 	})
 }

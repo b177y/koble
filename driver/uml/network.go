@@ -18,7 +18,7 @@ func (ud *UMLDriver) CreateNetwork(n driver.Network) (err error) {
 		return err
 	}
 	if n.External {
-		return vecnet.SetupExternal("tap0", "br_"+n.Name, n.Namespace)
+		return vecnet.SetupExternal("tap0", "br_"+n.Name, n.Namespace, "", "")
 	}
 	return nil
 }
