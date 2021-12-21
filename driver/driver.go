@@ -97,8 +97,9 @@ type Driver interface {
 	GetMachineState(m Machine) (state MachineState, err error)
 	MachineInfo(m Machine) (info MachineInfo, err error)
 	AttachToMachine(m Machine) (err error)
-	MachineExecShell(m Machine, command, user string,
+	Exec(m Machine, command, user string,
 		detach bool, workdir string) (err error)
+	Shell(m Machine, user, workdir string) (err error)
 	GetMachineLogs(m Machine,
 		follow bool, tail int) (err error)
 

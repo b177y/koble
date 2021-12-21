@@ -352,9 +352,13 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	}
 }
 
-func (ud *UMLDriver) MachineExecShell(m driver.Machine, command,
+func (ud *UMLDriver) Exec(m driver.Machine, command,
 	user string, detach bool, workdir string) (err error) {
 	return vecnet.ExecCommand(m.Name, user, command, m.Namespace)
+}
+
+func (ud *UMLDriver) Shell(m driver.Machine, user, workdir string) (err error) {
+	return vecnet.RunShell(m.Name, user, m.Namespace)
 }
 
 func (ud *UMLDriver) GetMachineLogs(m driver.Machine,

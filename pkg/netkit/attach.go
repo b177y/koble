@@ -8,17 +8,24 @@ func (nk *Netkit) AttachToMachine(machine string) error {
 		Lab:       nk.Lab.Name,
 		Namespace: nk.Namespace,
 	}
-	err := nk.Driver.AttachToMachine(m)
-	return err
+	return nk.Driver.AttachToMachine(m)
 }
 
-func (nk *Netkit) ExecMachineShell(machine, command, user string,
+func (nk *Netkit) Exec(machine, command, user string,
 	detach bool, workdir string) error {
 	m := driver.Machine{
 		Name:      machine,
 		Lab:       nk.Lab.Name,
 		Namespace: nk.Namespace,
 	}
-	err := nk.Driver.MachineExecShell(m, command, user, detach, workdir)
-	return err
+	return nk.Driver.Exec(m, command, user, detach, workdir)
+}
+
+func (nk *Netkit) Shell(machine, user, workdir string) error {
+	m := driver.Machine{
+		Name:      machine,
+		Lab:       nk.Lab.Name,
+		Namespace: nk.Namespace,
+	}
+	return nk.Driver.Shell(m, user, workdir)
 }

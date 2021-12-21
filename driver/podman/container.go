@@ -238,8 +238,7 @@ func (pd *PodmanDriver) AttachToMachine(m driver.Machine) (err error) {
 	return err
 }
 
-func (pd *PodmanDriver) MachineExecShell(m driver.Machine, command,
-	user string, detach bool, workdir string) (err error) {
+func (pd *PodmanDriver) Shell(m driver.Machine, user, workdir string) (err error) {
 	exists, err := pd.MachineExists(m)
 	if err != nil {
 		return err
@@ -248,9 +247,8 @@ func (pd *PodmanDriver) MachineExecShell(m driver.Machine, command,
 		return fmt.Errorf("Machine %s does not exist.", m.Name)
 	}
 	ec := new(handlers.ExecCreateConfig)
-	ec.Cmd = strings.Fields(command)
+	ec.Cmd = []string{"/bin/bash"}
 	ec.User = user
-	ec.Detach = detach
 	ec.WorkingDir = workdir
 	ec.AttachStderr = true
 	ec.AttachStdin = true
@@ -267,6 +265,39 @@ func (pd *PodmanDriver) MachineExecShell(m driver.Machine, command,
 	options.WithAttachError(true)
 	options.WithInputStream(*bufio.NewReader(os.Stdin))
 	options.WithAttachInput(true)
+	err = containers.ExecStartAndAttach(pd.conn, exId, options)
+	return err
+}
+
+func (pd *PodmanDriver) Exec(m driver.Machine, command,
+	user string, detach bool, workdir string) (err error) {
+	exists, err := pd.MachineExists(m)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("Machine %s does not exist.", m.Name)
+	}
+	ec := new(handlers.ExecCreateConfig)
+	ec.Cmd = strings.Fields(command)
+	ec.User = user
+	ec.Detach = detach
+	ec.WorkingDir = workdir
+	if !detach {
+		ec.AttachStderr = true
+		ec.AttachStdout = true
+	}
+	exId, err := containers.ExecCreate(pd.conn, m.Fullname(), ec)
+	if err != nil {
+		return err
+	}
+	options := new(containers.ExecStartAndAttachOptions)
+	if !detach {
+		options.WithOutputStream(io.WriteCloser(os.Stdout))
+		options.WithAttachOutput(true)
+		options.WithErrorStream(io.WriteCloser(os.Stderr))
+		options.WithAttachError(true)
+	}
 	err = containers.ExecStartAndAttach(pd.conn, exId, options)
 	return err
 }
