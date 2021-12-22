@@ -1,3 +1,6 @@
+//go:build exclude_nsenter_cgo
+// +build exclude_nsenter_cgo
+
 package vecnet
 
 /*
