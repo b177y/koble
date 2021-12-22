@@ -10,16 +10,26 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func SetupMgmtIface(machine, namespace, sockpath string) error {
-	err := NewBridge(machine+"nkbr", namespace)
+func SetupMgmtIface(machine, namespace, sockpath string) (ifaceName string, err error) {
+	bridgeAlias := fmt.Sprintf("mgmt_br_%s", machine)
+	tapAlias := fmt.Sprintf("mgmt_tap_%s", machine)
+	slirpAlias := fmt.Sprintf("mgmt_slirp_%s", machine)
+	err = WithNetNS(namespace, func(ns.NetNS) error {
+		err = NewBridge(bridgeAlias)
+		if err != nil {
+			return err
+		}
+		ifaceName, err = NewTap(tapAlias)
+		if err != nil {
+			return err
+		}
+		return AddTapToBridge(tapAlias, bridgeAlias)
+	})
 	if err != nil {
-		return err
+		return "", err
 	}
-	err = AddHost(machine+"nkmg", machine+"nkbr", namespace)
-	if err != nil {
-		return err
-	}
-	return SetupExternal(machine+"sl0", machine+"nkbr", namespace, "10.22.2.0/24", sockpath)
+	err = AddSlirpIface(slirpAlias, bridgeAlias, namespace, "10.22.2.0/24", sockpath)
+	return ifaceName, err
 }
 
 func WithSSHSession(machine, user, namespace string, toRun func(s *ssh.Session) error) (err error) {

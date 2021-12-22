@@ -13,12 +13,12 @@ func (ud *UMLDriver) CreateNetwork(n driver.Network) (err error) {
 	if exists {
 		return driver.ErrExists
 	}
-	err = vecnet.NewBridge("br_"+n.Name, n.Namespace)
+	err = vecnet.NewNet(n.Name, n.Namespace)
 	if err != nil {
 		return err
 	}
 	if n.External {
-		return vecnet.SetupExternal("tap0", "br_"+n.Name, n.Namespace, "", "")
+		return vecnet.MakeNetExternal(n.Name, n.Namespace, "")
 	}
 	return nil
 }
@@ -46,7 +46,7 @@ func (ud *UMLDriver) ListNetworks(lab string, all bool) (networks []driver.NetIn
 }
 
 func (ud *UMLDriver) NetworkExists(n driver.Network) (bool, error) {
-	return vecnet.IfaceExistsWithNS(n.Namespace, "br_"+n.Name)
+	return vecnet.NetExists(n.Name, n.Namespace)
 }
 
 func (ud *UMLDriver) NetInfo(net driver.Network) (nInfo driver.NetInfo, err error) {

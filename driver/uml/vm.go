@@ -195,20 +195,20 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	var networks []string
 	for i, n := range m.Networks {
 		// setup tap
-		err = vecnet.AddHost("t_"+m.Name, "br_"+n, m.Namespace)
+		ifaceName, err := vecnet.AddHostToNet(m.Name, n, m.Namespace)
 		if err != nil {
 			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name, n, err)
 		}
-		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, "t_"+m.Name+fmt.Sprint(i))
+		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
-	err = vecnet.SetupMgmtIface(m.Name, m.Namespace, filepath.Join(mDir, "slirp.sock"))
+	ifaceName, err := vecnet.SetupMgmtIface(m.Name, m.Namespace, filepath.Join(mDir, "slirp.sock"))
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
-	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s",
-		len(networks)+1, m.Name+"nkmg"))
+	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE",
+		len(networks), ifaceName))
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {
 	// 		mnt.Type = "bind"
@@ -298,8 +298,7 @@ func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 	os.RemoveAll(mDir)
 	os.RemoveAll(nsMdir)
 	for _, n := range m.Networks {
-		fmt.Println("Removing network", n, "for machine", m.Name)
-		vecnet.DelHost("t_"+m.Name, m.Namespace)
+		vecnet.RemoveHostTap(m.Name, n, m.Namespace)
 	}
 	os.Remove(filepath.Join(ud.StorageDir, "overlay", mHash+".disk"))
 	return nil
