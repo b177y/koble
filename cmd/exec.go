@@ -13,7 +13,7 @@ var detachMode bool
 
 var execCmd = &cobra.Command{
 	Use:               "exec [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "The 'exec' subcommand is used to run a command on a netkit machine",
+	Short:             "run a command on a netkit machine",
 	ValidArgsFunction: autocompRunningMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		if nk.Config.OpenTerms {

@@ -21,12 +21,12 @@ var nListAll bool
 
 var netCmd = &cobra.Command{
 	Use:   "net",
-	Short: "The 'net' subcommand is used to view and manage netkit networks",
+	Short: "view and manage netkit networks",
 }
 
 var ninfoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Get info about a netkit network",
+	Short: "get info about a netkit network",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.NetworkInfo(args[0])
 		if err != nil {

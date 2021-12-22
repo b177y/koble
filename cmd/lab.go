@@ -17,7 +17,7 @@ var labAllMachines bool
 
 var lstartCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
-	Short: "Start a netkit lab",
+	Short: "start a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabStart(args)
 		if err != nil {
@@ -29,7 +29,7 @@ var lstartCmd = &cobra.Command{
 
 var ldestroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
-	Short: "Clean up a netkit lab",
+	Short: "clean up a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabDestroy(args, labAllMachines)
 		if err != nil {
@@ -41,7 +41,7 @@ var ldestroyCmd = &cobra.Command{
 
 var lhaltCmd = &cobra.Command{
 	Use:   "halt [options] MACHINE [MACHINE...]",
-	Short: "Halt a netkit lab",
+	Short: "halt machines in a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabHalt(args, labHaltForce, labAllMachines)
 		if err != nil {
@@ -53,7 +53,7 @@ var lhaltCmd = &cobra.Command{
 
 var linfoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "View lab info",
+	Short: "view lab info",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabInfo()
 		if err != nil {
@@ -64,7 +64,7 @@ var linfoCmd = &cobra.Command{
 
 var linitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initialise a new netkit lab",
+	Short: "initialise a new netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := netkit.InitLab(labName, labDescription, labAuthors, labEmails, labWeb)
 		if err != nil {
@@ -75,7 +75,7 @@ var linitCmd = &cobra.Command{
 
 var lvalidateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate a netkit lab",
+	Short: "validate a netkit lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.Validate()
 		if err != nil {
@@ -86,7 +86,7 @@ var lvalidateCmd = &cobra.Command{
 
 var labCmd = &cobra.Command{
 	Use:   "lab",
-	Short: "The 'lab' subcommand is used to control netkit labs",
+	Short: "control netkit labs",
 }
 
 func init() {

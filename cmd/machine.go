@@ -20,12 +20,12 @@ var mListAll bool
 
 var machineCmd = &cobra.Command{
 	Use:   "machine",
-	Short: "The 'machine' subcommand is used to start and manage netkit machines",
+	Short: "start and manage netkit machines",
 }
 
 var mstartCmd = &cobra.Command{
 	Use:                   "start [options] MACHINENAME",
-	Short:                 "Start a netkit machine",
+	Short:                 "start a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	ValidArgsFunction:     autocompNonRunningMachine,
@@ -39,7 +39,7 @@ var mstartCmd = &cobra.Command{
 
 var mhaltCmd = &cobra.Command{
 	Use:                   "halt [options] MACHINE",
-	Short:                 "Halt a netkit machine",
+	Short:                 "halt a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     autocompRunningMachine,
 	DisableFlagsInUseLine: true,
@@ -53,7 +53,7 @@ var mhaltCmd = &cobra.Command{
 
 var mdestroyCmd = &cobra.Command{
 	Use:                   "destroy [options] MACHINE",
-	Short:                 "Destroy a netkit machine",
+	Short:                 "destroy a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
@@ -67,7 +67,7 @@ var mdestroyCmd = &cobra.Command{
 
 var minfoCmd = &cobra.Command{
 	Use:                   "info [options] MACHINE",
-	Short:                 "Get info about a netkit machine",
+	Short:                 "get info about a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
@@ -81,7 +81,7 @@ var minfoCmd = &cobra.Command{
 
 var maddCmd = &cobra.Command{
 	Use:                   "add [options] MACHINENAME",
-	Short:                 "Add a new machine to a lab",
+	Short:                 "add a new machine to a lab",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {

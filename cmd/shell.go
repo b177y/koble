@@ -14,7 +14,7 @@ var workDir string
 
 var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "The 'shell' subcommand is used to connect to a shell on a netkit machine",
+	Short:             "get a shell on a netkit machine",
 	ValidArgsFunction: autocompRunningMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {

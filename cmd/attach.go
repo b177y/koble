@@ -10,7 +10,7 @@ import (
 
 var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
-	Short:             "The 'attach' subcommand is used to attach to the main tty on a netkit machine",
+	Short:             "attach to the main tty of a netkit machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: autocompRunningMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
