@@ -2,7 +2,6 @@ package podman
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -14,51 +13,11 @@ import (
 
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
-	"github.com/containers/podman/v3/pkg/bindings"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
 	log "github.com/sirupsen/logrus"
 )
-
-type PodmanDriver struct {
-	conn         context.Context
-	Name         string
-	DefaultImage string
-	URI          string
-}
-
-func (pd *PodmanDriver) GetDefaultImage() string {
-	return pd.DefaultImage
-}
-
-func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
-	pd.Name = "Podman"
-	pd.URI = fmt.Sprintf("unix://run/user/%s/podman/podman.sock",
-		fmt.Sprint(os.Getuid()))
-	pd.DefaultImage = "localhost/netkit-deb-test"
-	// override uri with config option
-	if val, ok := conf["uri"]; ok {
-		if str, ok := val.(string); ok {
-			pd.URI = str
-		} else {
-			return fmt.Errorf("Driver 'uri' in config must be a string.")
-		}
-	}
-	if val, ok := conf["default_image"]; ok {
-		if str, ok := val.(string); ok {
-			pd.DefaultImage = str
-		} else {
-			return fmt.Errorf("Driver 'default_image' in config must be a string.")
-		}
-	}
-	log.Debug("Attempting to connect to podman socket.")
-	pd.conn, err = bindings.NewConnection(context.Background(), pd.URI)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func getLabels(m driver.Machine) map[string]string {
 	labels := make(map[string]string)
