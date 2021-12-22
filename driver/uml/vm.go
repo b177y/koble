@@ -129,7 +129,6 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	if m.Hostlab != "" {
 		cmd = append(cmd, "hostlab="+m.Hostlab)
 	}
-	cmd = append(cmd, "net.ifnames=0")
 	cmd = append(cmd, "SELINUX_INIT=0")
 	return cmd, nil
 }
@@ -207,7 +206,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
-	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE",
+	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_netkit0=10.22.2.110/24",
 		len(networks), ifaceName))
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {
