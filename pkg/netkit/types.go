@@ -39,7 +39,7 @@ func NewNetkit(namespace string) (*Netkit, error) {
 		return nil, err
 	}
 	var d driver.Driver
-	if initialiser, ok := availableDrivers[config.Driver.Name]; ok {
+	if initialiser, ok := AvailableDrivers[config.Driver.Name]; ok {
 		d = initialiser()
 		err = d.SetupDriver(config.Driver.ExtraConf)
 		if err != nil {

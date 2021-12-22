@@ -6,8 +6,8 @@ import (
 
 type DriverInitialiser func() driver.Driver
 
-var availableDrivers = map[string]DriverInitialiser{}
+var AvailableDrivers = map[string]DriverInitialiser{}
 
 func registerDriver(name string, d DriverInitialiser) {
-	availableDrivers[name] = d
+	AvailableDrivers[name] = d
 }

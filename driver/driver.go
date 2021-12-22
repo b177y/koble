@@ -7,6 +7,7 @@ import (
 
 	"github.com/cri-o/ocicni/pkg/ocicni"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -113,4 +114,5 @@ type Driver interface {
 	GetNetworkState(net Network) (state NetworkState, err error)
 
 	ListAllNamespaces() ([]string, error)
+	GetCLICommand() (command *cobra.Command, err error)
 }

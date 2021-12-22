@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	copier "github.com/containers/buildah/copier"
+	"github.com/spf13/cobra"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
@@ -450,4 +451,8 @@ func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
 
 	}
 	return namespaces, err
+}
+
+func (pd *PodmanDriver) GetCLICommand() (command *cobra.Command, err error) {
+	return new(cobra.Command), nil
 }
