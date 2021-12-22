@@ -45,7 +45,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 		return err
 	}
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
-	ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/netkit-fs", homedir)
+	ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/custom-fs", homedir)
 	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", os.Getenv("UML_ORIG_UID"))
 	ud.StorageDir = fmt.Sprintf("%s/.local/share/uml", homedir)
 	// override kernel with config option
@@ -206,6 +206,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if err != nil {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
+	// TODO autoconf with custom ip
 	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_netkit0=10.22.2.110/24",
 		len(networks), ifaceName))
 	// for _, mnt := range m.Volumes {
@@ -253,33 +254,39 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	}
 	// Check if process exists
 	killErr := syscall.Kill(pid, 0)
-	if killErr == nil {
-		// Send shutdown signal to UML instance
-		sig := syscall.SIGTERM
-		if force {
-			sig = syscall.SIGKILL
-		}
-		err = syscall.Kill(pid, sig)
+	if killErr != nil {
+		return fmt.Errorf("Could not crash machine %s (%d): %w", m.Name, pid, err)
+	}
+	// Send shutdown signal to UML instance
+	sig := syscall.SIGTERM
+	if force {
+		sig = syscall.SIGKILL
+	}
+	err = syscall.Kill(pid, sig)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < 10; i++ {
+		// wait for kill 0 to give err (shows pid no longer running)
+		err = syscall.Kill(pid, 0)
 		if err != nil {
-			return err
+			break
 		}
-		for i := 0; i < 10; i++ {
-			// wait for kill 0 to give err (shows pid no longer running)
-			err = syscall.Kill(pid, 0)
-			if err != nil {
-				break
-			}
-			time.Sleep(500 * time.Millisecond)
-		}
-		if err == nil {
-			return fmt.Errorf("Could not kill machine %s (%d): %w",
-				m.Name, pid, err)
-		}
-	} else {
-		err = os.WriteFile(filepath.Join(ud.RunDir, "machine", mHash, "state"), []byte("killed"), 0600)
-		if err != nil {
-			return err
-		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	if err == nil {
+		return fmt.Errorf("Could not kill machine %s (%d): %w",
+			m.Name, pid, err)
+	}
+	// check that state was updated
+	stateFile := filepath.Join(ud.RunDir, "machine", mHash, m.Name, "state")
+	stateBytes, err := ioutil.ReadFile(stateFile)
+	if err != nil {
+		return err
+	}
+	if string(stateBytes) != "exited" {
+		fmt.Printf("state file for %s (pid %d) has status %s when it should be exited (TODO look into shim)", m.Name, pid, string(stateBytes))
+		return ioutil.WriteFile(stateFile, []byte("exited"), 0600)
 	}
 	return nil
 }
