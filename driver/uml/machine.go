@@ -46,6 +46,12 @@ func processBySubstring(substring ...string) int {
 			if err != nil {
 				return -1
 			}
+			pgid, err := syscall.Getpgid(pid)
+			if err != nil {
+				return -1
+			} else if pgid != pid {
+				continue
+			}
 			processes = append(processes, process{
 				pid:     pid,
 				cmdline: strings.TrimSuffix(string(cmdline), "\n"),
