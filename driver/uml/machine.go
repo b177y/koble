@@ -297,25 +297,36 @@ func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 }
 
 func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
+	if findMachineProcess(m) > 0 {
+		state.Running = true
+	} else {
+		state.Running = false
+	}
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	stateFile := filepath.Join(mDir, "state")
 	p, err := os.ReadFile(stateFile)
-	if err != nil {
+	if errors.Is(err, os.ErrNotExist) {
+		err = ioutil.WriteFile(stateFile, []byte("running"), 0600)
+		if err != nil {
+			return state, err
+		}
+	} else if err != nil {
 		return state, err
 	}
-	state.Running = false
 	state.Status = string(p)
-	if string(p) == "running" {
-		state.Running = true
-	} else if string(p) == "exited" {
+	if state.Status == "running" && state.Running == false {
+		return state, errors.New("machine is not running but statefile contains 'running'")
+	}
+	if state.Status == "exited" {
 		ecFile := filepath.Join(mDir, "exitcode")
 		p, err := os.ReadFile(ecFile)
 		if err == nil {
 			ec, err := strconv.ParseInt(string(p), 10, 32)
 			if err == nil {
 				state.ExitCode = int32(ec)
+				state.Status = fmt.Sprintf("%s (%d)", state.Status, ec)
 			}
 		}
 	}
