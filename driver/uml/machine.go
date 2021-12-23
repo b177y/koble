@@ -22,25 +22,69 @@ import (
 	ht "github.com/hpcloud/tail"
 )
 
+type process struct {
+	pid     int
+	cmdline string
+}
+
+func processBySubstring(substring ...string) int {
+	dirs, err := ioutil.ReadDir("/proc")
+	if err != nil {
+		return -1
+	}
+	var processes []process
+	for _, entry := range dirs {
+		if pid, err := strconv.Atoi(entry.Name()); err == nil {
+			cmdline, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+			if err != nil {
+				return -1
+			}
+			processes = append(processes, process{
+				pid:     pid,
+				cmdline: strings.TrimSuffix(string(cmdline), "\n"),
+			})
+		}
+	}
+	for _, p := range processes {
+		nonMatchFound := false
+		for _, s := range substring {
+			if !strings.Contains(p.cmdline, s) {
+				nonMatchFound = true
+				continue
+			}
+		}
+		if !nonMatchFound {
+			return p.pid
+		}
+	}
+	return -1
+}
+
+func findMachineProcess(m driver.Machine) int {
+	return processBySubstring("umid="+m.Name,
+		"NETKITNAMESPACE="+m.Namespace)
+}
+
 func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
-
+	if findMachineProcess(m) > 0 {
+		return true, nil
+	}
+	// check uml rundir for machine
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
-	if _, err := os.Stat(mDir); os.IsNotExist(err) {
-		return false, nil
-	} else if err != nil {
+	if _, err := os.Stat(mDir); err == nil {
+		return true, nil
+	} else if err != nil && !os.IsNotExist(err) {
 		return false, err
 	}
-	return true, nil
+	return false, nil
 }
 
 func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []string, err error) {
 	cmd = []string{ud.Kernel}
-	cmd = append(cmd, "name="+m.Name)
-	cmd = append(cmd, "title="+m.Name)
-	cmd = append(cmd, "umid="+m.Name)
+	cmd = append(cmd, "name="+m.Name, "title="+m.Name, "umid="+m.Name)
 	cmd = append(cmd, "mem=132M")
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
@@ -50,8 +94,7 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	cmd = append(cmd, "root=98:0")
 	umlDir := filepath.Join(ud.RunDir, "machine", mHash)
 	cmd = append(cmd, "uml_dir="+umlDir)
-	cmd = append(cmd, "con0=fd:0,fd:1")
-	cmd = append(cmd, "con1=null")
+	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	cmd = append(cmd, networks...)
 	if m.HostHome {
 		home, err := os.UserHomeDir()
@@ -64,6 +107,10 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 		cmd = append(cmd, "hostlab="+m.Hostlab)
 	}
 	cmd = append(cmd, "SELINUX_INIT=0")
+	cmd = append(cmd, "NETKITNAMESPACE="+m.Namespace)
+	if m.Lab != "" {
+		cmd = append(cmd, "NETKITLAB="+m.Lab)
+	}
 	return cmd, nil
 }
 
@@ -94,6 +141,11 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 			return nil
 		}
 	}
+	defer func() {
+		if err != nil {
+			ud.RemoveMachine(m)
+		}
+	}()
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
 	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace)
@@ -267,7 +319,14 @@ func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineStat
 			}
 		}
 	}
-	// TODO use shirou/gopsutil to get process create_time and work out uptime
+	pidBytes, err := ioutil.ReadFile(filepath.Join(mDir, m.Name, "pid"))
+	if err == nil {
+		state.Pid, _ = strconv.Atoi(strings.TrimSuffix(string(pidBytes), "\n"))
+		info, err := os.Stat(fmt.Sprintf("/proc/%d", state.Pid))
+		if err == nil {
+			state.StartedAt = info.ModTime()
+		}
+	}
 	return state, nil
 }
 
@@ -357,17 +416,26 @@ func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineI
 			return machines, err
 		}
 		for _, e := range entries {
-			// TODO (temp fix)
-			if e.Name() != "netns.bind" {
-				info, err := ud.MachineInfo(driver.Machine{
-					Name:      e.Name(),
-					Namespace: namespace,
-				})
-				if err != nil && err != driver.ErrNotExists {
-					return machines, err
-				}
-				machines = append(machines, info)
+			sym, err := filepath.EvalSymlinks(filepath.Join(dir, e.Name()))
+			if err != nil {
+				os.RemoveAll(filepath.Join(dir, e.Name()))
+				continue
 			}
+			fInfo, err := os.Stat(sym)
+			if err != nil {
+				return machines, err
+			}
+			if !fInfo.IsDir() {
+				continue
+			}
+			info, err := ud.MachineInfo(driver.Machine{
+				Name:      e.Name(),
+				Namespace: namespace,
+			})
+			if err != nil && err != driver.ErrNotExists {
+				return machines, err
+			}
+			machines = append(machines, info)
 		}
 	}
 	return machines, nil
