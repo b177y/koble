@@ -22,6 +22,13 @@ import (
 	ht "github.com/hpcloud/tail"
 )
 
+func init() {
+	reexec.Register("umlShim", shim.RunShim)
+	if reexec.Init() {
+		os.Exit(0)
+	}
+}
+
 type process struct {
 	pid     int
 	cmdline string
@@ -114,11 +121,10 @@ func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []st
 	return cmd, nil
 }
 
-func runInShim(sockPath, namespace string, kernelCmd []string) error {
+func runInShim(mDir, namespace string, kernelCmd []string) error {
 	return vecnet.WithNetNS(namespace, func(ns.NetNS) error {
-		_ = shim.IMPORT
 		c := reexec.Command("umlShim")
-		c.Args = append(c.Args, sockPath)
+		c.Args = append(c.Args, mDir)
 		c.Args = append(c.Args, kernelCmd...)
 		c.SysProcAttr = &syscall.SysProcAttr{
 			Setsid: true,
@@ -241,7 +247,7 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	// Check if process exists
 	killErr := syscall.Kill(pid, 0)
 	if killErr != nil {
-		return fmt.Errorf("Could not crash machine %s (%d): %w", m.Name, pid, err)
+		return fmt.Errorf("Could not crash machine %s (%d): %w", m.Name, pid, killErr)
 	}
 	// Send shutdown signal to UML instance
 	sig := syscall.SIGTERM

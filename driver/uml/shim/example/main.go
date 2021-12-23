@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"syscall"
 
 	"github.com/b177y/netkit/driver/uml/shim"
@@ -19,6 +20,7 @@ var UMLShimCLI = &cobra.Command{
 	Args:                  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := reexec.Command("umlShim")
+		c.Args = append(c.Args, directory)
 		c.Args = append(c.Args, args...)
 		c.SysProcAttr = &syscall.SysProcAttr{
 			Setsid: true,
@@ -37,6 +39,9 @@ func main() {
 }
 
 func init() {
+	reexec.Register("umlShim", shim.RunShim)
+	if reexec.Init() {
+		os.Exit(0)
+	}
 	UMLShimCLI.Flags().StringVarP(&directory, "directory", "d", "", "directory")
-	_ = shim.IMPORT
 }

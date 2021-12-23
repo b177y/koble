@@ -5,6 +5,7 @@ package shim
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -15,10 +16,7 @@ import (
 
 	"github.com/creack/pty"
 	"github.com/docker/docker/pkg/broadcaster"
-	"github.com/docker/docker/pkg/reexec"
 )
-
-var IMPORT = ""
 
 // Custom io.WriteCloser to check for netkit ready status
 type ReadyChecker struct {
@@ -65,7 +63,7 @@ func shimLog(msg, dir string, err error) error {
 	return err
 }
 
-func runShim() {
+func RunShim() {
 	dir := os.Args[1]
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
@@ -75,6 +73,11 @@ func runShim() {
 	kern := os.Args[2]
 	kernArgs := os.Args[3:]
 	cmd := exec.Command(kern, kernArgs...)
+	fmt.Println("Starting exec of netkit kernel")
+	err = shimLog(fmt.Sprintf("starting kernel with %s %s\n", kern, kernArgs), dir, nil)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not write to shim log: %s", err.Error())
+	}
 	ptmx, err := pty.Start(cmd)
 	if err != nil {
 		shimLog("Failed to start pty command: ", dir, err)
@@ -95,34 +98,39 @@ func runShim() {
 		Dir: dir,
 	}
 	stdOutBr.Add(rc)
+	ctx, cancel := context.WithCancel(context.Background())
 	go io.Copy(stdOutBr, ptmx)
-	go func() {
+	go func(ctx context.Context) {
+		defer stdOutBr.Clean()
+		defer l.Close()
 		for {
-			c, err := l.Accept()
-			if err != nil {
-				c.Close()
-				continue
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				c, err := l.Accept()
+				if err != nil {
+					c.Close()
+					continue
+				}
+				fmt.Printf("[INFO] New connection from %s.\n", c.LocalAddr())
+				shimLog(fmt.Sprintf("[INFO] New connection from %s", c.LocalAddr()), dir, nil)
+				go func() {
+					defer func() {
+						c.Close()
+					}()
+					stdOutBr.Add(c)
+					io.Copy(ptmx, c)
+				}()
 			}
-			fmt.Printf("[INFO] New connection from %s.\n", c.LocalAddr())
-			shimLog(fmt.Sprintf("[INFO] New connection from %s", c.LocalAddr()), dir, nil)
-			go func() {
-				stdOutBr.Add(c)
-				go io.Copy(ptmx, c)
-			}()
 		}
-	}()
+	}(ctx)
 	err = cmd.Wait()
-	l.Close()
+	cancel()
+	ptmx.Close()
 	if err != nil {
 		log.Println("Error running uml", err)
 		shimLog("Command wait() error", dir, err)
 	}
 	updateState(dir, "exited", cmd.ProcessState.ExitCode())
-}
-
-func init() {
-	reexec.Register("umlShim", runShim)
-	if reexec.Init() {
-		os.Exit(0)
-	}
 }
