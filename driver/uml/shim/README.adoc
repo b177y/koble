@@ -20,25 +20,31 @@ an output which is specific to Netkit UML.
 
 === CLI Examples
 
-Basic examples can be found in the `examples` directory.
-
 To run the shim:
 
 [source,sh]
 ----
-go run examples/main.go -d DIRECTORY COMMAND
+go build -o uml-shim cmd/shim/main.go
+./uml-shim -d DIRECTORY COMMAND
 ----
 
 To connect to the session:
 
 [source,sh]
 ----
-go run examples/client.go -d DIRECTORY
+go build -o shim-client cmd/client/main.go
+./shim-client -d DIRECTORY
 ----
 
 === Usage Within Code
 
 To use the shim within a library you need docker's `reexec` package.
+
+[source,sh]
+----
+go get github.com/docker/docker/pkg/reexec
+go get github.com/b177y/netkit/driver/uml/shim
+----
 
 Register the shim function as a reexec function:
 
