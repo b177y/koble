@@ -30,6 +30,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
+	// ud.Kernel = "/home/billy/repos/netkit-jh-build/tmpbuild/linux-5.14.9/linux"
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
 	ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/custom-fs", homedir)
 	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", os.Getenv("UML_ORIG_UID"))
