@@ -54,7 +54,7 @@ func updateState(dir, state string, exitCode int) error {
 
 func shimLog(msg, dir string, err error) error {
 	fn := filepath.Join(dir, "umlshim.log")
-	f, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(fn, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}

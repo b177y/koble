@@ -4,11 +4,11 @@ GO ?= go
 BUILDTAGS ?= exclude_graphdriver_btrfs btrfs_noversion exclude_graphdriver_devicemapper containers_image_openpgp
 BUILDFLAGS := -mod=vendor $(BUILDFLAGS)
 
-.PHONY: build test
-
+.PHONY: build
 build:
 	$(GO) build $(BUILDFLAGS) -tags "$(BUILDTAGS)" -o bin/netkit
 
+.PHONY: test
 test:
 	$(GO) test $(BUILDFLAGS) -tags "$(BUILDTAGS)" ./pkg/netkit ./driver/uml ./driver/podman ./util/topsort
 

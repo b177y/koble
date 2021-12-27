@@ -17,6 +17,10 @@ func DeclareAllDriverTests(dt interface{}) bool {
 	}
 	var (
 		_ = DeclareStartMachineTests(d)
+		_ = DeclareHaltMachineTests(d)
+		_ = DeclareRemoveMachineTests(d)
+		_ = DeclareExistsMachineTests(d)
+		_ = DeclareGetStateMachineTests(d)
 	)
 	return true
 }
