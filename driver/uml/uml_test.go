@@ -13,7 +13,7 @@ var ud = new(uml.UMLDriver)
 
 var _ = driver_test.DeclareAllDriverTests(ud)
 
-func TestPodman(t *testing.T) {
+func TestUML(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "UML Driver Suite")
 }
