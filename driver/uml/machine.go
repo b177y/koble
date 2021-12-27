@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/b177y/go-uml-utilities/pkg/mconsole"
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/shim"
 	"github.com/b177y/netkit/driver/uml/vecnet"
@@ -241,7 +242,14 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	}
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
-	pidFile := filepath.Join(ud.RunDir, "machine", mHash, m.Name, "pid")
+	// try kill with uml_mconsole first
+	umlDir := filepath.Join(ud.RunDir, "machine", mHash, m.Name)
+	_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
+		filepath.Join(umlDir, "mconsole"))
+	if err != nil {
+		return err
+	}
+	pidFile := filepath.Join(umlDir, "pid")
 	pidBytes, err := os.ReadFile(pidFile)
 	if err != nil {
 		return err
