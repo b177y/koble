@@ -103,6 +103,7 @@ type Driver interface {
 	Shell(m Machine, user, workdir string) (err error)
 	GetMachineLogs(m Machine,
 		follow bool, tail int) (err error)
+	WaitUntil(m Machine, status string, timeout time.Duration) error
 
 	ListNetworks(lab string, all bool) (networks []NetInfo, err error)
 	NetInfo(n Network) (info NetInfo, err error)

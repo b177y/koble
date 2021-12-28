@@ -81,7 +81,7 @@ func CreateUserNS(name string) error {
 	}
 	err := cmd.Start()
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not run User NS pause process: %w", err)
 	}
 	// save pid of pause process to file
 	return ioutil.WriteFile(filepath.Join(NSPID_DIR, name+"-ns.pid"),
@@ -119,7 +119,7 @@ func ExecUserNS(name string) error {
 	}
 	err = cmd.Run()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error running ns reexec: %w", err)
 	}
 	os.Exit(0)
 	return nil

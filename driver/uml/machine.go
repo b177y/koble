@@ -2,6 +2,7 @@ package uml
 
 import (
 	"bufio"
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -242,11 +243,10 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	}
 	mHash := fmt.Sprintf("%x",
 		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
-	// try kill with uml_mconsole first
 	umlDir := filepath.Join(ud.RunDir, "machine", mHash, m.Name)
-	_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
-		filepath.Join(umlDir, "mconsole"))
-	if err != nil {
+	if !force {
+		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
+			filepath.Join(umlDir, "mconsole"))
 		return err
 	}
 	pidFile := filepath.Join(umlDir, "pid")
@@ -264,10 +264,7 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		return fmt.Errorf("Could not crash machine %s (%d): %w", m.Name, pid, killErr)
 	}
 	// Send shutdown signal to UML instance
-	sig := syscall.SIGTERM
-	if force {
-		sig = syscall.SIGKILL
-	}
+	sig := syscall.SIGKILL
 	err = syscall.Kill(pid, sig)
 	if err != nil {
 		return err
@@ -508,4 +505,27 @@ func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
 		namespaces = append(namespaces, n.Name())
 	}
 	return namespaces, nil
+}
+
+func (ud *UMLDriver) WaitUntil(m driver.Machine, status string,
+	timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
+	defer cancel()
+	for {
+		if err := ctx.Err(); err != nil {
+			fmt.Println("Context is finished")
+			return err
+		}
+		state, err := ud.GetMachineState(m)
+		if err != nil && errors.Is(err, driver.ErrNotExists) {
+			fmt.Println("Error getting state", err)
+			return err
+		}
+		// once condition is met return
+		if state.Status == status {
+			fmt.Println("condition has been met", state.Status, status)
+			return nil
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
 }

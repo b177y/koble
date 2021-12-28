@@ -1,6 +1,7 @@
 package uml
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ type UMLDriver struct {
 	Kernel       string
 	RunDir       string
 	StorageDir   string
+	Testing      bool
 }
 
 func (ud *UMLDriver) GetDefaultImage() string {
@@ -21,14 +23,25 @@ func (ud *UMLDriver) GetDefaultImage() string {
 }
 
 func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
-	err = vecnet.CreateAndEnterUserNS("netkit")
+	if val, ok := conf["testing"]; ok {
+		if b, ok := val.(bool); ok {
+			ud.Testing = b
+		} else {
+			return fmt.Errorf("Driver 'testing' in config must be a bool.")
+		}
+	}
+	if !ud.Testing {
+		err = vecnet.CreateAndEnterUserNS("netkit")
+	} else if os.Getuid() != 0 {
+		return errors.New("Testing needs to be run within a new user/mount namespace: `unshare -mUr go test ...`")
+	}
 	if err != nil {
-		return err
+		return fmt.Errorf("Cannot create / enter user ns: %w", err)
 	}
 	ud.Name = "UserMode Linux"
 	homedir, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not get user home dir: %w", err)
 	}
 	// ud.Kernel = "/home/billy/repos/netkit-jh-build/tmpbuild/linux-5.14.9/linux"
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
@@ -67,11 +80,11 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	}
 	err = os.MkdirAll(filepath.Join(ud.StorageDir, "overlay"), 0744)
 	if err != nil && err != os.ErrExist {
-		return err
+		return fmt.Errorf("Could not mkdir on ud.StorageDir")
 	}
 	err = os.MkdirAll(filepath.Join(ud.RunDir, "ns", "GLOBAL"), 0744)
 	if err != nil && err != os.ErrExist {
-		return err
+		return fmt.Errorf("Could not mkdir on ud.RunDir")
 	}
 	return nil
 }

@@ -6,12 +6,15 @@ import (
 	"github.com/b177y/netkit/driver"
 )
 
+var testconf = map[string]interface{}{"testing": true}
+
 func DeclareAllDriverTests(dt interface{}) bool {
 	d, ok := dt.(driver.Driver)
 	if !ok {
 		panic("not a valid Driver interface")
 	}
-	err := d.SetupDriver(nil)
+
+	err := d.SetupDriver(testconf)
 	if err != nil {
 		panic(fmt.Sprint("couldn't set up driver for tests: ", err))
 	}

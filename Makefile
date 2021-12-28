@@ -9,8 +9,15 @@ build:
 	$(GO) build $(BUILDFLAGS) -tags "$(BUILDTAGS)" -o bin/netkit
 
 .PHONY: test
-test:
-	$(GO) test $(BUILDFLAGS) -tags "$(BUILDTAGS)" ./pkg/netkit ./driver/uml ./driver/podman ./util/topsort
+test: test-uml
+	# $(GO) test -p 1 $(BUILDFLAGS) -tags "$(BUILDTAGS)" ./pkg/netkit ./driver/uml ./driver/podman ./util/topsort
+
+.PHONY: test-uml
+test-uml:
+	UML_ORIG_UID=$(shell id -u) \
+	UML_ORIG_EUID=$(shell echo $EUID) \
+	UML_ORIG_GID=$(shell id -g) \
+		unshare -mUr $(GO) test -p 1 $(BUILDFLAGS) -tags "$(BUILDTAGS)" ./driver/uml
 
 .PHONY: vendor
 vendor:
