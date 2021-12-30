@@ -1,14 +1,11 @@
 package uml
 
 import (
-	"crypto/md5"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
 	"syscall"
-
-	"github.com/b177y/netkit/driver"
 )
 
 type process struct {
@@ -55,9 +52,7 @@ func processBySubstring(substring ...string) int {
 	return -1
 }
 
-func findMachineProcess(m driver.Machine) int {
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	return processBySubstring("umid="+mHash,
-		"NETKITNAMESPACE="+m.Namespace)
+func findMachineProcess(m *Machine) int {
+	return processBySubstring("umid="+m.Id(),
+		"NETKITNAMESPACE="+m.namespace)
 }

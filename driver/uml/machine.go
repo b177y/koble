@@ -10,8 +10,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
@@ -22,7 +20,6 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
-	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -32,15 +29,31 @@ func init() {
 	}
 }
 
-func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
-	err error) {
-	if findMachineProcess(m) > 0 {
+type Machine struct {
+	name      string
+	namespace string
+	ud        UMLDriver
+}
+
+func (m *Machine) Name() string {
+	return m.name
+}
+
+func (m *Machine) Id() string {
+	return fmt.Sprintf("%x",
+		md5.Sum([]byte(m.name+"-"+m.namespace)))
+}
+
+func (m *Machine) Pid() int {
+	return 0
+}
+
+func (m *Machine) Exists() (bool, error) {
+	if m.Pid() > 0 {
 		return true, nil
 	}
 	// check uml rundir for machine
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	mDir := filepath.Join(ud.RunDir, "machine", mHash)
+	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
 	if _, err := os.Stat(mDir); err == nil {
 		return true, nil
 	} else if err != nil && !os.IsNotExist(err) {
@@ -49,34 +62,39 @@ func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	return false, nil
 }
 
-func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []string, err error) {
-	cmd = []string{ud.Kernel}
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	cmd = append(cmd, "name="+m.Name, "title="+m.Name, "umid="+mHash)
+func (m *Machine) Running() bool {
+	if findMachineProcess(m) > 0 {
+		return true
+	}
+	return false
+}
+
+func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error) {
+	cmd = []string{m.ud.Kernel}
+	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
-	diskPath := filepath.Join(ud.StorageDir, "overlay", mHash+".disk")
+	diskPath := filepath.Join(m.ud.StorageDir, "overlay", m.Id()+".disk")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
-	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", diskPath, ud.DefaultImage))
+	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", diskPath, m.ud.DefaultImage))
 	cmd = append(cmd, "root=98:0")
-	umlDir := filepath.Join(ud.RunDir, "machine", mHash)
+	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
 	cmd = append(cmd, "uml_dir="+umlDir)
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
-	cmd = append(cmd, networks...)
-	if m.HostHome {
+	cmd = append(cmd, opts.Networks...)
+	if opts.HostHome {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return []string{}, err
 		}
 		cmd = append(cmd, "hosthome="+home)
 	}
-	if m.Hostlab != "" {
-		cmd = append(cmd, "hostlab="+m.Hostlab)
+	if opts.Hostlab != "" {
+		cmd = append(cmd, "hostlab="+opts.Hostlab)
 	}
 	cmd = append(cmd, "SELINUX_INIT=0")
-	cmd = append(cmd, "NETKITNAMESPACE="+m.Namespace)
-	if m.Lab != "" {
-		cmd = append(cmd, "NETKITLAB="+m.Lab)
+	cmd = append(cmd, "NETKITNAMESPACE="+m.namespace)
+	if opts.Lab != "" {
+		cmd = append(cmd, "NETKITLAB="+opts.Lab)
 	}
 	return cmd, nil
 }
@@ -93,29 +111,26 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 	})
 }
 
-func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
-	exists, err := ud.MachineExists(m)
+func (m *Machine) Start(opts driver.StartOptions) (err error) {
+	exists, err := m.Exists()
 	if err != nil {
 		return err
 	}
 	if exists {
-		state, err := ud.GetMachineState(m)
 		if err != nil {
 			return fmt.Errorf("could not get machine state: %w", err)
 		}
-		if state.Running {
+		if m.Running() {
 			return nil
 		}
 	}
 	defer func() {
 		if err != nil {
-			ud.RemoveMachine(m)
+			m.Remove()
 		}
 	}()
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace)
-	mDir := filepath.Join(ud.RunDir, "machine", mHash)
+	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
+	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
 	err = os.MkdirAll(nsMdir, 0744)
 	if err != nil && err != os.ErrExist {
 		return err
@@ -125,13 +140,13 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		return err
 	}
 	// Remove symlink if it already exists
-	if _, err := os.Stat(filepath.Join(nsMdir, m.Name)); err == nil {
-		err = os.Remove(filepath.Join(nsMdir, m.Name))
+	if _, err := os.Stat(filepath.Join(nsMdir, m.name)); err == nil {
+		err = os.Remove(filepath.Join(nsMdir, m.name))
 		if err != nil {
 			return err
 		}
 	}
-	err = os.Symlink(mDir, filepath.Join(nsMdir, m.Name))
+	err = os.Symlink(mDir, filepath.Join(nsMdir, m.name))
 	if err != nil {
 		return err
 	}
@@ -144,9 +159,9 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		return err
 	}
 	var networks []string
-	for i, n := range m.Networks {
+	for i, n := range opts.Networks {
 		// setup tap
-		ifaceName, err := vecnet.AddHostToNet(m.Name, n, m.Namespace)
+		ifaceName, err := vecnet.AddHostToNet(m.name, n.Name, m.namespace)
 		if err != nil {
 			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name, n, err)
 		}
@@ -154,7 +169,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
-	ifaceName, err := vecnet.SetupMgmtIface(m.Name, m.Namespace, filepath.Join(mDir, "slirp.sock"))
+	ifaceName, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(mDir, "slirp.sock"))
 	if err != nil {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
@@ -166,36 +181,33 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	// 		mnt.Type = "bind"
 	// 	}
 	// }
-	kernelcmd, err := ud.getKernelCMD(m, networks)
+	kernelcmd, err := getKernelCMD(m, opts)
 	if err != nil {
 		return err
 	}
 	// fmt.Println("Got kernelcmd", kernelcmd)
-	err = runInShim(mDir, m.Namespace, kernelcmd)
+	err = runInShim(mDir, m.namespace, kernelcmd)
 	if err != nil {
 		return err
 	}
 	return err
 }
 
-func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
-	exists, err := ud.MachineExists(m)
+func (m *Machine) Stop(force bool) error {
+	exists, err := m.Exists()
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return fmt.Errorf("Machine %s does not exist", m.Name)
 	}
-	state, err := ud.GetMachineState(m)
 	if err != nil {
 		return err
 	}
-	if !state.Running {
-		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
+	if !m.Running() {
+		return fmt.Errorf("Can't stop %s as it isn't running", m.name)
 	}
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	umlDir := filepath.Join(ud.RunDir, "machine", mHash, mHash)
+	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id(), m.Id())
 	if !force {
 		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
 			filepath.Join(umlDir, "mconsole"))
@@ -209,19 +221,11 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		}
 		return err
 	}
-	pidFile := filepath.Join(umlDir, "pid")
-	pidBytes, err := os.ReadFile(pidFile)
-	if err != nil {
-		return err
-	}
-	pid, err := strconv.Atoi(strings.TrimSuffix(string(pidBytes), "\n"))
-	if err != nil {
-		return err
-	}
+	pid := m.Pid()
 	// Check if process exists
 	killErr := syscall.Kill(pid, 0)
 	if killErr != nil {
-		return fmt.Errorf("Could not crash machine %s (%d): %w", m.Name, pid, killErr)
+		return fmt.Errorf("Could not crash machine %s (%d): %w", m.name, pid, killErr)
 	}
 	// Send shutdown signal to UML instance
 	sig := syscall.SIGKILL
@@ -239,85 +243,35 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	}
 	if err == nil { // kill 0 error == nil means still running
 		return fmt.Errorf("Could not kill machine %s (%d)",
-			m.Name, pid)
+			m.name, pid)
 	}
 	return nil
 }
 
-func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
+func (m *Machine) Remove() error {
 	// TODO return non fatal errors?
-	state, _ := ud.GetMachineState(m)
-	if state.Running {
+	if m.Running() {
 		return errors.New("Machine can't be removed as it's running")
 	}
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace, m.Name)
-	mDir := filepath.Join(ud.RunDir, "machine", mHash)
+	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace, m.name)
+	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
 	os.RemoveAll(mDir)
 	os.RemoveAll(nsMdir)
-	for _, n := range m.Networks {
-		vecnet.RemoveHostTap(m.Name, n, m.Namespace)
-	}
-	os.Remove(filepath.Join(ud.StorageDir, "overlay", mHash+".disk"))
+	// get networks for machine
+	// for _, n := range m.Networks {
+	// 	vecnet.RemoveHostTap(m.Name, n, m.Namespace)
+	// }
+	os.Remove(filepath.Join(m.ud.StorageDir, "overlay", m.Id()+".disk"))
 	return nil
 }
 
-func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineState, err error) {
-	if findMachineProcess(m) > 0 {
-		state.Running = true
-	} else {
-		state.Running = false
-	}
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	mDir := filepath.Join(ud.RunDir, "machine", mHash)
-	stateFile := filepath.Join(mDir, "state")
-	p, err := os.ReadFile(stateFile)
-	if err != nil {
-		log.Warnf("Could not open %s: %v", stateFile, err)
-		return state, nil
-	}
-	state.Status = string(p)
-	if state.Status == "running" && state.Running == false {
-		return state, errors.New("machine is not running but statefile contains 'running'")
-	}
-	if state.Status == "exited" {
-		ecFile := filepath.Join(mDir, "exitcode")
-		p, err := os.ReadFile(ecFile)
-		if err == nil {
-			ec, err := strconv.ParseInt(string(p), 10, 32)
-			if err == nil {
-				state.ExitCode = int32(ec)
-				// TODO use this in pkg/netkit
-				// state.Status = fmt.Sprintf("%s (%d)", state.Status, ec)
-			}
-		}
-	}
-	pidBytes, err := ioutil.ReadFile(filepath.Join(mDir, m.Name, "pid"))
-	if err == nil {
-		state.Pid, _ = strconv.Atoi(strings.TrimSuffix(string(pidBytes), "\n"))
-		info, err := os.Stat(fmt.Sprintf("/proc/%d", state.Pid))
-		if err == nil {
-			state.StartedAt = info.ModTime()
-		}
-	}
-	return state, nil
-}
-
-func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
-	exists, err := ud.MachineExists(m)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return fmt.Errorf("Machine %s does not exist.", m.Name)
+func (m *Machine) Attach() (err error) {
+	if !m.Running() {
+		return fmt.Errorf("cannot attach to machine %s: not running", m.Name)
 	}
 	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
 	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	err = shim.Attach(filepath.Join(ud.RunDir, "machine", mHash, "attach.sock"))
+	err = shim.Attach(filepath.Join(m.ud.RunDir, "machine", m.Id(), "attach.sock"))
 	if err.Error() == "read escape sequence" {
 		return nil
 	} else {
@@ -325,21 +279,18 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	}
 }
 
-func (ud *UMLDriver) Exec(m driver.Machine, command,
-	user string, detach bool, workdir string) (err error) {
-	return vecnet.ExecCommand(m.Name, user, command, m.Namespace)
+func (m *Machine) Exec(command string,
+	opts driver.ExecOptions) (err error) {
+	return vecnet.ExecCommand(m.name, opts.User, command, m.namespace)
 }
 
-func (ud *UMLDriver) Shell(m driver.Machine, user, workdir string) (err error) {
-	return vecnet.RunShell(m.Name, user, m.Namespace)
+func (m *Machine) Shell(opts driver.ShellOptions) (err error) {
+	return vecnet.RunShell(m.name, opts.User, m.namespace)
 }
 
-func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
-	follow bool, tail int) (err error) {
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	fn := filepath.Join(ud.RunDir, "machine", mHash, "machine.log")
-	if follow {
+func (m *Machine) GetMachineLogs(opts driver.LogOptions) (err error) {
+	fn := filepath.Join(m.ud.RunDir, "machine", m.Id(), "machine.log")
+	if opts.Follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})
 		if err != nil {
 			return err
@@ -359,8 +310,8 @@ func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
 			lines = append(lines, scanner.Text())
 		}
 		startLine := 0
-		if tail >= 0 && tail < len(lines) {
-			startLine = len(lines) - tail
+		if opts.Tail >= 0 && opts.Tail < len(lines) {
+			startLine = len(lines) - opts.Tail
 		}
 		for i := startLine; i < len(lines); i++ {
 			fmt.Println(lines[i])
@@ -369,107 +320,18 @@ func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
 	return nil
 }
 
-func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
-	// TODO if all, look in all subdirs
-	var machines []driver.MachineInfo
-	if all {
-		namespaces, err := os.ReadDir(filepath.Join(ud.RunDir, "ns"))
-		if err != nil {
-			return machines, err
-		}
-		for _, n := range namespaces {
-			namespaceMachines, err := ud.ListMachines(n.Name(), false)
-			if err != nil {
-				return machines, err
-			}
-			machines = append(machines, namespaceMachines...)
-		}
-	} else {
-		dir := filepath.Join(ud.RunDir, "ns", namespace)
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			return machines, err
-		}
-		for _, e := range entries {
-			sym, err := filepath.EvalSymlinks(filepath.Join(dir, e.Name()))
-			if err != nil {
-				os.RemoveAll(filepath.Join(dir, e.Name()))
-				continue
-			}
-			fInfo, err := os.Stat(sym)
-			if err != nil {
-				return machines, err
-			}
-			if !fInfo.IsDir() {
-				continue
-			}
-			info, err := ud.MachineInfo(driver.Machine{
-				Name:      e.Name(),
-				Namespace: namespace,
-			})
-			if err != nil && err != driver.ErrNotExists {
-				return machines, err
-			}
-			machines = append(machines, info)
-		}
-	}
-	return machines, nil
-}
-
-func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err error) {
-	info.Name = m.Name
-	info.Namespace = m.Namespace
-	exists, err := ud.MachineExists(m)
-	if err != nil {
-		return info, err
-	} else if !exists {
-		return info, driver.ErrNotExists
-	}
-	state, err := ud.GetMachineState(m)
-	if err != nil {
-		return info, err
-	}
-	info.State = state.Status
-	info.ExitCode = state.ExitCode
-	mHash := fmt.Sprintf("%x",
-		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
-	mDir := filepath.Join(ud.RunDir, "machine", mHash)
-	content, err := ioutil.ReadFile(filepath.Join(mDir, "config.json"))
-	var mConfig driver.Machine
-	err = json.Unmarshal(content, &mConfig)
-	if err != nil {
-		return info, err
-	}
-	info.Networks = mConfig.Networks
-	info.Image = mConfig.Image
-	info.Lab = mConfig.Lab
-	return info, nil
-}
-
-func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
-	nsEntries, err := os.ReadDir(filepath.Join(ud.RunDir, "ns"))
-	for _, n := range nsEntries {
-		namespaces = append(namespaces, n.Name())
-	}
-	return namespaces, nil
-}
-
-func (ud *UMLDriver) WaitUntil(m driver.Machine, status string,
+func (m *Machine) WaitUntil(state string,
 	timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	for {
-		state, err := ud.GetMachineState(m)
-		if err != nil && errors.Is(err, driver.ErrNotExists) {
-			return fmt.Errorf("WaitUntil could not get machine state: %w", err)
-		}
 		// once condition is met return
-		if state.Status == status {
+		if m.State() == state {
 			return nil
 		}
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
-				m.Name, status, state.Status, err)
+				m.Name, state, m.State(), err)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
