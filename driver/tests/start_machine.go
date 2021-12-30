@@ -122,47 +122,57 @@ func DeclareExistsMachineTests(d driver.Driver) bool {
 		}
 		BeforeEach(func() {
 			err := d.StartMachine(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
+			err = d.WaitUntil(m, "running", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
 			d.HaltMachine(m, true)
 			err := d.RemoveMachine(m)
-			Expect(err).ToNot(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 		It("running machine exists", func() {
 			exists, err := d.MachineExists(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exists).To(BeTrue())
 		})
 		It("stopped machine exists", func() {
 			err := d.HaltMachine(m, false)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
+			err = d.WaitUntil(m, "exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			exists, err := d.MachineExists(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exists).To(BeTrue())
 		})
 		It("force stopped machine exists", func() {
 			err := d.HaltMachine(m, true)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
+			err = d.WaitUntil(m, "exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			exists, err := d.MachineExists(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exists).To(BeTrue())
 		})
 		It("removed machine does not exist", func() {
 			err := d.HaltMachine(m, true)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
+			err = d.WaitUntil(m, "exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			err = d.RemoveMachine(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			exists, err := d.MachineExists(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exists).To(BeFalse())
 		})
 		It("non existent machine does not exist", func() {
+			// TODO move to another 'It' as it wastes time
+			// starting and stopping a test machine
 			exists, err := d.MachineExists(driver.Machine{
 				Name:      "nonexistent",
 				Namespace: "testns",
 			})
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(exists).To(BeFalse())
 		})
 	})
@@ -177,19 +187,28 @@ func DeclareGetStateMachineTests(d driver.Driver) bool {
 		}
 		BeforeEach(func() {
 			err := d.StartMachine(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			err = d.WaitUntil(m, "running", 60)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
 			d.HaltMachine(m, true)
 			err := d.RemoveMachine(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 		It("running machine check state", func() {
 			state, err := d.GetMachineState(m)
-			Expect(err).To(BeNil())
+			Expect(err).ShouldNot(HaveOccurred())
 			Expect(state.Running).To(BeTrue())
+		})
+		It("running machine check state", func() {
+			err := d.HaltMachine(m, false)
+			Expect(err).ShouldNot(HaveOccurred())
+			err = d.WaitUntil(m, "exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
+			state, err := d.GetMachineState(m)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(state.Running).To(BeFalse())
 		})
 	})
 }
