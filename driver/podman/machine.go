@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	copier "github.com/containers/buildah/copier"
 	"github.com/spf13/cobra"
@@ -414,4 +415,8 @@ func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
 
 func (pd *PodmanDriver) GetCLICommand() (command *cobra.Command, err error) {
 	return new(cobra.Command), nil
+}
+
+func (pd *PodmanDriver) WaitUntil(m driver.Machine, status string, timeout time.Duration) error {
+	return driver.ErrNotImplemented
 }
