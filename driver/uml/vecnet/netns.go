@@ -1,6 +1,7 @@
 package vecnet
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -74,10 +75,16 @@ func NewNetNS(name string) error {
 func WithNetNS(namespace string, toRun func(ns.NetNS) error) error {
 	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
 	// create ns if not exist
-	if ns.IsNSorErr(nsPath) != nil {
+	if err := ns.IsNSorErr(nsPath); err != nil {
+		if !errors.Is(err, ns.NSPathNotExistErr{}) {
+			err = os.RemoveAll(nsPath)
+			if err != nil {
+				return fmt.Errorf("Could not remove existing file %s: %w", nsPath, err)
+			}
+		}
 		err := NewNetNS(namespace)
 		if err != nil {
-			return err
+			return fmt.Errorf("Could not create new bound net namespace %s: %w", namespace, err)
 		}
 	}
 	return ns.WithNetNSPath(nsPath, toRun)
