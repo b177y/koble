@@ -91,9 +91,9 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 	if showNS {
 		headers = append(headers, "namespace")
 	}
-	headers = append(headers, "lab")
+	// headers = append(headers, "lab")
 	headers = append(headers, "image")
-	headers = append(headers, "networks")
+	// headers = append(headers, "networks")
 	headers = append(headers, "state")
 
 	for _, m := range machines {
@@ -106,9 +106,9 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 				minfo = append(minfo, m.Namespace)
 			}
 		}
-		minfo = append(minfo, m.Lab)
+		// minfo = append(minfo, m.Lab)
 		minfo = append(minfo, filepath.Base(m.Image))
-		minfo = append(minfo, strings.Join(m.Networks, ","))
+		// minfo = append(minfo, strings.Join(m.Networks, ","))
 		minfo = append(minfo, m.State)
 		// Add machine info to list of machines
 		mlist = append(mlist, minfo)
@@ -187,10 +187,10 @@ func (nk *Netkit) LaunchInTerm() error {
 	return err
 }
 
-func orderMachines(machines []driver.Machine) (ordered []driver.Machine,
+func orderMachines(machines []Machine) (ordered []Machine,
 	err error) {
 	dg := topsort.NewGraph()
-	mappedMachines := map[string]driver.Machine{}
+	mappedMachines := map[string]Machine{}
 	for _, m := range machines {
 		mappedMachines[m.Name] = m
 	}

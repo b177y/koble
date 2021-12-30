@@ -45,7 +45,7 @@ type Driver interface {
 	GetDefaultImage() string
 	SetupDriver(conf map[string]interface{}) (err error)
 
-	Machine() (Machine, error)
+	Machine(string) (Machine, error)
 	ListMachines(namespace string, all bool) ([]MachineInfo, error)
 
 	ListNetworks(lab string, all bool) (networks []NetInfo, err error)

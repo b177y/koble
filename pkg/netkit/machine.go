@@ -3,25 +3,24 @@ package netkit
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/b177y/netkit/driver"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
-	log "github.com/sirupsen/logrus"
 )
 
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
-	m := driver.Machine{
-		Name:      name,
-		Lab:       nk.Lab.Name,
-		Namespace: nk.Namespace,
-		Hostlab:   nk.Lab.Directory,
-		HostHome:  true,
-		Networks:  networks,
-		Image:     nk.Driver.GetDefaultImage(),
+	m, err := nk.Driver.Machine(name)
+	if err != nil {
+		return err
 	}
-	log.Debug("defaults", m)
+	opts := driver.StartOptions{
+		Lab:      nk.Lab.Name,
+		Hostlab:  nk.Lab.Directory,
+		HostHome: true,
+		// Networks: networks,
+		Image: nk.Driver.GetDefaultImage(),
+	}
 
 	for _, n := range networks {
 		err := nk.StartNetwork(n)
@@ -40,79 +39,74 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 
 	// Add options from lab
 	for _, lm := range nk.Lab.Machines {
-		if lm.Name == m.Name {
-			m.Volumes = lm.Volumes
-			m.HostHome = lm.HostHome
+		if lm.Name == m.Name() {
+			// opts.Volumes = lm.Volumes
+			opts.HostHome = lm.HostHome
 			if lm.Image != "" {
-				m.Image = lm.Image
+				opts.Image = lm.Image
 			}
-			m.Networks = lm.Networks
+			// opts.Networks = lm.Networks
 		}
 	}
 	// Add options from command line flags
 	if image != "" {
-		m.Image = image
+		opts.Image = image
 	}
-	if m.HostHome {
+	if opts.HostHome {
 		home, err := os.UserHomeDir()
 		if err != nil {
 			return err
 		}
-		m.Volumes = append(m.Volumes, spec.Mount{
+		opts.Volumes = append(opts.Volumes, spec.Mount{
 			Source:      home,
 			Destination: "/hosthome",
 		})
 	}
-	m.Volumes = append(m.Volumes, spec.Mount{
+	opts.Volumes = append(opts.Volumes, spec.Mount{
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	fmt.Println("Starting machine", m.Name)
-	return nk.Driver.StartMachine(m)
+	fmt.Println("Starting machine", m.Name())
+	return m.Start(&opts)
 }
 
 func (nk *Netkit) MachineInfo(name string) error {
-	m := driver.Machine{
-		Name:      name,
-		Namespace: nk.Namespace,
-		Lab:       nk.Lab.Name,
-	}
+	m, err := nk.Driver.Machine(name)
 	var infoTable [][]string
-	infoTable = append(infoTable, []string{"Name", m.Name})
-	if nk.Lab.Name != "" {
-		for _, lm := range nk.Lab.Machines {
-			if lm.Name == m.Name {
-				lm.Lab = m.Lab
-				m = lm
-				if lm.Image != "" {
-					infoTable = append(infoTable,
-						[]string{"Image", lm.Image})
-				}
-				if len(lm.Dependencies) != 0 {
-					infoTable = append(infoTable,
-						[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
-				}
-				if len(lm.Networks) != 0 {
-					infoTable = append(infoTable,
-						[]string{"Networks", strings.Join(lm.Networks, ",")})
-				}
-				if len(lm.Volumes) != 0 {
-					var vols []string
-					for _, v := range lm.Volumes {
-						vols = append(vols, v.Source+":"+v.Destination)
-					}
-					infoTable = append(infoTable,
-						[]string{"Volumes", strings.Join(vols, ",")})
-				}
-			}
-		}
-	}
-	info, err := nk.Driver.MachineInfo(m)
-	fmt.Println(info)
+	infoTable = append(infoTable, []string{"Name", m.Name()})
+	// if nk.Lab.Name != "" {
+	// 	for _, lm := range nk.Lab.Machines {
+	// 		if lm.Name == m.Name() {
+	// 			// lm.Lab = m.Lab
+	// 			// m = lm
+	// 			if lm.Image != "" {
+	// 				infoTable = append(infoTable,
+	// 					[]string{"Image", lm.Image})
+	// 			}
+	// 			// if len(lm.Dependencies) != 0 {
+	// 			// 	infoTable = append(infoTable,
+	// 			// 		[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
+	// 			// }
+	// 			if len(lm.Networks) != 0 {
+	// 				infoTable = append(infoTable,
+	// 					[]string{"Networks", strings.Join(lm.Networks, ",")})
+	// 			}
+	// 			if len(lm.Volumes) != 0 {
+	// 				var vols []string
+	// 				for _, v := range lm.Volumes {
+	// 					vols = append(vols, v.Source+":"+v.Destination)
+	// 				}
+	// 				infoTable = append(infoTable,
+	// 					[]string{"Volumes", strings.Join(vols, ",")})
+	// 			}
+	// 		}
+	// 	}
+	// }
+	info, err := m.Info()
 	if err != nil && err != driver.ErrNotExists {
 		return err
 	}
-	if info.Image != "" && m.Image == "" {
+	if info.Image != "" {
 		infoTable = append(infoTable, []string{"Image", info.Image})
 	}
 	if info.State != "" {
@@ -123,48 +117,40 @@ func (nk *Netkit) MachineInfo(name string) error {
 }
 
 func (nk *Netkit) HaltMachine(machine string, force bool) error {
-	m := driver.Machine{
-		Name:      machine,
-		Namespace: nk.Namespace,
-		Lab:       nk.Lab.Name,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
 	fmt.Println("Halting machine", m.Name)
-	return nk.Driver.HaltMachine(m, false)
-}
-
-func (nk *Netkit) CrashMachine(machine string) error {
-	m := driver.Machine{
-		Name:      machine,
-		Namespace: nk.Namespace,
-		Lab:       nk.Lab.Name,
-	}
-	fmt.Println("Crashing machine", m.Name)
-	return nk.Driver.HaltMachine(m, true)
+	return m.Stop(force)
 }
 
 func (nk *Netkit) DestroyMachine(machine string) error {
-	m := driver.Machine{
-		Name:      machine,
-		Namespace: nk.Namespace,
-		Lab:       nk.Lab.Name,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
-	nk.CrashMachine(machine)
-	// if err != nil {
-	// 	return err
-	// }
+	fmt.Println("Crashing machine", m.Name)
+	err = m.Stop(true)
+	if err != nil {
+		return err
+	}
 	// TODO workout best way to delay until machine stopped
 	// time.Sleep(time.Second)
 	fmt.Println("Removing machine", m.Name)
-	return nk.Driver.RemoveMachine(m)
+	return m.Remove()
 }
 
 func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
-	m := driver.Machine{
-		Name:      machine,
-		Namespace: nk.Namespace,
-		Lab:       nk.Lab.Name,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
-	return nk.Driver.GetMachineLogs(m, follow, tail)
+	opts := driver.LogOptions{
+		Follow: follow,
+		Tail:   tail,
+	}
+	return m.Logs(&opts)
 }
 
 func (nk *Netkit) ListMachines(all bool) error {

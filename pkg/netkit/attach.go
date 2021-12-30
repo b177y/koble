@@ -3,29 +3,33 @@ package netkit
 import "github.com/b177y/netkit/driver"
 
 func (nk *Netkit) AttachToMachine(machine string) error {
-	m := driver.Machine{
-		Name:      machine,
-		Lab:       nk.Lab.Name,
-		Namespace: nk.Namespace,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
-	return nk.Driver.AttachToMachine(m)
+	return m.Attach(nil)
 }
 
 func (nk *Netkit) Exec(machine, command, user string,
 	detach bool, workdir string) error {
-	m := driver.Machine{
-		Name:      machine,
-		Lab:       nk.Lab.Name,
-		Namespace: nk.Namespace,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
-	return nk.Driver.Exec(m, command, user, detach, workdir)
+	return m.Exec(command, &driver.ExecOptions{
+		User:    user,
+		Detach:  detach,
+		Workdir: workdir,
+	})
 }
 
 func (nk *Netkit) Shell(machine, user, workdir string) error {
-	m := driver.Machine{
-		Name:      machine,
-		Lab:       nk.Lab.Name,
-		Namespace: nk.Namespace,
+	m, err := nk.Driver.Machine(machine)
+	if err != nil {
+		return err
 	}
-	return nk.Driver.Shell(m, user, workdir)
+	return m.Shell(&driver.ShellOptions{
+		User:    user,
+		Workdir: workdir,
+	})
 }

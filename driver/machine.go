@@ -49,7 +49,7 @@ type StartOptions struct {
 type ExecOptions struct {
 	User    string
 	Detach  bool
-	WorkDir string
+	Workdir string
 }
 
 type ShellOptions struct {
@@ -62,6 +62,8 @@ type LogOptions struct {
 	Tail   int
 }
 
+type AttachOptions struct{}
+
 type Machine interface {
 	Name() string
 	Id() string
@@ -69,13 +71,13 @@ type Machine interface {
 	Running() bool
 	Info() (MachineInfo, error)
 	Networks() ([]Network, error)
-	Start(StartOptions) error
+	Start(*StartOptions) error
 	Stop(force bool) error
 	Remove() error
-	Attach() error
+	Attach(opts *AttachOptions) error
 	Exec(command string,
-		opts ExecOptions) error
-	Shell(opts ShellOptions) error
-	Logs(opts LogOptions) error
+		opts *ExecOptions) error
+	Shell(opts *ShellOptions) error
+	Logs(opts *LogOptions) error
 	WaitUntil(state string, timeout time.Duration) error
 }

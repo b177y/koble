@@ -45,7 +45,8 @@ func (m *Machine) Id() string {
 }
 
 func (m *Machine) Pid() int {
-	return 0
+	return processBySubstring("umid="+m.Id(),
+		"UMLNAMESPACE="+m.namespace)
 }
 
 func (m *Machine) Exists() (bool, error) {
@@ -63,10 +64,7 @@ func (m *Machine) Exists() (bool, error) {
 }
 
 func (m *Machine) Running() bool {
-	if findMachineProcess(m) > 0 {
-		return true
-	}
-	return false
+	return m.Pid() > 0
 }
 
 func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error) {
@@ -80,7 +78,11 @@ func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error
 	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
 	cmd = append(cmd, "uml_dir="+umlDir)
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
-	cmd = append(cmd, opts.Networks...)
+	var networks []string
+	for _, n := range opts.Networks {
+		networks = append(networks, n.Name)
+	}
+	cmd = append(cmd, networks...)
 	if opts.HostHome {
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -92,9 +94,9 @@ func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error
 		cmd = append(cmd, "hostlab="+opts.Hostlab)
 	}
 	cmd = append(cmd, "SELINUX_INIT=0")
-	cmd = append(cmd, "NETKITNAMESPACE="+m.namespace)
+	cmd = append(cmd, "UMLNAMESPACE="+m.namespace)
 	if opts.Lab != "" {
-		cmd = append(cmd, "NETKITLAB="+opts.Lab)
+		cmd = append(cmd, "UMLLAB="+opts.Lab)
 	}
 	return cmd, nil
 }
@@ -111,7 +113,7 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 	})
 }
 
-func (m *Machine) Start(opts driver.StartOptions) (err error) {
+func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	exists, err := m.Exists()
 	if err != nil {
 		return err
@@ -181,7 +183,7 @@ func (m *Machine) Start(opts driver.StartOptions) (err error) {
 	// 		mnt.Type = "bind"
 	// 	}
 	// }
-	kernelcmd, err := getKernelCMD(m, opts)
+	kernelcmd, err := getKernelCMD(m, *opts)
 	if err != nil {
 		return err
 	}
@@ -265,7 +267,7 @@ func (m *Machine) Remove() error {
 	return nil
 }
 
-func (m *Machine) Attach() (err error) {
+func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 	if !m.Running() {
 		return fmt.Errorf("cannot attach to machine %s: not running", m.Name)
 	}
@@ -280,15 +282,15 @@ func (m *Machine) Attach() (err error) {
 }
 
 func (m *Machine) Exec(command string,
-	opts driver.ExecOptions) (err error) {
+	opts *driver.ExecOptions) (err error) {
 	return vecnet.ExecCommand(m.name, opts.User, command, m.namespace)
 }
 
-func (m *Machine) Shell(opts driver.ShellOptions) (err error) {
+func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
 	return vecnet.RunShell(m.name, opts.User, m.namespace)
 }
 
-func (m *Machine) GetMachineLogs(opts driver.LogOptions) (err error) {
+func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 	fn := filepath.Join(m.ud.RunDir, "machine", m.Id(), "machine.log")
 	if opts.Follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})
@@ -335,4 +337,16 @@ func (m *Machine) WaitUntil(state string,
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+}
+
+func (m *Machine) Networks() ([]driver.Network, error) {
+	return []driver.Network{}, nil
+}
+
+func (ud *UMLDriver) Machine(name string) (m driver.Machine,
+	err error) {
+	m = &Machine{
+		name: name,
+	}
+	return m, nil
 }

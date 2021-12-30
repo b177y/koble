@@ -16,17 +16,26 @@ import (
 )
 
 type Lab struct {
-	Name          string           `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	Directory     string           `yaml:"dir,omitempty"`
-	CreatedAt     string           `yaml:"created_at,omitempty" validate:"datetime"`
-	NetkitVersion string           `yaml:"netkit_version,omitempty"`
-	Description   string           `yaml:"description,omitempty"`
-	Authors       []string         `yaml:"authors,omitempty"`
-	Emails        []string         `yaml:"emails,omitempty" validate:"email"`
-	Web           []string         `yaml:"web,omitempty" validate:"url"`
-	Machines      []driver.Machine `yaml:"machines,omitempty"`
-	Networks      []Network        `yaml:"networks,omitempty"`
-	DefaultImage  string           `yaml:"default_image,omitempty"`
+	Name          string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	Directory     string    `yaml:"dir,omitempty"`
+	CreatedAt     string    `yaml:"created_at,omitempty" validate:"datetime"`
+	NetkitVersion string    `yaml:"netkit_version,omitempty"`
+	Description   string    `yaml:"description,omitempty"`
+	Authors       []string  `yaml:"authors,omitempty"`
+	Emails        []string  `yaml:"emails,omitempty" validate:"email"`
+	Web           []string  `yaml:"web,omitempty" validate:"url"`
+	Machines      []Machine `yaml:"machines,omitempty"`
+	Networks      []Network `yaml:"networks,omitempty"`
+	DefaultImage  string    `yaml:"default_image,omitempty"`
+}
+
+type Machine struct {
+	Name         string
+	Image        string
+	Networks     []Network
+	Volumes      []string
+	Dependencies []string
+	HostHome     bool
 }
 
 func InitLab(name string, description string, authors []string, emails []string, web []string) error {
@@ -129,11 +138,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 			return fmt.Errorf("A machine with the name %s already exists.", name)
 		}
 	}
-	lab.Machines = append(lab.Machines, driver.Machine{
-		Name:     name,
-		Image:    image,
-		Networks: networks,
-	})
+	lab.Machines = append(lab.Machines, Machine{Name: name})
 	err = SaveLab(&lab)
 	// TODO print help for getting started with machine
 	if err != nil {
@@ -207,10 +212,12 @@ func (nk *Netkit) LabStart(mlist []string) error {
 	fmt.Printf("=================================================================\n\n")
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
-		err := nk.StartMachine(m.Name, m.Image, m.Networks)
-		if err == driver.ErrExists {
-			fmt.Printf("Machine %s already exists.\n", m.Name)
-		} else if err != nil {
+		m, err := nk.Driver.Machine(m.Name)
+		if err != nil {
+			return err
+		}
+		err = m.Start(nil)
+		if err != nil {
 			return err
 		}
 	}
@@ -226,8 +233,8 @@ func contains(arr []string, item string) bool {
 	return false
 }
 
-func filterMachines(machines []driver.Machine,
-	filter []string) (mList []driver.Machine) {
+func filterMachines(machines []Machine,
+	filter []string) (mList []Machine) {
 	// if no machines in filter then all machines are included
 	if len(filter) == 0 {
 		return machines
@@ -248,14 +255,14 @@ func (nk *Netkit) GetMachineList(mlist []string,
 	} else if all && len(mlist) != 0 {
 		return machines, errors.New("You cannot specify machines when using --all")
 	}
-	output, err := nk.Driver.ListMachines(nk.Lab.Name, all)
-	for _, m := range output {
-		machines = append(machines, driver.Machine{
-			Name: m.Name,
-			Lab:  m.Lab,
-		})
-	}
-	machines = filterMachines(machines, mlist)
+	// output, err := nk.Driver.ListMachines(nk.Lab.Name, all)
+	// for _, m := range output {
+	// 	machines = append(machines, driver.Machine{
+	// 		Name: m.Name,
+	// 		Lab:  m.Lab,
+	// 	})
+	// }
+	// machines = filterMachines(machines, mlist)
 	return machines, nil
 }
 
