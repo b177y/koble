@@ -8,11 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// var TestMachine = driver.Machine{
-// 	Name:      "NETKITTESTING",
-// 	Namespace: "TESTINGNS",
-// }
-
 func DeclareStartMachineTests(d driver.Driver) bool {
 	return Describe("start machine", func() {
 		var m = driver.Machine{
@@ -20,7 +15,7 @@ func DeclareStartMachineTests(d driver.Driver) bool {
 			Namespace: "testns",
 		}
 		AfterEach(func() {
-			err := d.WaitUntil(m, "running", 30)
+			err := d.WaitUntil(m, "running", 60)
 			Expect(err).To(BeNil())
 			err = d.HaltMachine(m, true)
 			Expect(err).To(BeNil())
@@ -52,7 +47,7 @@ func DeclareHaltMachineTests(d driver.Driver) bool {
 		BeforeEach(func() {
 			err := d.StartMachine(m)
 			Expect(err).To(BeNil())
-			err = d.WaitUntil(m, "running", 30)
+			err = d.WaitUntil(m, "running", 60)
 			Expect(err).To(BeNil())
 		})
 		AfterEach(func() {
@@ -62,6 +57,8 @@ func DeclareHaltMachineTests(d driver.Driver) bool {
 		It("halt a machine gracefully", func() {
 			err := d.HaltMachine(m, false)
 			Expect(err).To(BeNil())
+			err = d.WaitUntil(m, "exited", 60)
+			Expect(err).To(BeNil())
 			state, err := d.GetMachineState(m)
 			Expect(err).Should(BeNil())
 			Expect(state.Running).To(BeFalse())
@@ -69,6 +66,8 @@ func DeclareHaltMachineTests(d driver.Driver) bool {
 		})
 		It("halt a machine forcefully", func() {
 			err := d.HaltMachine(m, true)
+			Expect(err).To(BeNil())
+			err = d.WaitUntil(m, "exited", 60)
 			Expect(err).To(BeNil())
 			state, err := d.GetMachineState(m)
 			Expect(err).Should(BeNil())
@@ -87,7 +86,7 @@ func DeclareRemoveMachineTests(d driver.Driver) bool {
 		BeforeEach(func() {
 			err := d.StartMachine(m)
 			Expect(err).To(BeNil())
-			err = d.WaitUntil(m, "running", 30)
+			err = d.WaitUntil(m, "running", 60)
 			Expect(err).To(BeNil())
 		})
 		It("remove a stopped machine", func() {
@@ -179,7 +178,7 @@ func DeclareGetStateMachineTests(d driver.Driver) bool {
 		BeforeEach(func() {
 			err := d.StartMachine(m)
 			Expect(err).To(BeNil())
-			err = d.WaitUntil(m, "running", 30)
+			err = d.WaitUntil(m, "running", 60)
 			Expect(err).To(BeNil())
 		})
 		AfterEach(func() {
@@ -205,7 +204,7 @@ func DeclareAttachMachineTests(d driver.Driver) bool {
 		BeforeEach(func() {
 			err := d.StartMachine(m)
 			Expect(err).To(BeNil())
-			err = d.WaitUntil(m, "running", 30)
+			err = d.WaitUntil(m, "running", 60)
 			Expect(err).To(BeNil())
 		})
 		AfterEach(func() {
