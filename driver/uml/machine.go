@@ -22,6 +22,7 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -198,6 +199,14 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 	if !force {
 		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
 			filepath.Join(umlDir, "mconsole"))
+		// if socket timeout return nil
+		// TODO patch UML kernel to respond before executing cad action
+		// if err, ok := err.(net.Error); ok && err.Timeout() {
+		// string error comparison is bad practice but above does not work
+		// no documentation found for unix socket deadline exceeded errors
+		if err.Error() == "read socket timeout" {
+			return nil
+		}
 		return err
 	}
 	pidFile := filepath.Join(umlDir, "pid")
@@ -265,14 +274,9 @@ func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineStat
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	stateFile := filepath.Join(mDir, "state")
 	p, err := os.ReadFile(stateFile)
-	if errors.Is(err, os.ErrNotExist) {
-		fmt.Println(stateFile, "does not exist, writing to it now:", state.Running)
-		err = ioutil.WriteFile(stateFile, []byte("running"), 0600)
-		if err != nil {
-			return state, err
-		}
-	} else if err != nil {
-		return state, err
+	if err != nil {
+		log.Warnf("Could not open %s: %v", stateFile, err)
+		return state, nil
 	}
 	state.Status = string(p)
 	if state.Status == "running" && state.Running == false {
@@ -285,7 +289,8 @@ func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineStat
 			ec, err := strconv.ParseInt(string(p), 10, 32)
 			if err == nil {
 				state.ExitCode = int32(ec)
-				state.Status = fmt.Sprintf("%s (%d)", state.Status, ec)
+				// TODO use this in pkg/netkit
+				// state.Status = fmt.Sprintf("%s (%d)", state.Status, ec)
 			}
 		}
 	}
@@ -454,19 +459,17 @@ func (ud *UMLDriver) WaitUntil(m driver.Machine, status string,
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	for {
-		if err := ctx.Err(); err != nil {
-			fmt.Println("Context is finished")
-			return err
-		}
 		state, err := ud.GetMachineState(m)
 		if err != nil && errors.Is(err, driver.ErrNotExists) {
-			fmt.Println("Error getting state", err)
-			return err
+			return fmt.Errorf("WaitUntil could not get machine state: %w", err)
 		}
 		// once condition is met return
 		if state.Status == status {
-			fmt.Println("condition has been met", state.Status, status)
 			return nil
+		}
+		if err := ctx.Err(); err != nil {
+			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
+				m.Name, status, state.Status, err)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
