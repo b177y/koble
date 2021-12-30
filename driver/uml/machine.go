@@ -3,7 +3,7 @@ package uml
 import (
 	"bufio"
 	"context"
-	"crypto/sha256"
+	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,55 +31,6 @@ func init() {
 	}
 }
 
-type process struct {
-	pid     int
-	cmdline string
-}
-
-func processBySubstring(substring ...string) int {
-	dirs, err := ioutil.ReadDir("/proc")
-	if err != nil {
-		return -1
-	}
-	var processes []process
-	for _, entry := range dirs {
-		if pid, err := strconv.Atoi(entry.Name()); err == nil {
-			cmdline, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
-			if err != nil {
-				return -1
-			}
-			pgid, err := syscall.Getpgid(pid)
-			if err != nil {
-				return -1
-			} else if pgid != pid {
-				continue
-			}
-			processes = append(processes, process{
-				pid:     pid,
-				cmdline: strings.TrimSuffix(string(cmdline), "\n"),
-			})
-		}
-	}
-	for _, p := range processes {
-		nonMatchFound := false
-		for _, s := range substring {
-			if !strings.Contains(p.cmdline, s) {
-				nonMatchFound = true
-				continue
-			}
-		}
-		if !nonMatchFound {
-			return p.pid
-		}
-	}
-	return -1
-}
-
-func findMachineProcess(m driver.Machine) int {
-	return processBySubstring("umid="+m.Name,
-		"NETKITNAMESPACE="+m.Namespace)
-}
-
 func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	err error) {
 	if findMachineProcess(m) > 0 {
@@ -87,7 +38,7 @@ func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 	}
 	// check uml rundir for machine
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	if _, err := os.Stat(mDir); err == nil {
 		return true, nil
@@ -99,10 +50,10 @@ func (ud *UMLDriver) MachineExists(m driver.Machine) (exists bool,
 
 func (ud *UMLDriver) getKernelCMD(m driver.Machine, networks []string) (cmd []string, err error) {
 	cmd = []string{ud.Kernel}
-	cmd = append(cmd, "name="+m.Name, "title="+m.Name, "umid="+m.Name)
-	cmd = append(cmd, "mem=132M")
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
+	cmd = append(cmd, "name="+m.Name, "title="+m.Name, "umid="+mHash)
+	cmd = append(cmd, "mem=132M")
 	diskPath := filepath.Join(ud.StorageDir, "overlay", mHash+".disk")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
 	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", diskPath, ud.DefaultImage))
@@ -149,7 +100,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 	if exists {
 		state, err := ud.GetMachineState(m)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not get machine state: %w", err)
 		}
 		if state.Running {
 			return nil
@@ -161,7 +112,7 @@ func (ud *UMLDriver) StartMachine(m driver.Machine) (err error) {
 		}
 	}()
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace)
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	err = os.MkdirAll(nsMdir, 0744)
@@ -242,8 +193,8 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name)
 	}
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
-	umlDir := filepath.Join(ud.RunDir, "machine", mHash, m.Name)
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
+	umlDir := filepath.Join(ud.RunDir, "machine", mHash, mHash)
 	if !force {
 		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
 			filepath.Join(umlDir, "mconsole"))
@@ -277,19 +228,9 @@ func (ud *UMLDriver) HaltMachine(m driver.Machine, force bool) error {
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	if err == nil {
-		return fmt.Errorf("Could not kill machine %s (%d): %w",
-			m.Name, pid, err)
-	}
-	// check that state was updated
-	stateFile := filepath.Join(ud.RunDir, "machine", mHash, m.Name, "state")
-	stateBytes, err := ioutil.ReadFile(stateFile)
-	if err != nil {
-		return err
-	}
-	if string(stateBytes) != "exited" {
-		fmt.Printf("state file for %s (pid %d) has status %s when it should be exited (TODO look into shim)", m.Name, pid, string(stateBytes))
-		return ioutil.WriteFile(stateFile, []byte("exited"), 0600)
+	if err == nil { // kill 0 error == nil means still running
+		return fmt.Errorf("Could not kill machine %s (%d)",
+			m.Name, pid)
 	}
 	return nil
 }
@@ -301,7 +242,7 @@ func (ud *UMLDriver) RemoveMachine(m driver.Machine) error {
 		return errors.New("Machine can't be removed as it's running")
 	}
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	nsMdir := filepath.Join(ud.RunDir, "ns", m.Namespace, m.Name)
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	os.RemoveAll(mDir)
@@ -320,11 +261,12 @@ func (ud *UMLDriver) GetMachineState(m driver.Machine) (state driver.MachineStat
 		state.Running = false
 	}
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	stateFile := filepath.Join(mDir, "state")
 	p, err := os.ReadFile(stateFile)
 	if errors.Is(err, os.ErrNotExist) {
+		fmt.Println(stateFile, "does not exist, writing to it now:", state.Running)
 		err = ioutil.WriteFile(stateFile, []byte("running"), 0600)
 		if err != nil {
 			return state, err
@@ -369,7 +311,7 @@ func (ud *UMLDriver) AttachToMachine(m driver.Machine) (err error) {
 	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
 	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	err = shim.Attach(filepath.Join(ud.RunDir, "machine", mHash, "attach.sock"))
 	if err.Error() == "read escape sequence" {
 		return nil
@@ -390,7 +332,7 @@ func (ud *UMLDriver) Shell(m driver.Machine, user, workdir string) (err error) {
 func (ud *UMLDriver) GetMachineLogs(m driver.Machine,
 	follow bool, tail int) (err error) {
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	fn := filepath.Join(ud.RunDir, "machine", mHash, "machine.log")
 	if follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})
@@ -485,7 +427,7 @@ func (ud *UMLDriver) MachineInfo(m driver.Machine) (info driver.MachineInfo, err
 	info.State = state.Status
 	info.ExitCode = state.ExitCode
 	mHash := fmt.Sprintf("%x",
-		sha256.Sum256([]byte(m.Name+"-"+m.Namespace)))
+		md5.Sum([]byte(m.Name+"-"+m.Namespace)))
 	mDir := filepath.Join(ud.RunDir, "machine", mHash)
 	content, err := ioutil.ReadFile(filepath.Join(mDir, "config.json"))
 	var mConfig driver.Machine
