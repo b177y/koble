@@ -92,12 +92,10 @@ func NewBridge(name string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("created bridge")
 	err = netlink.LinkSetAlias(newBr, name)
 	if err != nil {
 		return err
 	}
-	fmt.Println("set bridge alias", newBr.LinkAttrs.Alias)
 	return netlink.LinkSetUp(newBr)
 }
 
