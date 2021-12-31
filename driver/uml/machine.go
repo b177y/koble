@@ -111,6 +111,9 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 }
 
 func (m *Machine) Start(opts *driver.StartOptions) (err error) {
+	if opts == nil {
+		opts = new(driver.StartOptions)
+	}
 	exists, err := m.Exists()
 	if err != nil {
 		return err
@@ -128,11 +131,11 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 			m.Remove()
 		}
 	}()
-	// nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
-	// err = os.MkdirAll(nsMdir, 0744)
-	// if err != nil && err != os.ErrExist {
-	// 	return err
-	// }
+	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
+	err = os.MkdirAll(nsMdir, 0744)
+	if err != nil && err != os.ErrExist {
+		return err
+	}
 	err = os.MkdirAll(m.mDir(), 0744)
 	if err != nil && err != os.ErrExist {
 		return err
@@ -222,19 +225,19 @@ func (m *Machine) Stop(force bool) error {
 	}
 	pid := m.Pid()
 	// Check if process exists
-	killErr := syscall.Kill(pid, 0)
+	killErr := syscall.Kill(-pid, 0)
 	if killErr != nil {
 		return fmt.Errorf("Could not crash machine %s (%d): %w", m.name, pid, killErr)
 	}
 	// Send shutdown signal to UML instance
 	sig := syscall.SIGKILL
-	err = syscall.Kill(pid, sig)
+	err = syscall.Kill(-pid, sig)
 	if err != nil {
 		return err
 	}
 	for i := 0; i < 10; i++ {
 		// wait for kill 0 to give err (shows pid no longer running)
-		err = syscall.Kill(pid, 0)
+		err = syscall.Kill(-pid, 0)
 		if err != nil {
 			break
 		}
@@ -263,6 +266,9 @@ func (m *Machine) Remove() error {
 }
 
 func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
+	if opts == nil {
+		opts = new(driver.AttachOptions)
+	}
 	if !m.Running() {
 		return fmt.Errorf("cannot attach to machine %s: not running", m.name)
 	}
@@ -279,16 +285,25 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 func (m *Machine) Exec(command string,
 	opts *driver.ExecOptions) (err error) {
 	// TODO check opts and fill with defaults
+	if opts == nil {
+		opts = new(driver.ExecOptions)
+	}
 	return vecnet.ExecCommand(m.name, opts.User, command, m.namespace)
 }
 
 func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
 	// TODO check opts and fill with defaults
+	if opts == nil {
+		opts = new(driver.ShellOptions)
+	}
 	return vecnet.RunShell(m.name, opts.User, m.namespace)
 }
 
 func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 	// TODO check opts and fill with defaults
+	if opts == nil {
+		opts = new(driver.LogOptions)
+	}
 	fn := filepath.Join(m.ud.RunDir, "machine", m.Id(), "machine.log")
 	if opts.Follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})

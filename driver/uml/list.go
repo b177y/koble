@@ -56,15 +56,13 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	var machinesFound []string
 	// find machines from running processes
 	for _, p := range processList {
-		if strings.Contains(p.cmdline, "UMLNAMESPACE=") {
-			name, err := extractFromCmdline(p.cmdline, "name")
-			if err != nil {
-				// TODO WARN
-				log.Warnf("Could not extract name from UML process (%d)", p.pid)
-				continue
-			}
-			machinesFound = append(machinesFound, name)
+		name, err := extractFromCmdline(p.cmdline, "name")
+		if err != nil {
+			// TODO WARN
+			log.Warnf("Could not extract name from UML process (%d)", p.pid)
+			continue
 		}
+		machinesFound = append(machinesFound, name)
 	}
 	// find machines from dir list
 	// if these machines aren't running they wont have shown up in ps list

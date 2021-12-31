@@ -66,7 +66,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	fmt.Println("Starting machine", m.Name())
+	fmt.Printf("Starting machine %s\n", m.Name())
 	return m.Start(&opts)
 }
 
@@ -121,7 +121,7 @@ func (nk *Netkit) HaltMachine(machine string, force bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Halting machine", m.Name)
+	fmt.Printf("Halting machine %s\n", m.Name())
 	return m.Stop(force)
 }
 
@@ -130,14 +130,16 @@ func (nk *Netkit) DestroyMachine(machine string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Crashing machine", m.Name)
-	err = m.Stop(true)
-	if err != nil {
-		return err
-	}
+	fmt.Printf("Crashing machine %s\n", m.Name())
+	m.Stop(true)
+	// err = m.Stop(true)
+	// if err != nil {
+	// TODO WARN instead of error or silent?
+	// 	return err
+	// }
 	// TODO workout best way to delay until machine stopped
 	// time.Sleep(time.Second)
-	fmt.Println("Removing machine", m.Name)
+	fmt.Printf("Removing machine %s\n", m.Name())
 	return m.Remove()
 }
 
