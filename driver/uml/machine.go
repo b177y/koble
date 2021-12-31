@@ -359,13 +359,3 @@ func (m *Machine) WaitUntil(state string,
 func (m *Machine) Networks() ([]driver.Network, error) {
 	return []driver.Network{}, nil
 }
-
-func (ud *UMLDriver) Machine(name, namespace string) (m driver.Machine,
-	err error) {
-	m = &Machine{
-		name:      name,
-		namespace: namespace,
-		ud:        ud,
-	}
-	return m, nil
-}

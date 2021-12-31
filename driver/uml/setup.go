@@ -9,19 +9,6 @@ import (
 	"github.com/b177y/netkit/driver/uml/vecnet"
 )
 
-type UMLDriver struct {
-	Name         string
-	DefaultImage string
-	Kernel       string
-	RunDir       string
-	StorageDir   string
-	Testing      bool
-}
-
-func (ud *UMLDriver) GetDefaultImage() string {
-	return ud.DefaultImage
-}
-
 func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	if val, ok := conf["testing"]; ok {
 		if b, ok := val.(bool); ok {
