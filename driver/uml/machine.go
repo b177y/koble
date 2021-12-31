@@ -198,7 +198,7 @@ func (m *Machine) Stop(force bool) error {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("Machine %s does not exist", m.Name)
+		return fmt.Errorf("Machine %s does not exist", m.name)
 	}
 	if err != nil {
 		return err
