@@ -23,6 +23,9 @@ func getProcesses() (pList []process, err error) {
 			cmdline, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 			if err != nil {
 				return pList, err
+			} else if strings.Contains(string(cmdline), "umlShim") {
+				// we want to catch uml kernel processes not the shim
+				continue
 			}
 			pgid, err := syscall.Getpgid(pid)
 			if err != nil {

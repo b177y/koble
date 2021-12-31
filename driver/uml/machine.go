@@ -32,7 +32,7 @@ func init() {
 type Machine struct {
 	name      string
 	namespace string
-	ud        UMLDriver
+	ud        *UMLDriver
 }
 
 func (m *Machine) Name() string {
@@ -54,8 +54,7 @@ func (m *Machine) Exists() (bool, error) {
 		return true, nil
 	}
 	// check uml rundir for machine
-	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	if _, err := os.Stat(mDir); err == nil {
+	if _, err := os.Stat(m.mDir()); err == nil {
 		return true, nil
 	} else if err != nil && !os.IsNotExist(err) {
 		return false, err
@@ -71,12 +70,10 @@ func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error
 	cmd = []string{m.ud.Kernel}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
-	diskPath := filepath.Join(m.ud.StorageDir, "overlay", m.Id()+".disk")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
-	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", diskPath, m.ud.DefaultImage))
+	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(), m.ud.DefaultImage))
 	cmd = append(cmd, "root=98:0")
-	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	cmd = append(cmd, "uml_dir="+umlDir)
+	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	var networks []string
 	for _, n := range opts.Networks {
@@ -131,24 +128,23 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 			m.Remove()
 		}
 	}()
-	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
-	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	err = os.MkdirAll(nsMdir, 0744)
-	if err != nil && err != os.ErrExist {
-		return err
-	}
-	err = os.MkdirAll(mDir, 0744)
+	// nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
+	// err = os.MkdirAll(nsMdir, 0744)
+	// if err != nil && err != os.ErrExist {
+	// 	return err
+	// }
+	err = os.MkdirAll(m.mDir(), 0744)
 	if err != nil && err != os.ErrExist {
 		return err
 	}
 	// Remove symlink if it already exists
-	if _, err := os.Stat(filepath.Join(nsMdir, m.name)); err == nil {
-		err = os.Remove(filepath.Join(nsMdir, m.name))
+	if _, err := os.Stat(m.nsDir()); err == nil {
+		err = os.Remove(m.nsDir())
 		if err != nil {
 			return err
 		}
 	}
-	err = os.Symlink(mDir, filepath.Join(nsMdir, m.name))
+	err = os.Symlink(m.mDir(), m.nsDir())
 	if err != nil {
 		return err
 	}
@@ -156,7 +152,8 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(mDir, "config.json"), configBytes, 0644)
+	err = ioutil.WriteFile(filepath.Join(m.mDir(), "config.json"),
+		configBytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -165,13 +162,13 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 		// setup tap
 		ifaceName, err := vecnet.AddHostToNet(m.name, n.Name, m.namespace)
 		if err != nil {
-			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name, n, err)
+			return fmt.Errorf("Could not add machine %s to network %s: %w", m.name, n.Name, err)
 		}
 		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
-	ifaceName, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(mDir, "slirp.sock"))
+	ifaceName, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(m.mDir(), "slirp.sock"))
 	if err != nil {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
@@ -188,7 +185,7 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 		return err
 	}
 	// fmt.Println("Got kernelcmd", kernelcmd)
-	err = runInShim(mDir, m.namespace, kernelcmd)
+	err = runInShim(m.mDir(), m.namespace, kernelcmd)
 	if err != nil {
 		return err
 	}
@@ -255,25 +252,23 @@ func (m *Machine) Remove() error {
 	if m.Running() {
 		return errors.New("Machine can't be removed as it's running")
 	}
-	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace, m.name)
-	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	os.RemoveAll(mDir)
-	os.RemoveAll(nsMdir)
+	os.RemoveAll(m.mDir())
+	os.RemoveAll(filepath.Join(m.nsDir(), m.name))
 	// get networks for machine
 	// for _, n := range m.Networks {
 	// 	vecnet.RemoveHostTap(m.Name, n, m.Namespace)
 	// }
-	os.Remove(filepath.Join(m.ud.StorageDir, "overlay", m.Id()+".disk"))
+	os.Remove(m.diskPath())
 	return nil
 }
 
 func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 	if !m.Running() {
-		return fmt.Errorf("cannot attach to machine %s: not running", m.Name)
+		return fmt.Errorf("cannot attach to machine %s: not running", m.name)
 	}
-	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name)
+	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.name)
 	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	err = shim.Attach(filepath.Join(m.ud.RunDir, "machine", m.Id(), "attach.sock"))
+	err = shim.Attach(filepath.Join(m.mDir(), "attach.sock"))
 	if err.Error() == "read escape sequence" {
 		return nil
 	} else {
@@ -283,14 +278,17 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 
 func (m *Machine) Exec(command string,
 	opts *driver.ExecOptions) (err error) {
+	// TODO check opts and fill with defaults
 	return vecnet.ExecCommand(m.name, opts.User, command, m.namespace)
 }
 
 func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
+	// TODO check opts and fill with defaults
 	return vecnet.RunShell(m.name, opts.User, m.namespace)
 }
 
 func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
+	// TODO check opts and fill with defaults
 	fn := filepath.Join(m.ud.RunDir, "machine", m.Id(), "machine.log")
 	if opts.Follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})
@@ -333,7 +331,7 @@ func (m *Machine) WaitUntil(state string,
 		}
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
-				m.Name, state, m.State(), err)
+				m.name, state, m.State(), err)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
@@ -343,10 +341,12 @@ func (m *Machine) Networks() ([]driver.Network, error) {
 	return []driver.Network{}, nil
 }
 
-func (ud *UMLDriver) Machine(name string) (m driver.Machine,
+func (ud *UMLDriver) Machine(name, namespace string) (m driver.Machine,
 	err error) {
 	m = &Machine{
-		name: name,
+		name:      name,
+		namespace: namespace,
+		ud:        ud,
 	}
 	return m, nil
 }

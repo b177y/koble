@@ -46,6 +46,10 @@ func (m *Machine) StartedAt() time.Time {
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
+	exists, err := m.Exists()
+	if !exists {
+		return driver.MachineInfo{}, driver.ErrNotExists
+	}
 	info.Name = m.Name()
 	info.Running = m.Running()
 	info.Namespace = m.namespace

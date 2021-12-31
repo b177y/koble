@@ -10,7 +10,7 @@ import (
 
 func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
-	m, err := nk.Driver.Machine(name)
+	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 }
 
 func (nk *Netkit) MachineInfo(name string) error {
-	m, err := nk.Driver.Machine(name)
+	m, err := nk.Driver.Machine(name, nk.Namespace)
 	var infoTable [][]string
 	infoTable = append(infoTable, []string{"Name", m.Name()})
 	// if nk.Lab.Name != "" {
@@ -117,7 +117,7 @@ func (nk *Netkit) MachineInfo(name string) error {
 }
 
 func (nk *Netkit) HaltMachine(machine string, force bool) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (nk *Netkit) HaltMachine(machine string, force bool) error {
 }
 
 func (nk *Netkit) DestroyMachine(machine string) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (nk *Netkit) DestroyMachine(machine string) error {
 }
 
 func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}

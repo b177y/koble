@@ -212,7 +212,7 @@ func (nk *Netkit) LabStart(mlist []string) error {
 	fmt.Printf("=================================================================\n\n")
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
-		m, err := nk.Driver.Machine(m.Name)
+		m, err := nk.Driver.Machine(m.Name, nk.Namespace)
 		if err != nil {
 			return err
 		}

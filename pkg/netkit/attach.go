@@ -3,7 +3,7 @@ package netkit
 import "github.com/b177y/netkit/driver"
 
 func (nk *Netkit) AttachToMachine(machine string) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -12,7 +12,7 @@ func (nk *Netkit) AttachToMachine(machine string) error {
 
 func (nk *Netkit) Exec(machine, command, user string,
 	detach bool, workdir string) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (nk *Netkit) Exec(machine, command, user string,
 }
 
 func (nk *Netkit) Shell(machine, user, workdir string) error {
-	m, err := nk.Driver.Machine(machine)
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}

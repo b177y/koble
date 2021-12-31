@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/b177y/netkit/driver"
+	log "github.com/sirupsen/logrus"
 )
 
 type mFound struct {
@@ -37,7 +38,7 @@ func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
 }
 
 func extractFromCmdline(cmdline, key string) (value string, err error) {
-	parts := strings.Split(cmdline, " ")
+	parts := strings.Split(cmdline, "\x00")
 	for _, p := range parts {
 		if strings.HasPrefix(p, key+"=") {
 			return strings.Replace(p, key+"=", "", 1), nil
@@ -59,6 +60,7 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 			name, err := extractFromCmdline(p.cmdline, "name")
 			if err != nil {
 				// TODO WARN
+				log.Warnf("Could not extract name from UML process (%d)", p.pid)
 				continue
 			}
 			machinesFound = append(machinesFound, name)
@@ -94,7 +96,7 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	machinesFound = removeDuplicates(machinesFound)
 	// for each entry of machinesFound get info
 	for _, name := range machinesFound {
-		m, err := ud.Machine(name)
+		m, err := ud.Machine(name, namespace)
 		if err != nil {
 			// TODO WARN
 			continue
