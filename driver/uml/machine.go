@@ -199,15 +199,19 @@ func (m *Machine) Stop(force bool) error {
 	exists, err := m.Exists()
 	if err != nil {
 		return err
-	}
-	if !exists {
-		return fmt.Errorf("Machine %s does not exist", m.name)
-	}
-	if err != nil {
-		return err
+	} else if !exists {
+		// make force stop immutable (like how `rm -f` doesn't error if file doesn't exist)
+		if force {
+			return nil
+		}
+		return fmt.Errorf("can't stop %s as it does not exist", m.name)
 	}
 	if !m.Running() {
-		return fmt.Errorf("Can't stop %s as it isn't running", m.name)
+		// make force stop immutable
+		if force {
+			return nil
+		}
+		return fmt.Errorf("can't stop %s as it isn't running", m.name)
 	}
 	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id(), m.Id())
 	if !force {
@@ -251,7 +255,7 @@ func (m *Machine) Stop(force bool) error {
 }
 
 func (m *Machine) Remove() error {
-	// TODO return non fatal errors?
+	// TODO WARN on non fatal errors (cannot remove paths etc)
 	if m.Running() {
 		return errors.New("Machine can't be removed as it's running")
 	}
