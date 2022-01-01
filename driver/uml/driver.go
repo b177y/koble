@@ -11,10 +11,6 @@ type UMLDriver struct {
 	Testing      bool
 }
 
-func (ud *UMLDriver) GetDefaultImage() string {
-	return ud.DefaultImage
-}
-
 func (ud *UMLDriver) Machine(name, namespace string) (m driver.Machine,
 	err error) {
 	m = &Machine{

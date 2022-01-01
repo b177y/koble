@@ -18,8 +18,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		Lab:      nk.Lab.Name,
 		Hostlab:  nk.Lab.Directory,
 		HostHome: true,
-		// Networks: networks,
-		Image: nk.Driver.GetDefaultImage(),
+		Networks: networks,
 	}
 
 	for _, n := range networks {

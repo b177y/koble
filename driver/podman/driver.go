@@ -14,10 +14,6 @@ type PodmanDriver struct {
 	URI          string
 }
 
-func (pd *PodmanDriver) GetDefaultImage() string {
-	return pd.DefaultImage
-}
-
 func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 	err error) {
 	m = &Machine{
