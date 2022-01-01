@@ -243,198 +243,198 @@ is_fd_inherited(int fd)
   return FD_ISSET(fd % FD_SETSIZE, &(open_files_set[fd / FD_SETSIZE])) ? 1 : 0;
 }
 
-static void __attribute__((constructor)) init()
-{
-  const char *xdg_runtime_dir;
-  const char *pause;
-  const char *listen_pid;
-  const char *listen_fds;
-  const char *listen_fdnames;
+/* static void __attribute__((constructor)) init() */
+/* { */
+/*   const char *xdg_runtime_dir; */
+/*   const char *pause; */
+/*   const char *listen_pid; */
+/*   const char *listen_fds; */
+/*   const char *listen_fdnames; */
 
-  DIR *d;
+/*   DIR *d; */
 
-  pause = getenv ("_PODMAN_PAUSE");
-  if (pause && pause[0])
-    {
-      do_pause ();
-      _exit (EXIT_FAILURE);
-    }
+/*   pause = getenv ("_PODMAN_PAUSE"); */
+/*   if (pause && pause[0]) */
+/*     { */
+/*       do_pause (); */
+/*       _exit (EXIT_FAILURE); */
+/*     } */
 
-  /* Store how many FDs were open before the Go runtime kicked in.  */
-  d = opendir ("/proc/self/fd");
-  if (d)
-    {
-      struct dirent *ent;
-      size_t size = 0;
+/*   /1* Store how many FDs were open before the Go runtime kicked in.  *1/ */
+/*   d = opendir ("/proc/self/fd"); */
+/*   if (d) */
+/*     { */
+/*       struct dirent *ent; */
+/*       size_t size = 0; */
 
-      for (ent = readdir (d); ent; ent = readdir (d))
-        {
-          int fd;
+/*       for (ent = readdir (d); ent; ent = readdir (d)) */
+/*         { */
+/*           int fd; */
 
-          if (ent->d_name[0] == '.')
-            continue;
+/*           if (ent->d_name[0] == '.') */
+/*             continue; */
 
-          fd = atoi (ent->d_name);
-          if (fd == dirfd (d))
-            continue;
+/*           fd = atoi (ent->d_name); */
+/*           if (fd == dirfd (d)) */
+/*             continue; */
 
-          if (fd >= size * FD_SETSIZE)
-            {
-              int i;
-              size_t new_size;
+/*           if (fd >= size * FD_SETSIZE) */
+/*             { */
+/*               int i; */
+/*               size_t new_size; */
 
-              new_size = (fd / FD_SETSIZE) + 1;
-              open_files_set = realloc (open_files_set, new_size * sizeof (fd_set));
-              if (open_files_set == NULL)
-                _exit (EXIT_FAILURE);
+/*               new_size = (fd / FD_SETSIZE) + 1; */
+/*               open_files_set = realloc (open_files_set, new_size * sizeof (fd_set)); */
+/*               if (open_files_set == NULL) */
+/*                 _exit (EXIT_FAILURE); */
 
-              for (i = size; i < new_size; i++)
-                FD_ZERO (&(open_files_set[i]));
+/*               for (i = size; i < new_size; i++) */
+/*                 FD_ZERO (&(open_files_set[i])); */
 
-              size = new_size;
-            }
+/*               size = new_size; */
+/*             } */
 
-          if (fd > open_files_max_fd)
-            open_files_max_fd = fd;
+/*           if (fd > open_files_max_fd) */
+/*             open_files_max_fd = fd; */
 
-          FD_SET (fd % FD_SETSIZE, &(open_files_set[fd / FD_SETSIZE]));
-        }
-      closedir (d);
-    }
+/*           FD_SET (fd % FD_SETSIZE, &(open_files_set[fd / FD_SETSIZE])); */
+/*         } */
+/*       closedir (d); */
+/*     } */
 
-    listen_pid = getenv("LISTEN_PID");
-    listen_fds = getenv("LISTEN_FDS");
-    listen_fdnames = getenv("LISTEN_FDNAMES");
+/*     listen_pid = getenv("LISTEN_PID"); */
+/*     listen_fds = getenv("LISTEN_FDS"); */
+/*     listen_fdnames = getenv("LISTEN_FDNAMES"); */
 
-    if (listen_pid != NULL && listen_fds != NULL && strtol(listen_pid, NULL, 10) == getpid())
-      {
-        // save systemd socket environment for rootless child
-        do_socket_activation = true;
-        saved_systemd_listen_pid = strdup(listen_pid);
-        saved_systemd_listen_fds = strdup(listen_fds);
-        if (listen_fdnames != NULL)
-          saved_systemd_listen_fdnames = strdup(listen_fdnames);
-        if (saved_systemd_listen_pid == NULL
-                || saved_systemd_listen_fds == NULL)
-          {
-            fprintf (stderr, "save socket listen environments error: %s\n", strerror (errno));
-            _exit (EXIT_FAILURE);
-          }
-      }
+/*     if (listen_pid != NULL && listen_fds != NULL && strtol(listen_pid, NULL, 10) == getpid()) */
+/*       { */
+/*         // save systemd socket environment for rootless child */
+/*         do_socket_activation = true; */
+/*         saved_systemd_listen_pid = strdup(listen_pid); */
+/*         saved_systemd_listen_fds = strdup(listen_fds); */
+/*         if (listen_fdnames != NULL) */
+/*           saved_systemd_listen_fdnames = strdup(listen_fdnames); */
+/*         if (saved_systemd_listen_pid == NULL */
+/*                 || saved_systemd_listen_fds == NULL) */
+/*           { */
+/*             fprintf (stderr, "save socket listen environments error: %s\n", strerror (errno)); */
+/*             _exit (EXIT_FAILURE); */
+/*           } */
+/*       } */
 
-  /* Shortcut.  If we are able to join the pause pid file, do it now so we don't
-     need to re-exec.  */
-  xdg_runtime_dir = getenv ("XDG_RUNTIME_DIR");
-  if (geteuid () != 0 && xdg_runtime_dir && xdg_runtime_dir[0] && can_use_shortcut ())
-    {
-      int r;
-      int fd;
-      long pid;
-      char buf[12];
-      uid_t uid;
-      gid_t gid;
-      char path[PATH_MAX];
-      const char *const suffix = "/libpod/tmp/pause.pid";
-      char *cwd = getcwd (NULL, 0);
-      char uid_fmt[16];
-      char gid_fmt[16];
-      size_t len;
+/*   /1* Shortcut.  If we are able to join the pause pid file, do it now so we don't */
+/*      need to re-exec.  *1/ */
+/*   xdg_runtime_dir = getenv ("XDG_RUNTIME_DIR"); */
+/*   if (geteuid () != 0 && xdg_runtime_dir && xdg_runtime_dir[0] && can_use_shortcut ()) */
+/*     { */
+/*       int r; */
+/*       int fd; */
+/*       long pid; */
+/*       char buf[12]; */
+/*       uid_t uid; */
+/*       gid_t gid; */
+/*       char path[PATH_MAX]; */
+/*       const char *const suffix = "/libpod/tmp/pause.pid"; */
+/*       char *cwd = getcwd (NULL, 0); */
+/*       char uid_fmt[16]; */
+/*       char gid_fmt[16]; */
+/*       size_t len; */
 
-      if (cwd == NULL)
-        {
-          fprintf (stderr, "error getting current working directory: %s\n", strerror (errno));
-          _exit (EXIT_FAILURE);
-        }
+/*       if (cwd == NULL) */
+/*         { */
+/*           fprintf (stderr, "error getting current working directory: %s\n", strerror (errno)); */
+/*           _exit (EXIT_FAILURE); */
+/*         } */
 
-      len = snprintf (path, PATH_MAX, "%s%s", xdg_runtime_dir, suffix);
-      if (len >= PATH_MAX)
-        {
-          fprintf (stderr, "invalid value for XDG_RUNTIME_DIR: %s", strerror (ENAMETOOLONG));
-          exit (EXIT_FAILURE);
-        }
+/*       len = snprintf (path, PATH_MAX, "%s%s", xdg_runtime_dir, suffix); */
+/*       if (len >= PATH_MAX) */
+/*         { */
+/*           fprintf (stderr, "invalid value for XDG_RUNTIME_DIR: %s", strerror (ENAMETOOLONG)); */
+/*           exit (EXIT_FAILURE); */
+/*         } */
 
-      fd = open (path, O_RDONLY);
-      if (fd < 0)
-        {
-          free (cwd);
-          return;
-        }
+/*       fd = open (path, O_RDONLY); */
+/*       if (fd < 0) */
+/*         { */
+/*           free (cwd); */
+/*           return; */
+/*         } */
 
-      r = TEMP_FAILURE_RETRY (read (fd, buf, sizeof (buf) - 1));
-      close (fd);
-      if (r < 0)
-        {
-          free (cwd);
-          return;
-        }
-      buf[r] = '\0';
+/*       r = TEMP_FAILURE_RETRY (read (fd, buf, sizeof (buf) - 1)); */
+/*       close (fd); */
+/*       if (r < 0) */
+/*         { */
+/*           free (cwd); */
+/*           return; */
+/*         } */
+/*       buf[r] = '\0'; */
 
-      pid = strtol (buf, NULL, 10);
-      if (pid == LONG_MAX)
-        {
-          free (cwd);
-          return;
-        }
+/*       pid = strtol (buf, NULL, 10); */
+/*       if (pid == LONG_MAX) */
+/*         { */
+/*           free (cwd); */
+/*           return; */
+/*         } */
 
-      uid = geteuid ();
-      gid = getegid ();
+/*       uid = geteuid (); */
+/*       gid = getegid (); */
 
-      sprintf (path, "/proc/%ld/ns/user", pid);
-      fd = open (path, O_RDONLY);
-      if (fd < 0 || setns (fd, 0) < 0)
-        {
-          free (cwd);
-          return;
-        }
-      close (fd);
+/*       sprintf (path, "/proc/%ld/ns/user", pid); */
+/*       fd = open (path, O_RDONLY); */
+/*       if (fd < 0 || setns (fd, 0) < 0) */
+/*         { */
+/*           free (cwd); */
+/*           return; */
+/*         } */
+/*       close (fd); */
 
-      /* Errors here cannot be ignored as we already joined a ns.  */
-      sprintf (path, "/proc/%ld/ns/mnt", pid);
-      fd = open (path, O_RDONLY);
-      if (fd < 0)
-        {
-          fprintf (stderr, "cannot open %s: %s", path, strerror (errno));
-          exit (EXIT_FAILURE);
-        }
+/*       /1* Errors here cannot be ignored as we already joined a ns.  *1/ */
+/*       sprintf (path, "/proc/%ld/ns/mnt", pid); */
+/*       fd = open (path, O_RDONLY); */
+/*       if (fd < 0) */
+/*         { */
+/*           fprintf (stderr, "cannot open %s: %s", path, strerror (errno)); */
+/*           exit (EXIT_FAILURE); */
+/*         } */
 
-      sprintf (uid_fmt, "%d", uid);
-      sprintf (gid_fmt, "%d", gid);
+/*       sprintf (uid_fmt, "%d", uid); */
+/*       sprintf (gid_fmt, "%d", gid); */
 
-      setenv ("_CONTAINERS_USERNS_CONFIGURED", "init", 1);
-      setenv ("_CONTAINERS_ROOTLESS_UID", uid_fmt, 1);
-      setenv ("_CONTAINERS_ROOTLESS_GID", gid_fmt, 1);
+/*       setenv ("_CONTAINERS_USERNS_CONFIGURED", "init", 1); */
+/*       setenv ("_CONTAINERS_ROOTLESS_UID", uid_fmt, 1); */
+/*       setenv ("_CONTAINERS_ROOTLESS_GID", gid_fmt, 1); */
 
-      r = setns (fd, 0);
-      if (r < 0)
-        {
-          fprintf (stderr, "cannot join mount namespace for %ld: %s", pid, strerror (errno));
-          exit (EXIT_FAILURE);
-        }
-      close (fd);
+/*       r = setns (fd, 0); */
+/*       if (r < 0) */
+/*         { */
+/*           fprintf (stderr, "cannot join mount namespace for %ld: %s", pid, strerror (errno)); */
+/*           exit (EXIT_FAILURE); */
+/*         } */
+/*       close (fd); */
 
-      if (syscall_setresgid (0, 0, 0) < 0)
-        {
-          fprintf (stderr, "cannot setresgid: %s\n", strerror (errno));
-          _exit (EXIT_FAILURE);
-        }
+/*       if (syscall_setresgid (0, 0, 0) < 0) */
+/*         { */
+/*           fprintf (stderr, "cannot setresgid: %s\n", strerror (errno)); */
+/*           _exit (EXIT_FAILURE); */
+/*         } */
 
-      if (syscall_setresuid (0, 0, 0) < 0)
-        {
-          fprintf (stderr, "cannot setresuid: %s\n", strerror (errno));
-          _exit (EXIT_FAILURE);
-        }
+/*       if (syscall_setresuid (0, 0, 0) < 0) */
+/*         { */
+/*           fprintf (stderr, "cannot setresuid: %s\n", strerror (errno)); */
+/*           _exit (EXIT_FAILURE); */
+/*         } */
 
-      if (chdir (cwd) < 0)
-        {
-          fprintf (stderr, "cannot chdir to %s: %s\n", cwd, strerror (errno));
-          _exit (EXIT_FAILURE);
-        }
+/*       if (chdir (cwd) < 0) */
+/*         { */
+/*           fprintf (stderr, "cannot chdir to %s: %s\n", cwd, strerror (errno)); */
+/*           _exit (EXIT_FAILURE); */
+/*         } */
 
-      free (cwd);
-      rootless_uid_init = uid;
-      rootless_gid_init = gid;
-    }
-}
+/*       free (cwd); */
+/*       rootless_uid_init = uid; */
+/*       rootless_gid_init = gid; */
+/*     } */
+/* } */
 
 static int
 syscall_clone (unsigned long flags, void *child_stack)

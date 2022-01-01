@@ -91,5 +91,9 @@ func CommandWithSock(command string,
 	if err != nil {
 		return "", err
 	}
+	defer func() {
+		fmt.Println("Closing socket")
+		conn.Close()
+	}()
 	return SendCommand(command, *conn)
 }

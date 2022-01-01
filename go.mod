@@ -4,12 +4,16 @@ go 1.17
 
 replace github.com/containernetworking/plugins => github.com/containernetworking/plugins v0.9.1
 
+replace github.com/b177y/go-uml-utilities => ../uml-utilities
+
 require (
 	github.com/b177y/go-uml-utilities v0.0.0-20211227003103-92a347668a4d
 	github.com/containernetworking/plugins v0.9.1
 	github.com/containers/buildah v1.23.1
+	github.com/containers/image/v5 v5.16.0
 	github.com/containers/podman/v3 v3.4.0
 	github.com/creack/pty v1.1.17
+	github.com/creasty/defaults v1.5.2
 	github.com/cri-o/ocicni v0.2.1-0.20210621164014-d0acc7862283
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/go-playground/validator/v10 v10.9.0
@@ -46,7 +50,6 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.8.0 // indirect
 	github.com/containernetworking/cni v0.8.1 // indirect
 	github.com/containers/common v0.44.2 // indirect
-	github.com/containers/image/v5 v5.16.0 // indirect
 	github.com/containers/libtrust v0.0.0-20190913040956-14b96171aa3b // indirect
 	github.com/containers/ocicrypt v1.1.2 // indirect
 	github.com/containers/psgo v1.7.1 // indirect
