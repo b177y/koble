@@ -17,6 +17,8 @@ func DeclareStartMachineTests(d driver.Driver) bool {
 			Expect(err).ShouldNot(HaveOccurred())
 			err = m.Stop(true)
 			Expect(err).ShouldNot(HaveOccurred())
+			err = m.WaitUntil("exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			err = m.Remove()
 			if !errors.Is(err, driver.ErrNotExists) {
 				Expect(err).ShouldNot(HaveOccurred())
@@ -86,11 +88,15 @@ func DeclareRemoveMachineTests(d driver.Driver) bool {
 		It("remove a stopped machine", func() {
 			err := m.Stop(false)
 			Expect(err).ShouldNot(HaveOccurred())
+			err = m.WaitUntil("exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			err = m.Remove()
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 		It("remove a force stopped machine", func() {
 			err := m.Stop(true) // force is true here
+			Expect(err).ShouldNot(HaveOccurred())
+			err = m.WaitUntil("exited", 60)
 			Expect(err).ShouldNot(HaveOccurred())
 			err = m.Remove()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -100,6 +106,8 @@ func DeclareRemoveMachineTests(d driver.Driver) bool {
 			Expect(err).Should(HaveOccurred())
 			// cleanup
 			err = m.Stop(true)
+			Expect(err).ShouldNot(HaveOccurred())
+			err = m.WaitUntil("exited", 60)
 			Expect(err).ShouldNot(HaveOccurred())
 			err = m.Remove()
 			Expect(err).ShouldNot(HaveOccurred())
@@ -119,9 +127,15 @@ func DeclareExistsMachineTests(d driver.Driver) bool {
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 		AfterEach(func() {
-			m.Stop(true)
-			err := m.Remove()
+			exists, err := m.Exists()
 			Expect(err).ShouldNot(HaveOccurred())
+			if exists {
+				m.Stop(true)
+				err = m.WaitUntil("exited", 60)
+				Expect(err).ShouldNot(HaveOccurred())
+				err = m.Remove()
+				Expect(err).ShouldNot(HaveOccurred())
+			}
 		})
 		It("running machine exists", func() {
 			exists, err := m.Exists()
@@ -182,6 +196,8 @@ func DeclareGetStateMachineTests(d driver.Driver) bool {
 		})
 		AfterEach(func() {
 			m.Stop(true)
+			err = m.WaitUntil("exited", 60)
+			Expect(err).ShouldNot(HaveOccurred())
 			err := m.Remove()
 			Expect(err).ShouldNot(HaveOccurred())
 		})

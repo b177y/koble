@@ -206,13 +206,24 @@ func (m *Machine) Stop(force bool) error {
 	if !m.Running() {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name())
 	}
-	err = containers.Stop(m.pd.conn, m.Id(), nil)
-	return err
+	if force {
+		return containers.Kill(m.pd.conn, m.Id(), nil)
+	}
+	return containers.Stop(m.pd.conn, m.Id(), nil)
 }
 
 func (m *Machine) Remove() error {
-	err := containers.Remove(m.pd.conn, m.Id(), nil)
-	return err
+	exists, err := m.Exists()
+	if err != nil {
+		fmt.Println("hmm error checking exists", err)
+		return err
+	}
+	if !exists {
+		fmt.Println("doesnt exist so not removing")
+		return nil
+	}
+	fmt.Println("container exists so removing it now")
+	return containers.Remove(m.pd.conn, m.Id(), nil)
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
