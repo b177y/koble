@@ -3,54 +3,75 @@ package uml
 import (
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/vecnet"
+	"github.com/creasty/defaults"
 )
 
-func (ud *UMLDriver) CreateNetwork(n driver.Network) (err error) {
-	exists, err := ud.NetworkExists(n)
+type Network struct {
+	name      string
+	namespace string
+	ud        *UMLDriver
+}
+
+func (n *Network) Create(opts *driver.NetCreateOptions) error {
+	if opts == nil {
+		opts = new(driver.NetCreateOptions)
+	}
+	if err := defaults.Set(opts); err != nil {
+		return err
+	}
+	exists, err := n.Exists()
 	if err != nil {
 		return err
 	}
 	if exists {
 		return driver.ErrExists
 	}
-	err = vecnet.NewNet(n.Name, n.Namespace)
+	err = vecnet.NewNet(n.name, n.namespace)
 	if err != nil {
 		return err
 	}
-	if n.External {
-		return vecnet.MakeNetExternal(n.Name, n.Namespace, "")
+	if opts.External {
+		return vecnet.MakeNetExternal(n.name, n.namespace, "")
 	}
+	// configBytes, err := json.Marshal(opts)
+	// if err != nil {
+	// 	return err
+	// }
+	// err = ioutil.WriteFile(filepath.Join(m.mDir(), "config.json"),
+	// 	configBytes, 0644)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
-func (ud *UMLDriver) StartNetwork(net driver.Network) (err error) {
+func (n *Network) Start() (err error) {
 	return nil
 }
 
-func (ud *UMLDriver) RemoveNetwork(net driver.Network) (err error) {
-	return err
+func (n *Network) Remove() (err error) {
+	return vecnet.RemoveNet(n.name, n.namespace)
 }
 
-func (ud *UMLDriver) StopNetwork(net driver.Network) (err error) {
+func (n *Network) Stop() (err error) {
 	return nil
 }
 
-func (ud *UMLDriver) GetNetworkState(net driver.Network) (state driver.NetworkState,
-	err error) {
-	state.Running, err = ud.NetworkExists(net)
-	return state, err
+func (n *Network) Running() (running bool, err error) {
+	return n.Exists()
 }
 
-func (ud *UMLDriver) ListNetworks(lab string, all bool) (networks []driver.NetInfo, err error) {
+func (ud *UMLDriver) ListNetworks(namespace string,
+	all bool) (networks []driver.NetInfo, err error) {
 	return networks, nil
 }
 
-func (ud *UMLDriver) NetworkExists(n driver.Network) (bool, error) {
-	return vecnet.NetExists(n.Name, n.Namespace)
+func (n *Network) Exists() (bool, error) {
+	return vecnet.NetExists(n.name, n.namespace)
 }
 
-func (ud *UMLDriver) NetInfo(net driver.Network) (nInfo driver.NetInfo, err error) {
-	exists, err := ud.NetworkExists(net)
+func (n *Network) Info() (nInfo driver.NetInfo, err error) {
+	exists, err := n.Exists()
 	if err != nil {
 		return nInfo, err
 	}

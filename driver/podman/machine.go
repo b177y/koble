@@ -160,11 +160,11 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	s.UseImageHosts = true
 	s.UseImageResolvConf = true
 	for _, n := range opts.Networks {
-		net := driver.Network{
-			Name:      n.Name,
-			Namespace: m.namespace,
+		net, err := m.pd.Network(n.Name(), m.namespace)
+		if err != nil {
+			return err
 		}
-		s.CNINetworks = append(s.CNINetworks, net.Fullname())
+		s.CNINetworks = append(s.CNINetworks, net.Id())
 	}
 	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
 		Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value netkit-startup-phase2.service)", "-eq", "1"},

@@ -28,6 +28,16 @@ func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 	return m, nil
 }
 
+func (pd *PodmanDriver) Network(name, namespace string) (n driver.Network,
+	err error) {
+	n = &Network{
+		name:      name,
+		namespace: namespace,
+		pd:        pd,
+	}
+	return n, nil
+}
+
 func (pd *PodmanDriver) GetCLICommand() (command *cobra.Command, err error) {
 	return new(cobra.Command), nil
 }

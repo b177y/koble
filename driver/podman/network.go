@@ -12,45 +12,59 @@ import (
 	"github.com/containers/podman/v3/pkg/domain/entities"
 )
 
-func getNetLabels(n driver.Network) map[string]string {
+func (n *Network) getNetLabels() map[string]string {
 	labels := make(map[string]string)
 	labels["netkit"] = "true"
-	labels["netkit:name"] = n.Name
-	if n.Lab != "" {
-		labels["netkit:lab"] = n.Lab
-	} else {
-		labels["netkit:nolab"] = "true"
-	}
-	labels["netkit:namespace"] = n.Namespace
+	labels["netkit:name"] = n.Name()
+	// if n.Lab != "" {
+	// 	labels["netkit:lab"] = n.Lab
+	// } else {
+	// 	labels["netkit:nolab"] = "true"
+	// }
+	labels["netkit:namespace"] = n.namespace
 	return labels
 }
 
-func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
-	exists, err := pd.NetworkExists(n)
+type Network struct {
+	name      string
+	namespace string
+	pd        *PodmanDriver
+}
+
+func (n *Network) Name() string {
+	return n.name
+}
+
+func (n *Network) Id() string {
+	return "netkit_" + n.namespace + "_" + n.name
+}
+
+func (n *Network) Create(opts *driver.NetCreateOptions) (err error) {
+	exists, err := n.Exists()
 	if err != nil {
 		return err
 	}
 	if exists {
 		return driver.ErrExists
 	}
-	if n.External {
-		opts := new(network.CreateOptions)
-		if n.Subnet != "" && n.Gateway != "" {
-			_, sn, err := net.ParseCIDR(n.Subnet)
+	if opts.External {
+		cOpts := new(network.CreateOptions)
+		if opts.Subnet != "" && opts.Gateway != "" {
+			_, sn, err := net.ParseCIDR(opts.Subnet)
 			if err != nil {
 				return err
 			}
-			gw := net.ParseIP(n.Gateway)
+			gw := net.ParseIP(opts.Gateway)
 			if gw == nil {
-				return fmt.Errorf("Could not parse IP %s as Gateway", n.Gateway)
+				return fmt.Errorf("Could not parse IP %s as Gateway", opts.Gateway)
 			}
-			opts.WithGateway(gw)
-			opts.WithSubnet(*sn)
+			cOpts.WithGateway(gw)
+			cOpts.WithSubnet(*sn)
 		}
-		opts.WithName(n.Fullname())
-		opts.WithLabels(getNetLabels(n))
-		opts.WithInternal(false)
-		_, err = network.Create(pd.conn, opts)
+		cOpts.WithName(n.Id())
+		cOpts.WithLabels(n.getNetLabels())
+		cOpts.WithInternal(false)
+		_, err = network.Create(n.pd.conn, cOpts)
 		return err
 	} else {
 		home, err := os.UserHomeDir()
@@ -58,7 +72,7 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
 			return err
 		}
 		// TODO check ~/.config/cni/net.d/cni.lock ??
-		f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Fullname()+".conflist"))
+		f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Id()+".conflist"))
 		defer f.Close()
 		if err != nil {
 			return err
@@ -72,118 +86,116 @@ func (pd *PodmanDriver) CreateNetwork(n driver.Network) (err error) {
 	}
 }
 
-func (pd *PodmanDriver) StartNetwork(net driver.Network) (err error) {
+func (n *Network) Start() (err error) {
 	// podman network doesn't need manual starting
 	return nil
 }
 
-func (pd *PodmanDriver) RemoveNetwork(net driver.Network) (err error) {
-	_, err = network.Remove(pd.conn, net.Fullname(), nil)
+func (n *Network) Remove() (err error) {
+	_, err = network.Remove(n.pd.conn, n.Id(), nil)
 	return err
 }
 
-func (pd *PodmanDriver) StopNetwork(net driver.Network) (err error) {
+func (n *Network) Stop() (err error) {
 	// podman network doesn't need manual stopping
 	return nil
 }
 
-func (pd *PodmanDriver) GetNetworkState(net driver.Network) (state driver.NetworkState,
-	err error) {
-	state.Running, err = pd.NetworkExists(net)
-	return state, err
+func (n *Network) Running() (running bool, err error) {
+	return n.Exists()
 }
 
 func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.NetInfo, err error) {
-	opts := new(network.ListOptions)
-	filters := getFilters("", lab, "GLOBAL", all)
-	opts.WithFilters(filters)
-	nets, err := network.List(pd.conn, opts)
-	if err != nil {
-		return networks, err
-	}
-	for _, n := range nets {
-		name, namespace, lab := getInfoFromLabels(n.Labels)
-		n := driver.Network{
-			Name:      name,
-			Namespace: namespace,
-			Lab:       lab,
-		}
-		info, err := network.Inspect(pd.conn, n.Fullname(), nil)
-		if err != nil {
-			return networks, err
-		}
-		nw := driver.NetInfo{
-			Name: name,
-			Lab:  lab,
-		}
-		// this is currently very cursed due to podman bindings at v3.4
-		// returning map[string]interface{}
-		// future bindings will return
-		// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
-		// update this code to make it cleaner when this is released :)
-		if v, ok := info[0]["plugins"]; ok {
-			parsed := v.([]interface{})
-			basicInfo := parsed[0].(map[string]interface{})
-			if v, ok := basicInfo["bridge"]; ok {
-				nw.Interface = v.(string)
-			}
-			if v, ok := basicInfo["ipam"]; ok {
-				ipamParsed := v.(map[string]interface{})
-				if v, ok := ipamParsed["isGateway"]; ok {
-					nw.External = v.(bool)
-				}
-				if v, ok := ipamParsed["ranges"]; ok {
-					rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
-					if v, ok := rangesMap["gateway"]; ok {
-						nw.Gateway = v.(string)
-					}
-					if v, ok := rangesMap["subnet"]; ok {
-						nw.Subnet = v.(string)
-					}
-				}
-			}
-		}
-		networks = append(networks, nw)
-	}
+	// opts := new(network.ListOptions)
+	// filters := getFilters("", lab, "GLOBAL", all)
+	// opts.WithFilters(filters)
+	// nets, err := network.List(pd.conn, opts)
+	// if err != nil {
+	// 	return networks, err
+	// }
+	// for _, n := range nets {
+	// 	name, namespace, lab := getInfoFromLabels(n.Labels)
+	// 	n := driver.Network{
+	// 		Name:      name,
+	// 		Namespace: namespace,
+	// 		Lab:       lab,
+	// 	}
+	// 	info, err := network.Inspect(pd.conn, n.Fullname(), nil)
+	// 	if err != nil {
+	// 		return networks, err
+	// 	}
+	// 	nw := driver.NetInfo{
+	// 		Name: name,
+	// 		Lab:  lab,
+	// 	}
+	// this is currently very cursed due to podman bindings at v3.4
+	// returning map[string]interface{}
+	// future bindings will return
+	// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
+	// update this code to make it cleaner when this is released :)
+	// if v, ok := info[0]["plugins"]; ok {
+	// 	parsed := v.([]interface{})
+	// 	basicInfo := parsed[0].(map[string]interface{})
+	// if v, ok := basicInfo["bridge"]; ok {
+	// 	nw.Interface = v.(string)
+	// }
+	// if v, ok := basicInfo["ipam"]; ok {
+	// 	ipamParsed := v.(map[string]interface{})
+	// 	if v, ok := ipamParsed["isGateway"]; ok {
+	// 		nw.External = v.(bool)
+	// 	}
+	// 	if v, ok := ipamParsed["ranges"]; ok {
+	// 		rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
+	// 		if v, ok := rangesMap["gateway"]; ok {
+	// 			nw.Gateway = v.(string)
+	// 		}
+	// 		if v, ok := rangesMap["subnet"]; ok {
+	// 			nw.Subnet = v.(string)
+	// 		}
+	// 	}
+	// }
+	// }
+	// networks = append(networks, nw)
+	// }
 	return networks, nil
 }
 
-func (pd *PodmanDriver) NetworkExists(net driver.Network) (bool, error) {
-	return network.Exists(pd.conn, net.Fullname(), nil)
+func (n *Network) Exists() (bool, error) {
+	return network.Exists(n.pd.conn, n.Id(), nil)
 }
 
-func (pd *PodmanDriver) NetInfo(net driver.Network) (nInfo driver.NetInfo, err error) {
-	exists, err := pd.NetworkExists(net)
+func (n *Network) Info() (nInfo driver.NetInfo, err error) {
+	exists, err := n.Exists()
 	if err != nil {
 		return nInfo, err
 	}
 	if !exists {
 		return nInfo, driver.ErrNotExists
 	}
-	info, err := network.Inspect(pd.conn, net.Fullname(), nil)
+	info, err := network.Inspect(n.pd.conn, n.Id(), nil)
 	if err != nil {
 		return nInfo, err
 	}
-	nInfo, err = netInfoFromInspect(net, info)
+	nInfo, err = netInfoFromInspect(*n, info)
 	return nInfo, err
 }
 
-func netInfoFromInspect(nw driver.Network, insp []entities.NetworkInspectReport) (netInfo driver.NetInfo, err error) {
+func netInfoFromInspect(nw Network, insp []entities.NetworkInspectReport) (netInfo driver.NetInfo, err error) {
 	// this is currently very cursed due to podman bindings at v3.4
 	// returning map[string]interface{}
 	// future bindings will return
 	// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
 	// update this code to make it cleaner when this is released :)
 	netInfo = driver.NetInfo{
-		Name: nw.Name,
-		Lab:  nw.Lab,
+		Name:      nw.Name(),
+		Namespace: nw.namespace,
 	}
 	if v, ok := insp[0]["plugins"]; ok {
 		parsed := v.([]interface{})
 		basicInfo := parsed[0].(map[string]interface{})
-		if v, ok := basicInfo["bridge"]; ok {
-			netInfo.Interface = v.(string)
-		}
+		// if v, ok := basicInfo["bridge"]; ok {
+		// 	netInfo.Interface = v.(string)
+		// }
 		if v, ok := basicInfo["ipam"]; ok {
 			ipamParsed := v.(map[string]interface{})
 			if v, ok := ipamParsed["isGateway"]; ok {
