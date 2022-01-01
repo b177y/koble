@@ -7,19 +7,7 @@ import (
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-// type Machine struct {
-// 	Name         string `yaml:"name" validate:"alphanum,max=30"`
-// 	Lab          string
-// 	Namespace    string
-// 	Hostlab      string
-// 	Dependencies []string               `yaml:"depends_on,omitempty"`
-// 	HostHome     bool                   `yaml:"hosthome,omitempty"`
-// 	Networks     []string               `yaml:"networks,omitempty" validate:"alphanum,max=30"`
-// 	Volumes      []spec.Mount           `yaml:"volumes,omitempty"`
-// 	Image        string                 `yaml:"image,omitempty"`
-// 	DriverExtra  map[string]interface{} `yaml:"driver_extra,omitempty"`
-// }
-
+// Information about a machine available from the driver
 type MachineInfo struct {
 	Name      string
 	Namespace string

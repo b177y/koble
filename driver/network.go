@@ -1,5 +1,6 @@
 package driver
 
+// Information about a network available from the driver
 type NetInfo struct {
 	Name      string
 	Namespace string

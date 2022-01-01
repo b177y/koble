@@ -6,6 +6,10 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 )
 
+// ip addresses
+// https://github.com/containers/podman/blob/375ff223f430301edf25ef5a5f03a1ae1e029bef/libpod/network/internal/util/util.go
+// https://github.com/containers/podman/blob/375ff223f430301edf25ef5a5f03a1ae1e029bef/libpod/network/internal/util/ip.go
+
 func NetExists(name, namespace string) (exists bool, err error) {
 	err = WithNetNS(namespace, func(ns.NetNS) error {
 		exists, err = IfaceExistsByAlias("nbr_" + name)
