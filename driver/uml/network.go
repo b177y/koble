@@ -1,6 +1,9 @@
 package uml
 
 import (
+	"crypto/md5"
+	"fmt"
+
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/vecnet"
 	"github.com/creasty/defaults"
@@ -10,6 +13,15 @@ type Network struct {
 	name      string
 	namespace string
 	ud        *UMLDriver
+}
+
+func (n *Network) Id() string {
+	return fmt.Sprintf("%x",
+		md5.Sum([]byte(n.name+"-"+n.namespace)))
+}
+
+func (n *Network) Name() string {
+	return n.name
 }
 
 func (n *Network) Create(opts *driver.NetCreateOptions) error {

@@ -118,10 +118,10 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 
 func NetInfoToStringArr(networks []driver.NetInfo, showLab bool) (nlist [][]string, headers []string) {
 	headers = append(headers, "name")
-	if showLab {
-		headers = append(headers, "lab")
-	}
-	headers = append(headers, "interface")
+	// if showLab {
+	// 	headers = append(headers, "lab")
+	// }
+	// headers = append(headers, "interface")
 	headers = append(headers, "external")
 	headers = append(headers, "gateway")
 	headers = append(headers, "subnet")
@@ -129,10 +129,10 @@ func NetInfoToStringArr(networks []driver.NetInfo, showLab bool) (nlist [][]stri
 	for _, n := range networks {
 		var ninfo []string
 		ninfo = append(ninfo, n.Name)
-		if showLab {
-			ninfo = append(ninfo, n.Lab)
-		}
-		ninfo = append(ninfo, n.Interface)
+		// if showLab {
+		// 	ninfo = append(ninfo, n.Lab)
+		// }
+		// ninfo = append(ninfo, n.Interface)
 		ninfo = append(ninfo, strconv.FormatBool(n.External))
 		ninfo = append(ninfo, n.Gateway)
 		ninfo = append(ninfo, n.Subnet)

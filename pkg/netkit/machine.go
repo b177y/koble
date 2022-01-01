@@ -27,14 +27,6 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 		if err != nil && err != driver.ErrExists {
 			return err
 		}
-		_, err = nk.Driver.GetNetworkState(driver.Network{
-			Name:      n,
-			Namespace: nk.Namespace,
-			Lab:       nk.Lab.Name,
-		})
-		if err != nil {
-			return err
-		}
 	}
 
 	// Add options from lab

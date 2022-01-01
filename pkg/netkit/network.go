@@ -16,16 +16,15 @@ type Network struct {
 }
 
 func (nk *Netkit) StartNetwork(name string) error {
-	n := driver.Network{
-		Name:      name,
-		Lab:       nk.Lab.Name,
-		Namespace: nk.Namespace,
-	}
-	err := nk.Driver.CreateNetwork(n)
+	n, err := nk.Driver.Network(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	err = nk.Driver.StartNetwork(n)
+	err = n.Create(nil) // TODO add options
+	if err != nil {
+		return err
+	}
+	err = n.Start()
 	return err
 }
 
@@ -40,19 +39,19 @@ func (nk *Netkit) ListNetworks(all bool) error {
 }
 
 func (nk *Netkit) NetworkInfo(name string) error {
-	n := driver.Network{
-		Name: name,
-		Lab:  nk.Lab.Name,
+	n, err := nk.Driver.Network(name, nk.Namespace)
+	if err != nil {
+		return err
 	}
 	var infoTable [][]string
-	infoTable = append(infoTable, []string{"Name", n.Name})
+	infoTable = append(infoTable, []string{"Name", n.Name()})
 	// get machines connected
-	info, err := nk.Driver.NetInfo(n)
+	info, err := n.Info()
 	if err != nil && err != driver.ErrNotExists {
 		return err
 	}
 	if err != driver.ErrNotExists {
-		infoTable = append(infoTable, []string{"Interface", info.Interface})
+		// infoTable = append(infoTable, []string{"Interface", info.Interface})
 		infoTable = append(infoTable, []string{"External", strconv.FormatBool(info.External)})
 		infoTable = append(infoTable, []string{"Gateway", info.Gateway})
 		infoTable = append(infoTable, []string{"Subnet", info.Subnet})

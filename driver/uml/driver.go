@@ -24,3 +24,13 @@ func (ud *UMLDriver) Machine(name, namespace string) (m driver.Machine,
 	}
 	return m, nil
 }
+
+func (ud *UMLDriver) Network(name, namespace string) (n driver.Network,
+	err error) {
+	n = &Network{
+		name:      name,
+		namespace: namespace,
+		ud:        ud,
+	}
+	return n, nil
+}
