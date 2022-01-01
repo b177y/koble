@@ -9,21 +9,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type PodmanDriver struct {
-	conn         context.Context
-	Name         string
-	DefaultImage string
-	URI          string
-}
-
-func (pd *PodmanDriver) GetDefaultImage() string {
-	return pd.DefaultImage
-}
-
 func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	pd.Name = "Podman"
-	pd.URI = fmt.Sprintf("unix://run/user/%s/podman/podman.sock",
-		fmt.Sprint(os.Getuid()))
+	pd.URI = fmt.Sprintf("unix://run/user/%d/podman/podman.sock",
+		os.Getuid())
 	pd.DefaultImage = "localhost/netkit-deb-test"
 	// override uri with config option
 	if val, ok := conf["uri"]; ok {

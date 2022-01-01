@@ -126,6 +126,7 @@ func ExecUserNS(name string) error {
 }
 
 func CreateAndEnterUserNS(name string) error {
+	fmt.Println("RUNNING ENTER NS")
 	pidEnv := os.Getenv("UML_NS_PID")
 	if pidEnv == "" {
 		exists, err := UserNSExists(name)

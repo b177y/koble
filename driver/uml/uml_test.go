@@ -11,9 +11,11 @@ import (
 
 var ud = new(uml.UMLDriver)
 
-var _ = driver_test.DeclareAllDriverTests(ud)
-
 func TestUML(t *testing.T) {
+	err := driver_test.DeclareAllDriverTests(ud)
+	if err != nil {
+		t.Fatal(err)
+	}
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "UML Driver Suite")
 }
