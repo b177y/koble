@@ -23,6 +23,7 @@ import (
 type MachineInfo struct {
 	Name      string
 	Namespace string
+	Lab       string
 	Image     string
 	Pid       int
 	State     string
@@ -30,6 +31,7 @@ type MachineInfo struct {
 	Running   bool
 	StartedAt time.Time
 	Mounts    []string
+	Networks  []string
 	Ports     []ocicni.PortMapping
 	Uptime    string
 	ExitCode  int32
@@ -40,7 +42,7 @@ type StartOptions struct {
 	Image       string                 `default:""`
 	HostHome    bool                   `default:"false"`
 	Hostlab     string                 `default:""`
-	Networks    []Network              `default:"[]"`
+	Networks    []string               `default:"[]"`
 	Volumes     []spec.Mount           `default:"[]"`
 	DriverExtra map[string]interface{} `default:"{}"`
 	Lab         string                 `default:""`

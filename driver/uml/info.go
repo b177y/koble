@@ -1,7 +1,9 @@
 package uml
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -45,6 +47,25 @@ func (m *Machine) StartedAt() time.Time {
 	return stat.ModTime()
 }
 
+func saveInfo(dir string, info interface{}) error {
+	configBytes, err := json.Marshal(info)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(filepath.Join(dir, "config.json"),
+		configBytes, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func loadInfo(dir string, info interface{}) (err error) {
+	content, err := ioutil.ReadFile(filepath.Join(dir, "config.json"))
+	err = json.Unmarshal(content, &info)
+	return err
+}
+
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	exists, err := m.Exists()
 	if !exists {
@@ -58,15 +79,14 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	info.Pid = m.Pid()
 	info.StartedAt = m.StartedAt()
 
-	// mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	// content, err := ioutil.ReadFile(filepath.Join(mDir, "config.json"))
-	// var mConfig driver.Machine
-	// err = json.Unmarshal(content, &mConfig)
-	// if err != nil {
-	// 	return info, err
-	// }
-	// info.Networks = mConfig.Networks
-	// info.Image = mConfig.Image
-	// info.Lab = mConfig.Lab
+	var saveInfo driver.StartOptions
+	err = loadInfo(m.mDir(), &saveInfo)
+	if err != nil {
+		return info, err
+	}
+	info.Networks = saveInfo.Networks
+	info.Image = saveInfo.Image
+	info.Lab = saveInfo.Lab
+
 	return info, nil
 }

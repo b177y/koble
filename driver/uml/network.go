@@ -3,6 +3,7 @@ package uml
 import (
 	"crypto/md5"
 	"fmt"
+	"path/filepath"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/b177y/netkit/driver/uml/vecnet"
@@ -45,15 +46,10 @@ func (n *Network) Create(opts *driver.NetCreateOptions) error {
 	if opts.External {
 		return vecnet.MakeNetExternal(n.name, n.namespace, "")
 	}
-	// configBytes, err := json.Marshal(opts)
-	// if err != nil {
-	// 	return err
-	// }
-	// err = ioutil.WriteFile(filepath.Join(m.mDir(), "config.json"),
-	// 	configBytes, 0644)
-	// if err != nil {
-	// 	return err
-	// }
+	err = saveInfo(filepath.Join(n.ud.RunDir, "net", n.Id()), opts)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -90,5 +86,7 @@ func (n *Network) Info() (nInfo driver.NetInfo, err error) {
 	if !exists {
 		return nInfo, driver.ErrNotExists
 	}
+	var info driver.NetCreateOptions
+	err = loadInfo(filepath.Join(n.ud.RunDir, "net", n.Id()), info)
 	return nInfo, err
 }

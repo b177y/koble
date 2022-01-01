@@ -4,10 +4,8 @@ import (
 	"bufio"
 	"context"
 	"crypto/md5"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -77,7 +75,7 @@ func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	var networks []string
 	for _, n := range opts.Networks {
-		networks = append(networks, n.Name())
+		networks = append(networks, n)
 	}
 	cmd = append(cmd, networks...)
 	if opts.HostHome {
@@ -151,21 +149,16 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	configBytes, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(filepath.Join(m.mDir(), "config.json"),
-		configBytes, 0644)
+	err = saveInfo(m.mDir(), opts)
 	if err != nil {
 		return err
 	}
 	var networks []string
 	for i, n := range opts.Networks {
 		// setup tap
-		ifaceName, err := vecnet.AddHostToNet(m.name, n.Name(), m.namespace)
+		ifaceName, err := vecnet.AddHostToNet(m.name, n, m.namespace)
 		if err != nil {
-			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name(), n.Name(), err)
+			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name(), n, err)
 		}
 		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
 		// add to networks for cmdline

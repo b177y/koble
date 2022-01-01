@@ -160,7 +160,7 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	s.UseImageHosts = true
 	s.UseImageResolvConf = true
 	for _, n := range opts.Networks {
-		net, err := m.pd.Network(n.Name(), m.namespace)
+		net, err := m.pd.Network(n, m.namespace)
 		if err != nil {
 			return err
 		}
