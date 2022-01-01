@@ -37,13 +37,13 @@ type MachineInfo struct {
 }
 
 type StartOptions struct {
-	Image       string
-	HostHome    bool
-	Hostlab     string
-	Networks    []Network
-	Volumes     []spec.Mount
-	DriverExtra map[string]interface{}
-	Lab         string
+	Image       string                 `default:""`
+	HostHome    bool                   `default:"false"`
+	Hostlab     string                 `default:""`
+	Networks    []Network              `default:"[]"`
+	Volumes     []spec.Mount           `default:"[]"`
+	DriverExtra map[string]interface{} `default:"{}"`
+	Lab         string                 `default:""`
 }
 
 type ExecOptions struct {

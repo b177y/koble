@@ -11,6 +11,8 @@ import (
 	"time"
 
 	copier "github.com/containers/buildah/copier"
+	"github.com/containers/image/v5/manifest"
+	"github.com/creasty/defaults"
 
 	"github.com/b177y/netkit/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
@@ -39,7 +41,32 @@ func (m *Machine) Exists() (bool, error) {
 }
 
 func (m *Machine) Running() bool {
-	return false
+	// TODO add err
+	inspect, err := containers.Inspect(m.pd.conn, m.Id(), nil)
+	if err != nil {
+		return false
+	}
+	return inspect.State.Running
+}
+
+func (m *Machine) State() (state string, err error) {
+	inspect, err := containers.Inspect(m.pd.conn, m.Id(), nil)
+	if err != nil {
+		return "", err
+	}
+	if inspect.State.Status == "running" {
+		hc, err := containers.RunHealthCheck(m.pd.conn, m.Id(), nil)
+		if err != nil {
+			return "", err
+		}
+		if hc.Status != "healthy" {
+			return "booting", nil
+		} else {
+			return "running", nil
+		}
+	} else {
+		return inspect.State.Status, nil
+	}
 }
 
 func (m *Machine) getLabels() map[string]string {
@@ -87,6 +114,12 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	if opts == nil {
 		opts = new(driver.StartOptions)
 	}
+	if err := defaults.Set(opts); err != nil {
+		return err
+	}
+	if opts.Image == "" {
+		opts.Image = m.pd.DefaultImage
+	}
 	exists, err := m.Exists()
 	if err != nil {
 		return err
@@ -132,6 +165,10 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 			Namespace: m.namespace,
 		}
 		s.CNINetworks = append(s.CNINetworks, net.Fullname())
+	}
+	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
+		Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value netkit-startup-phase2.service)", "-eq", "1"},
+		Timeout: 3 * time.Second,
 	}
 	s.Terminal = true
 	s.Labels = m.getLabels()
@@ -355,12 +392,16 @@ func (m *Machine) WaitUntil(state string, timeout time.Duration) error {
 	defer cancel()
 	for {
 		// once condition is met return
-		if m.State() == state {
+		mState, err := m.State()
+		if err != nil {
+			return err
+		}
+		if mState == state {
 			return nil
 		}
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
-				m.name, state, m.State(), err)
+				m.name, state, mState, err)
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
