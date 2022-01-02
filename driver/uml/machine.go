@@ -16,8 +16,10 @@ import (
 	"github.com/b177y/netkit/driver/uml/shim"
 	"github.com/b177y/netkit/driver/uml/vecnet"
 	"github.com/containernetworking/plugins/pkg/ns"
+	"github.com/creasty/defaults"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -69,7 +71,7 @@ func getKernelCMD(m *Machine, opts driver.StartOptions, networks []string) (cmd 
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
-	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(), m.ud.DefaultImage))
+	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(), opts.Image))
 	cmd = append(cmd, "root=98:0")
 	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
@@ -107,6 +109,12 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	if opts == nil {
 		opts = new(driver.StartOptions)
+	}
+	if err := defaults.Set(opts); err != nil {
+		return err
+	}
+	if opts.Image == "" {
+		opts.Image = m.ud.DefaultImage
 	}
 	exists, err := m.Exists()
 	if err != nil {
@@ -250,10 +258,11 @@ func (m *Machine) Remove() error {
 	}
 	os.RemoveAll(m.mDir())
 	os.RemoveAll(filepath.Join(m.nsDir(), m.name))
-	// get networks for machine
-	// for _, n := range m.Networks {
-	// 	vecnet.RemoveHostTap(m.Name, n, m.Namespace)
-	// }
+	err := vecnet.RemoveMachineNets(m.Name(), m.namespace, true)
+	if err != nil {
+		log.Warnf("Could not remove networks for machine %s: %w\n",
+			m.Name(), err)
+	}
 	os.Remove(m.diskPath())
 	return nil
 }
