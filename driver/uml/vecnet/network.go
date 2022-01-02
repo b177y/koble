@@ -73,6 +73,20 @@ func bridgeUsed(bridge netlink.Link) (used bool, err error) {
 	return false, nil
 }
 
+func linkBelongsToMachine(link netlink.Link, machine string) bool {
+	alias := link.Attrs().Alias
+	if strings.Contains(alias, "mtap_"+machine) {
+		return true
+	} else if strings.Contains(alias, "mgmt_tap_"+machine) {
+		return true
+	} else if strings.Contains(alias, "mgmt_slirp_"+machine) {
+		return true
+	} else {
+		// dont include mgmt_br as itll be deleted later
+		return false
+	}
+}
+
 func RemoveMachineNets(machine, namespace string, rmNet bool) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		interfaces, err := netlink.LinkList()
@@ -80,7 +94,8 @@ func RemoveMachineNets(machine, namespace string, rmNet bool) error {
 			return err
 		}
 		for _, i := range interfaces {
-			if !strings.Contains(i.Attrs().Alias, "mtap_"+machine) {
+			if !linkBelongsToMachine(i, machine) {
+				fmt.Printf("%s doesnt belong to %s, skipping\n", i.Attrs().Alias, machine)
 				continue
 			}
 			err = netlink.LinkDel(i)
@@ -93,7 +108,6 @@ func RemoveMachineNets(machine, namespace string, rmNet bool) error {
 					return fmt.Errorf("Could not find tap %s's master by index %d: %w",
 						i.Attrs().Alias, i.Attrs().MasterIndex, err)
 				}
-				fmt.Printf("Found bridge %s for tap %s\n", br.Attrs().Alias, i.Attrs().Alias)
 				if used, err := bridgeUsed(br); err != nil {
 					return err
 				} else if !used {
