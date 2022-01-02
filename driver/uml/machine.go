@@ -64,7 +64,7 @@ func (m *Machine) Running() bool {
 	return m.Pid() > 0
 }
 
-func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error) {
+func getKernelCMD(m *Machine, opts driver.StartOptions, networks []string) (cmd []string, err error) {
 	cmd = []string{m.ud.Kernel}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
@@ -73,10 +73,6 @@ func getKernelCMD(m *Machine, opts driver.StartOptions) (cmd []string, err error
 	cmd = append(cmd, "root=98:0")
 	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
-	var networks []string
-	for _, n := range opts.Networks {
-		networks = append(networks, n)
-	}
 	cmd = append(cmd, networks...)
 	if opts.HostHome {
 		home, err := os.UserHomeDir()
@@ -164,19 +160,19 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
-	ifaceName, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(m.mDir(), "slirp.sock"))
+	ifaceName, mgmtIp, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(m.mDir(), "slirp.sock"))
 	if err != nil {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
 	// TODO autoconf with custom ip
-	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_netkit0=10.22.2.110/24",
-		len(networks), ifaceName))
+	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_netkit0=%s",
+		len(networks), ifaceName, mgmtIp))
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {
 	// 		mnt.Type = "bind"
 	// 	}
 	// }
-	kernelcmd, err := getKernelCMD(m, *opts)
+	kernelcmd, err := getKernelCMD(m, *opts, networks)
 	if err != nil {
 		return err
 	}

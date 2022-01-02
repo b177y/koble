@@ -17,6 +17,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"syscall"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var NSPID_DIR = "/run/user/1000/uml"
@@ -117,9 +119,14 @@ func ExecUserNS(name string) error {
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	}
-	err = cmd.Run()
+	err = cmd.Start()
 	if err != nil {
 		return fmt.Errorf("Error running ns reexec: %w", err)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		log.Debugf("Error from reexec child: %v", err)
+		os.Exit(1)
 	}
 	os.Exit(0)
 	return nil
