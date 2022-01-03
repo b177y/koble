@@ -95,7 +95,6 @@ func RemoveMachineNets(machine, namespace string, rmNet bool) error {
 		}
 		for _, i := range interfaces {
 			if !linkBelongsToMachine(i, machine) {
-				fmt.Printf("%s doesnt belong to %s, skipping\n", i.Attrs().Alias, machine)
 				continue
 			}
 			err = netlink.LinkDel(i)

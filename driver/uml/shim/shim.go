@@ -101,8 +101,11 @@ func RunShim() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go io.Copy(stdOutBr, ptmx)
 	go func(ctx context.Context) {
-		defer stdOutBr.Clean()
-		defer l.Close()
+		defer func() {
+			stdOutBr.Clean()
+			l.Close()
+			os.RemoveAll(sockpath)
+		}()
 		for {
 			select {
 			case <-ctx.Done():
@@ -133,4 +136,5 @@ func RunShim() {
 		shimLog("Command wait() error", dir, err)
 	}
 	updateState(dir, "exited", cmd.ProcessState.ExitCode())
+	os.RemoveAll(sockpath)
 }

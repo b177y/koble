@@ -102,6 +102,7 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 		c.SysProcAttr = &syscall.SysProcAttr{
 			Setsid: true,
 		}
+		log.Info("starting shim with kernelCmd: ", kernelCmd)
 		return c.Start()
 	})
 }
@@ -192,7 +193,13 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 	return err
 }
 
-func (m *Machine) Stop(force bool) error {
+func (m *Machine) Stop(force bool) (err error) {
+	defer func() {
+		if err == nil {
+			// TODO remove this once test kernel patch reverted
+			os.RemoveAll(filepath.Join(m.mDir(), m.Id()))
+		}
+	}()
 	exists, err := m.Exists()
 	if err != nil {
 		return err

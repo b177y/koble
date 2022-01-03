@@ -25,7 +25,7 @@ var NetkitCLI = &cobra.Command{
 		} else if quiet {
 			log.SetLevel(log.ErrorLevel)
 		} else {
-			log.SetLevel(log.InfoLevel)
+			log.SetLevel(log.WarnLevel)
 		}
 		var err error
 		nk, err = netkit.NewNetkit(namespace)

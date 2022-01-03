@@ -109,12 +109,9 @@ func DelBridge(alias string) error {
 }
 
 func NewTap(alias string) (ifaceName string, err error) {
-	exists, err := IfaceExistsByAlias(alias)
-	if err != nil {
-		return "", err
-	} else if exists {
-		// tap already exists
-		return "", nil
+	t, err := netlink.LinkByAlias(alias)
+	if err == nil {
+		return t.Attrs().Name, nil
 	}
 	ifaceName, err = newLinkID()
 	if err != nil {
@@ -192,14 +189,6 @@ func AddSlirpIface(name, bridge, namespace, subnet, sockpath string) error {
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		var tap netlink.Link
 		var err error
-		exists, err := IfaceExistsByAlias(name)
-		if err != nil {
-			return err
-		} else if exists {
-			// TODO change this bc iface might exist but slirp might have stopped
-			// tapout already exists
-			return nil
-		}
 		// timeout ~5s to wait for slirp4netns to create new tap
 		for i := 0; i < 10; i++ {
 			tap, err = netlink.LinkByName(ifaceName)
