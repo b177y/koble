@@ -12,6 +12,14 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+var PRIVKEY = `-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACBtsm54vc9xUMLYwqj+Jy47biWyf0WNc1O7b4HnW00saAAAAJi4/CjruPwo
+6wAAAAtzc2gtZWQyNTUxOQAAACBtsm54vc9xUMLYwqj+Jy47biWyf0WNc1O7b4HnW00saA
+AAAECxwuglsavOtToObx6HPzIh1jstZaHr56Bp08XJSz3jcG2ybni9z3FQwtjCqP4nLjtu
+JbJ/RY1zU7tvgedbTSxoAAAAE2JpbGx5QGxhcHRvcC0weEU4MDIBAg==
+-----END OPENSSH PRIVATE KEY-----`
+
 func ipFromSubnet(subnet net.IPNet, num int) string {
 	ip := make(net.IP, len(subnet.IP))
 	copy(ip, subnet.IP)
@@ -112,9 +120,13 @@ func WithSSHSession(machine, user, namespace string, toRun func(s *ssh.Session) 
 		if user == "" {
 			user = "root"
 		}
+		signer, err := ssh.ParsePrivateKey([]byte(PRIVKEY))
+		if err != nil {
+			return err
+		}
 		sshConfig := &ssh.ClientConfig{
 			User:            user,
-			Auth:            []ssh.AuthMethod{ssh.Password("netkit")},
+			Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		}
 		addr, err := getBridgeIP(fmt.Sprintf("mgmt_br_%s", machine))
