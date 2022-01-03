@@ -1,9 +1,1 @@
-= Netkit
-
-This is a rewrite of
-link:https://github.com/netkit-jh/netkit-jh-build[netkit-jh]
-using rootless containers as the underlying technology.
-
-== Install
-
-== Usage
+docs/modules/ROOT/pages/index.adoc
