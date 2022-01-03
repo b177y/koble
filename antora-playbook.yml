@@ -1,9 +1,17 @@
 site:
   title: Netkit Docs
-  # start_page: component-b::index.adoc 
 content:
   sources: 
   - url: ./
+    start_path: docs
+    branches: main
+  - url: ../netkit-fs
+    branches: main
+    start_path: docs
+  - url: ../netkit-kernel
+    branches: main
+    start_path: docs
+  - url: ../uml-utilities
     branches: main
     start_path: docs
 ui: 
