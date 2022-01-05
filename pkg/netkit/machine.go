@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/b177y/netkit/driver"
+	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
@@ -146,12 +147,20 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 	return m.Logs(&opts)
 }
 
-func (nk *Netkit) ListMachines(all bool) error {
+func (nk *Netkit) ListMachines(all, json bool) error {
 	machines, err := nk.Driver.ListMachines(nk.Namespace, all)
 	if err != nil {
 		return err
 	}
-	mlist, headers := MachineInfoToStringArr(machines, all)
-	RenderTable(headers, mlist)
+	if json {
+		s, err := prettyjson.Marshal(machines)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(s))
+	} else {
+		mlist, headers := MachineInfoToStringArr(machines, all)
+		RenderTable(headers, mlist)
+	}
 	return nil
 }

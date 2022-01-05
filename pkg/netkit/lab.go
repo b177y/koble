@@ -308,7 +308,7 @@ func (nk *Netkit) LabInfo() error {
 	info = append(info, []string{"Description", nk.Lab.Description})
 	RenderTable([]string{}, info)
 	fmt.Printf("================================================================\n\n")
-	err := nk.ListMachines(false)
+	err := nk.ListMachines(false, false)
 	if err != nil {
 		return err
 	}

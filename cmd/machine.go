@@ -17,6 +17,7 @@ var addMachineNetworks []string
 var addMachineImage string
 
 var mListAll bool
+var mListJson bool
 
 var machineCmd = &cobra.Command{
 	Use:   "machine",
@@ -105,7 +106,7 @@ var mlistCmd = &cobra.Command{
 				fmt.Fprintf(os.Stderr, "To see all machines use `netkit machine list --all`\n\n")
 			}
 		}
-		err := nk.ListMachines(mListAll)
+		err := nk.ListMachines(mListAll, mListJson)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -127,4 +128,5 @@ func init() {
 	maddCmd.Flags().StringArrayVar(&addMachineNetworks, "networks", []string{}, "Networks to add to new machine.")
 
 	mlistCmd.Flags().BoolVarP(&mListAll, "all", "a", false, "List all machines (from all labs / non-labs)")
+	mlistCmd.Flags().BoolVar(&mListJson, "json", false, "Print machine list as json array to stdout")
 }

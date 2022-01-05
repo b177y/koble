@@ -333,6 +333,9 @@ github.com/docker/go-metrics
 # github.com/docker/go-units v0.4.0
 ## explicit
 github.com/docker/go-units
+# github.com/fatih/color v1.13.0
+## explicit; go 1.13
+github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
@@ -397,6 +400,9 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
+## explicit
+github.com/hokaccha/go-prettyjson
 # github.com/hpcloud/tail v1.0.0
 ## explicit
 github.com/hpcloud/tail

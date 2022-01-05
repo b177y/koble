@@ -17,6 +17,7 @@ require (
 	github.com/cri-o/ocicni v0.2.1-0.20210621164014-d0acc7862283
 	github.com/docker/docker v20.10.10+incompatible
 	github.com/go-playground/validator/v10 v10.9.0
+	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f
 	github.com/hpcloud/tail v1.0.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6
 	github.com/olekukonko/tablewriter v0.0.5
@@ -63,6 +64,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

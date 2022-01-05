@@ -9,21 +9,21 @@ import (
 
 // Information about a machine available from the driver
 type MachineInfo struct {
-	Name      string
-	Namespace string
-	Lab       string
-	Image     string
-	Pid       int
-	State     string
-	Status    string
-	Running   bool
-	StartedAt time.Time
-	Mounts    []string
-	Networks  []string
-	Ports     []ocicni.PortMapping
-	Uptime    string
-	ExitCode  int32
-	ExitedAt  int64
+	Name      string               `json:"name"`
+	Namespace string               `json:"namespace"`
+	Lab       string               `json:"lab,omitempty"`
+	Image     string               `json:"image"`
+	Pid       int                  `json:"pid,omitempty"`
+	State     string               `json:"state"`
+	Status    string               `json:"status,omitempty"`
+	Running   bool                 `json:"running"`
+	StartedAt time.Time            `json:"started_at,omitempty"`
+	Mounts    []string             `json:"mounts"`
+	Networks  []string             `json:"networks"`
+	Ports     []ocicni.PortMapping `json:"ports"`
+	Uptime    string               `json:"uptime,omitempty"`
+	ExitCode  int32                `json:"exit_code,omitempty"`
+	ExitedAt  int64                `json:"exited_at,omitempty"`
 }
 
 type StartOptions struct {
