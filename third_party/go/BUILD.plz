@@ -2139,6 +2139,7 @@ go_mod_download(
     _tag = "download",
     module = "github.com/containers/storage",
     version = "v1.36.0",
+    strip = ["pkg/unshare/unshare_cgo.go"],
 )
 
 go_module(
