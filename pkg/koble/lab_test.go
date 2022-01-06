@@ -1,4 +1,4 @@
-package netkit_test
+package koble_test
 
 import (
 	"fmt"
@@ -8,22 +8,22 @@ import (
 	"testing"
 
 	"github.com/b177y/netkit/driver/mock"
-	"github.com/b177y/netkit/pkg/netkit"
+	"github.com/b177y/netkit/pkg/koble"
 )
 
-var nk *netkit.Netkit
+var nk *koble.Koble
 
 var TESTPATH string
 var TMPDIR string
 
 func TestInitLabNewDir(t *testing.T) {
-	err := netkit.InitLab("newlab", "", []string{}, []string{}, []string{})
+	err := koble.InitLab("newlab", "", []string{}, []string{}, []string{})
 	if err != nil {
 		t.Errorf("Could not initialise lab in new directory: %w", err)
 	}
-	var lab netkit.Lab
+	var lab koble.Lab
 	os.Chdir("newlab")
-	_, err = netkit.GetLab(&lab)
+	_, err = koble.GetLab(&lab)
 	if err != nil {
 		t.Errorf("Could not load newly initialised lab: %w", err)
 	}
@@ -37,12 +37,12 @@ func TestInitLabNewDir(t *testing.T) {
 func TestInitLabCurrDir(t *testing.T) {
 	os.Mkdir("newlab", 0700)
 	os.Chdir("newlab")
-	err := netkit.InitLab("", "test description", []string{}, []string{}, []string{})
+	err := koble.InitLab("", "test description", []string{}, []string{}, []string{})
 	if err != nil {
 		t.Errorf("Could not initialise lab in current directory: %w", err)
 	}
-	var lab netkit.Lab
-	_, err = netkit.GetLab(&lab)
+	var lab koble.Lab
+	_, err = koble.GetLab(&lab)
 	if err != nil {
 		t.Errorf("Could not load newly initialised lab: %w", err)
 	}
@@ -53,7 +53,7 @@ func TestInitLabCurrDir(t *testing.T) {
 
 func TestInitLabNewDirExists(t *testing.T) {
 	os.Mkdir("newlab", 0700)
-	err := netkit.InitLab("newlab", "", []string{}, []string{}, []string{})
+	err := koble.InitLab("newlab", "", []string{}, []string{}, []string{})
 	if err == nil {
 		t.Error("Managed to make new lab where the directory already exists")
 	}
@@ -67,7 +67,7 @@ func TestInitLabCurrDirExists(t *testing.T) {
 	os.Mkdir("newlab", 0700)
 	os.Chdir("newlab")
 	os.Create("lab.yml")
-	err := netkit.InitLab("", "", []string{}, []string{}, []string{})
+	err := koble.InitLab("", "", []string{}, []string{}, []string{})
 	if err == nil {
 		t.Error("Managed to init new lab which already has lab.yml")
 	}
@@ -79,17 +79,17 @@ func TestInitLabCurrDirExists(t *testing.T) {
 }
 
 func TestAddMachineToLab(t *testing.T) {
-	err := netkit.InitLab("newlab", "", []string{}, []string{}, []string{})
+	err := koble.InitLab("newlab", "", []string{}, []string{}, []string{})
 	if err != nil {
 		t.Errorf("Could not initialise lab for test: %w", err)
 	}
 	os.Chdir("newlab")
-	err = netkit.AddMachineToLab("testmachine", []string{"n1", "n2"}, "test-image")
+	err = koble.AddMachineToLab("testmachine", []string{"n1", "n2"}, "test-image")
 	if err != nil {
 		t.Errorf("Could not add machine to lab: %w", err)
 	}
-	var lab netkit.Lab
-	_, err = netkit.GetLab(&lab)
+	var lab koble.Lab
+	_, err = koble.GetLab(&lab)
 	if err != nil {
 		t.Errorf("Could not load lab for test: %w", err)
 	}
@@ -114,18 +114,18 @@ func TestAddMachineToLab(t *testing.T) {
 }
 
 func TestAddNetworkToLab(t *testing.T) {
-	err := netkit.InitLab("newlab", "", []string{}, []string{}, []string{})
+	err := koble.InitLab("newlab", "", []string{}, []string{}, []string{})
 	if err != nil {
 		t.Errorf("Could not initialise lab for test: %w", err)
 	}
 	os.Chdir("newlab")
 	ip, cidr, _ := net.ParseCIDR("172.16.10.1/24")
-	err = netkit.AddNetworkToLab("testnet", true, ip, *cidr, false)
+	err = koble.AddNetworkToLab("testnet", true, ip, *cidr, false)
 	if err != nil {
 		t.Errorf("Could not add network to lab: %w", err)
 	}
-	var lab netkit.Lab
-	_, err = netkit.GetLab(&lab)
+	var lab koble.Lab
+	_, err = koble.GetLab(&lab)
 	if err != nil {
 		t.Errorf("Could not load lab for test: %w", err)
 	}
@@ -180,13 +180,13 @@ func TestMain(tm *testing.M) {
 		os.Exit(-1)
 	}
 	os.Chdir(TMPDIR)
-	nk, err = netkit.NewNetkit("GLOBAL")
+	nk, err = koble.NewKoble("GLOBAL")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
 	nk.Driver = new(mock.MockDriver)
-	err = nk.Driver.SetupDriver(new(netkit.Config).Driver.ExtraConf)
+	err = nk.Driver.SetupDriver(new(koble.Config).Driver.ExtraConf)
 	c := tm.Run()
 	err = os.RemoveAll(TMPDIR)
 	if err != nil {

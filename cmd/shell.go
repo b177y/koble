@@ -14,7 +14,7 @@ var workDir string
 
 var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "get a shell on a netkit machine",
+	Short:             "get a shell on a koble machine",
 	ValidArgsFunction: autocompRunningMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {
@@ -50,6 +50,6 @@ func init() {
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	shellCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
 	shellCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
-	NetkitCLI.AddCommand(shellCmd)
+	KobleCLI.AddCommand(shellCmd)
 	machineCmd.AddCommand(shellCmd)
 }

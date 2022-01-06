@@ -1,4 +1,4 @@
-package netkit
+package koble_test
 
 import "testing"
 

@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 import (
 	"crypto/sha256"
@@ -10,17 +10,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Netkit struct {
+type Koble struct {
 	Lab       Lab
 	Config    Config
 	Namespace string
 	Driver    driver.Driver
 }
 
-func NewNetkit(namespace string) (*Netkit, error) {
+func NewKoble(namespace string) (*Koble, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/netkit")
+	viper.AddConfigPath("$HOME/.config/koble")
 	viper.AddConfigPath("./examples/")
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -48,7 +48,7 @@ func NewNetkit(namespace string) (*Netkit, error) {
 	} else {
 		return nil, fmt.Errorf("Driver %s is not currently supported.", config.Driver.Name)
 	}
-	nk := &Netkit{
+	nk := &Koble{
 		Lab:    lab,
 		Driver: d,
 		Config: config,

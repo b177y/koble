@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-func (nk *Netkit) StartMachine(name, image string, networks []string) error {
+func (nk *Koble) StartMachine(name, image string, networks []string) error {
 	// Start with defaults
 	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
@@ -62,7 +62,7 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	return m.Start(&opts)
 }
 
-func (nk *Netkit) MachineInfo(name string, json bool) error {
+func (nk *Koble) MachineInfo(name string, json bool) error {
 	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (nk *Netkit) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Netkit) HaltMachine(machine string, force bool) error {
+func (nk *Koble) HaltMachine(machine string, force bool) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func (nk *Netkit) HaltMachine(machine string, force bool) error {
 	return m.Stop(force)
 }
 
-func (nk *Netkit) RemoveMachine(machine string) error {
+func (nk *Koble) RemoveMachine(machine string) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func (nk *Netkit) RemoveMachine(machine string) error {
 	return m.Remove()
 }
 
-func (nk *Netkit) DestroyMachine(machine string) error {
+func (nk *Koble) DestroyMachine(machine string) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func (nk *Netkit) DestroyMachine(machine string) error {
 	return m.Remove()
 }
 
-func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
+func (nk *Koble) MachineLogs(machine string, follow bool, tail int) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func (nk *Netkit) MachineLogs(machine string, follow bool, tail int) error {
 	return m.Logs(&opts)
 }
 
-func (nk *Netkit) ListMachines(all, json bool) error {
+func (nk *Koble) ListMachines(all, json bool) error {
 	machines, err := nk.Driver.ListMachines(nk.Namespace, all)
 	if err != nil {
 		return err

@@ -14,7 +14,7 @@ giving access to stdin, stdout and stderr of the process
 Although the shim can wrap any process,
 it is designed to wrap Usermode Linux kernel processes.
 The 'state' file is updated from booting to running by looking for
-an output which is specific to Netkit UML.
+an output which is specific to Koble UML.
 
 == Usage
 

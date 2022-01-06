@@ -10,9 +10,11 @@ import (
 
 var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
-	Short:             "attach to the main tty of a netkit machine",
+	Short:             "attach to the main tty of a koble machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: autocompRunningMachine,
+	Example: `koble attach --terminal
+	koble attach --console`,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
@@ -43,6 +45,6 @@ var attachCmd = &cobra.Command{
 func init() {
 	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
 	attachCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
-	NetkitCLI.AddCommand(attachCmd)
+	KobleCLI.AddCommand(attachCmd)
 	machineCmd.AddCommand(attachCmd)
 }

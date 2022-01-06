@@ -25,7 +25,7 @@ var unshareCmd = cobra.Command{
 			namespace = args[0]
 		}
 		fmt.Println("Entering namespace for", namespace)
-		err := vecnet.CreateAndEnterUserNS("netkit")
+		err := vecnet.CreateAndEnterUserNS("koble")
 		if err != nil {
 			log.Fatal(err)
 		}

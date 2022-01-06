@@ -9,9 +9,11 @@ var logsFollow bool
 var logsTail int
 
 var logsCmd = &cobra.Command{
-	Use:               "logs [options] MACHINE",
-	Short:             "get logs from a netkit machine",
-	Args:              cobra.ExactArgs(1),
+	Use:   "logs [options] MACHINE",
+	Short: "get logs from a koble machine",
+	Args:  cobra.ExactArgs(1),
+	Example: `koble logs a0 -f
+	koble logs dh --tail 10`,
 	ValidArgsFunction: autocompMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		machine := args[0]
@@ -26,6 +28,6 @@ var logsCmd = &cobra.Command{
 func init() {
 	logsCmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Follow log output")
 	logsCmd.Flags().IntVar(&logsTail, "tail", -1, "Output the specified number of LINES at the end of the logs.  Defaults to -1, which prints all lines")
-	NetkitCLI.AddCommand(logsCmd)
+	KobleCLI.AddCommand(logsCmd)
 	machineCmd.AddCommand(logsCmd)
 }

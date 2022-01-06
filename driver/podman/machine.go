@@ -33,7 +33,7 @@ func (m *Machine) Name() string {
 }
 
 func (m *Machine) Id() string {
-	return "netkit_" + m.namespace + "_" + m.name
+	return "koble_" + m.namespace + "_" + m.name
 }
 
 func (m *Machine) Exists() (bool, error) {
@@ -71,23 +71,23 @@ func (m *Machine) State() (state string, err error) {
 
 func (m *Machine) getLabels() map[string]string {
 	labels := make(map[string]string)
-	labels["netkit"] = "true"
-	labels["netkit:name"] = m.Name()
+	labels["koble"] = "true"
+	labels["koble:name"] = m.Name()
 	// if m.Lab != "" {
-	// 	labels["netkit:lab"] = m.Lab
+	// 	labels["koble:lab"] = m.Lab
 	// }
-	labels["netkit:namespace"] = m.namespace
+	labels["koble:namespace"] = m.namespace
 	return labels
 }
 
 func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
-	if val, ok := labels["netkit:name"]; ok {
+	if val, ok := labels["koble:name"]; ok {
 		name = val
 	}
-	if val, ok := labels["netkit:lab"]; ok {
+	if val, ok := labels["koble:lab"]; ok {
 		lab = val
 	}
-	if val, ok := labels["netkit:namespace"]; ok {
+	if val, ok := labels["koble:namespace"]; ok {
 		namespace = val
 	}
 	return name, namespace, lab
@@ -96,15 +96,15 @@ func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
 func getFilters(machine, lab, namespace string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
-	labelFilters = append(labelFilters, "netkit=true")
-	labelFilters = append(labelFilters, "netkit:namespace="+namespace)
+	labelFilters = append(labelFilters, "koble=true")
+	labelFilters = append(labelFilters, "koble:namespace="+namespace)
 	if lab != "" && !all {
-		labelFilters = append(labelFilters, "netkit:lab="+lab)
+		labelFilters = append(labelFilters, "koble:lab="+lab)
 	} // else if !all {
-	//labelFilters = append(labelFilters, "netkit:nolab=true")
+	//labelFilters = append(labelFilters, "koble:nolab=true")
 	//}
 	if machine != "" && !all {
-		labelFilters = append(labelFilters, "netkit:name="+machine)
+		labelFilters = append(labelFilters, "koble:name="+machine)
 	}
 	filters["label"] = labelFilters
 	return filters
@@ -167,7 +167,7 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 		s.CNINetworks = append(s.CNINetworks, net.Id())
 	}
 	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
-		Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value netkit-startup-phase2.service)", "-eq", "1"},
+		Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value koble-startup-phase2.service)", "-eq", "1"},
 		Timeout: 3 * time.Second,
 	}
 	s.Terminal = true

@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 type DriverConfig struct {
 	Name      string                 `mapstructure:"name"`

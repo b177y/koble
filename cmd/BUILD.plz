@@ -7,7 +7,7 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps=[
-        "//pkg/netkit",
+        "//pkg/koble",
         "//driver",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",

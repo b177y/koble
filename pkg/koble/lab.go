@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 import (
 	"errors"
@@ -16,17 +16,17 @@ import (
 )
 
 type Lab struct {
-	Name          string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	Directory     string    `yaml:"dir,omitempty"`
-	CreatedAt     string    `yaml:"created_at,omitempty" validate:"datetime"`
-	NetkitVersion string    `yaml:"netkit_version,omitempty"`
-	Description   string    `yaml:"description,omitempty"`
-	Authors       []string  `yaml:"authors,omitempty"`
-	Emails        []string  `yaml:"emails,omitempty" validate:"email"`
-	Web           []string  `yaml:"web,omitempty" validate:"url"`
-	Machines      []Machine `yaml:"machines,omitempty"`
-	Networks      []Network `yaml:"networks,omitempty"`
-	DefaultImage  string    `yaml:"default_image,omitempty"`
+	Name         string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	Directory    string    `yaml:"dir,omitempty"`
+	CreatedAt    string    `yaml:"created_at,omitempty" validate:"datetime"`
+	KobleVersion string    `yaml:"koble_version,omitempty"`
+	Description  string    `yaml:"description,omitempty"`
+	Authors      []string  `yaml:"authors,omitempty"`
+	Emails       []string  `yaml:"emails,omitempty" validate:"email"`
+	Web          []string  `yaml:"web,omitempty" validate:"url"`
+	Machines     []Machine `yaml:"machines,omitempty"`
+	Networks     []Network `yaml:"networks,omitempty"`
+	DefaultImage string    `yaml:"default_image,omitempty"`
 }
 
 type Machine struct {
@@ -70,7 +70,7 @@ func InitLab(name string, description string, authors []string, emails []string,
 			return err
 		}
 		if info.IsDir() {
-			return fmt.Errorf("%s already exists as a directory. To initialise it as a Netkit lab directory, cd to it then run init with no name.", name)
+			return fmt.Errorf("%s already exists as a directory. To initialise it as a Koble lab directory, cd to it then run init with no name.", name)
 		} else {
 			return fmt.Errorf("A file named %s exists. Please use a different name to initialise the lab or rename the file.", name)
 		}
@@ -83,11 +83,11 @@ func InitLab(name string, description string, authors []string, emails []string,
 	// TODO check if in script mode
 	// ask for name, description etc
 	lab := Lab{
-		Description:   description,
-		NetkitVersion: VERSION,
-		Authors:       authors,
-		Emails:        emails,
-		Web:           web,
+		Description:  description,
+		KobleVersion: VERSION,
+		Authors:      authors,
+		Emails:       emails,
+		Web:          web,
 	}
 	lab.CreatedAt = time.Now().Format("02-01-2006")
 	bytes, err := yaml.Marshal(lab)
@@ -193,12 +193,12 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 	return nil
 }
 
-func (nk *Netkit) Validate() error {
+func (nk *Koble) Validate() error {
 	// do some extra validation here
 	return nil
 }
 
-func (nk *Netkit) LabStart(mlist []string) error {
+func (nk *Koble) LabStart(mlist []string) error {
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
@@ -248,7 +248,7 @@ func filterMachines(machines []Machine,
 	return mList
 }
 
-func (nk *Netkit) GetMachineList(mlist []string,
+func (nk *Koble) GetMachineList(mlist []string,
 	all bool) (machines []driver.Machine, err error) {
 	if len(mlist) == 0 && nk.Lab.Name == "" && !all {
 		return machines, errors.New("You are not in a lab. Use --all or specify machines.")
@@ -266,7 +266,7 @@ func (nk *Netkit) GetMachineList(mlist []string,
 	return machines, nil
 }
 
-func (nk *Netkit) LabDestroy(mlist []string, all bool) error {
+func (nk *Koble) LabDestroy(mlist []string, all bool) error {
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
 		err := nk.DestroyMachine(m.Name)
@@ -277,7 +277,7 @@ func (nk *Netkit) LabDestroy(mlist []string, all bool) error {
 	return nil
 }
 
-func (nk *Netkit) LabHalt(mlist []string,
+func (nk *Koble) LabHalt(mlist []string,
 	force, all bool) error {
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	for _, m := range machines {
@@ -289,7 +289,7 @@ func (nk *Netkit) LabHalt(mlist []string,
 	return nil
 }
 
-func (nk *Netkit) LabInfo() error {
+func (nk *Koble) LabInfo() error {
 	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
@@ -298,7 +298,7 @@ func (nk *Netkit) LabInfo() error {
 	info = append(info, []string{"Name", nk.Lab.Name})
 	info = append(info, []string{"Directory", nk.Lab.Directory})
 	info = append(info, []string{"Created At", nk.Lab.CreatedAt})
-	info = append(info, []string{"Netkit Version", nk.Lab.NetkitVersion})
+	info = append(info, []string{"Koble Version", nk.Lab.KobleVersion})
 	authorHeading, authors := multiHeading("Author", nk.Lab.Authors)
 	info = append(info, []string{authorHeading, authors})
 	emailHeading, emails := multiHeading("Email", nk.Lab.Emails)

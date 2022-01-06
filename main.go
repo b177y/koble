@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	err := cmd.NetkitCLI.Execute()
+	err := cmd.KobleCLI.Execute()
 	if err != nil && err.Error() != "" {
 		fmt.Println(err)
 	}

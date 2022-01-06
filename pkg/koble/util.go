@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 import (
 	"errors"
@@ -142,7 +142,7 @@ func NetInfoToStringArr(networks []driver.NetInfo, showLab bool) (nlist [][]stri
 	return nlist, headers
 }
 
-func (nk *Netkit) getTerm() (term Terminal, err error) {
+func (nk *Koble) getTerm() (term Terminal, err error) {
 	// Check custom terms first
 	// This allows users to override default ones to add custom flags
 	for _, t := range nk.Config.Terms {
@@ -159,7 +159,7 @@ func (nk *Netkit) getTerm() (term Terminal, err error) {
 	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal)
 }
 
-func (nk *Netkit) LaunchInTerm() error {
+func (nk *Koble) LaunchInTerm() error {
 	term, err := nk.getTerm()
 	if err != nil {
 		return err

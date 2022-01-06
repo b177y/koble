@@ -3,19 +3,19 @@ package cmd
 import (
 	"errors"
 
-	"github.com/b177y/netkit/pkg/netkit"
+	"github.com/b177y/netkit/pkg/koble"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var nk *netkit.Netkit
+var nk *koble.Koble
 var verbose bool
 var quiet bool
 var namespace string
 
-var NetkitCLI = &cobra.Command{
-	Use:   "netkit",
-	Short: "Netkit is a network emulation tool",
+var KobleCLI = &cobra.Command{
+	Use:   "koble",
+	Short: "Koble is a network emulation tool",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if verbose && quiet {
 			log.Fatal(errors.New("CLI Flags --verbose and --quiet cannot be used together."))
@@ -28,12 +28,12 @@ var NetkitCLI = &cobra.Command{
 			log.SetLevel(log.WarnLevel)
 		}
 		var err error
-		nk, err = netkit.NewNetkit(namespace)
+		nk, err = koble.NewKoble(namespace)
 		if err != nil {
 			log.Fatal(err)
 		}
 	},
-	Version: netkit.VERSION,
+	Version: koble.VERSION,
 }
 
 var useTerm bool
@@ -44,11 +44,11 @@ var machine string
 var labName string
 
 func init() {
-	NetkitCLI.AddCommand(labCmd)
-	NetkitCLI.AddCommand(machineCmd)
-	NetkitCLI.AddCommand(netCmd)
-	NetkitCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
-	NetkitCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-	NetkitCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
-	NetkitCLI.RegisterFlagCompletionFunc("namespace", autocompNamespace)
+	KobleCLI.AddCommand(labCmd)
+	KobleCLI.AddCommand(machineCmd)
+	KobleCLI.AddCommand(netCmd)
+	KobleCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
+	KobleCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	KobleCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
+	KobleCLI.RegisterFlagCompletionFunc("namespace", autocompNamespace)
 }

@@ -7,7 +7,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/b177y/netkit/pkg/netkit"
+	"github.com/b177y/netkit/pkg/koble"
 	"github.com/spf13/cobra"
 )
 
@@ -21,12 +21,12 @@ var nListAll bool
 
 var netCmd = &cobra.Command{
 	Use:   "net",
-	Short: "view and manage netkit networks",
+	Short: "view and manage koble networks",
 }
 
 var ninfoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "get info about a netkit network",
+	Short: "get info about a koble network",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.NetworkInfo(args[0])
 		if err != nil {
@@ -37,15 +37,15 @@ var ninfoCmd = &cobra.Command{
 
 var nlistCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list netkit networks",
+	Short: "list koble networks",
 	Run: func(cmd *cobra.Command, args []string) {
 		if !nListAll {
 			if nk.Lab.Name == "" {
 				fmt.Fprintln(os.Stderr, "Listing all networks which are not associated with a lab.")
-				fmt.Fprintf(os.Stderr, "To see all machines use `netkit net list --all`\n\n")
+				fmt.Fprintf(os.Stderr, "To see all machines use `koble net list --all`\n\n")
 			} else {
 				fmt.Fprintf(os.Stderr, "Listing all networks within this lab (%s).\n", nk.Lab.Name)
-				fmt.Fprintf(os.Stderr, "To see all machines use `netkit net list --all`\n\n")
+				fmt.Fprintf(os.Stderr, "To see all machines use `koble net list --all`\n\n")
 			}
 		}
 		err := nk.ListNetworks(nListAll)
@@ -59,7 +59,7 @@ var naddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a new network to a lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.AddNetworkToLab(networkName, networkExternal, networkGateway, networkSubnet, networkIpv6)
+		err := koble.AddNetworkToLab(networkName, networkExternal, networkGateway, networkSubnet, networkIpv6)
 		if err != nil {
 			log.Fatal(err)
 		}

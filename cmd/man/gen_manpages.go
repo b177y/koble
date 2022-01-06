@@ -10,18 +10,18 @@ import (
 
 func main() {
 	header := &doc.GenManHeader{
-		Title:   "Netkit",
+		Title:   "Koble",
 		Section: "1",
 	}
 	err := os.MkdirAll("out", 0700)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenManTree(cmd.NetkitCLI, header, "out")
+	err = doc.GenManTree(cmd.KobleCLI, header, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenMarkdownTree(cmd.NetkitCLI, "out")
+	err = doc.GenMarkdownTree(cmd.KobleCLI, "out")
 	if err != nil {
 		log.Fatal(err)
 	}

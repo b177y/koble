@@ -21,11 +21,11 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 		name, _, _ := getInfoFromLabels(c.Labels)
 		var mNetworks []string
 		for _, n := range c.Networks {
-			s := strings.Index(n, "netkit_")
+			s := strings.Index(n, "koble_")
 			if s == -1 {
 				mNetworks = append(mNetworks, n)
 			} else {
-				s = s + 7 // s should be 0, + 7 accounts for netkit_
+				s = s + 7 // s should be 0, + 7 accounts for koble_
 				e := strings.Index(n[s:], "_")
 				if e == -1 {
 					mNetworks = append(mNetworks, n)

@@ -1,7 +1,7 @@
 package(default_visibility = ["PUBLIC"])
 
 go_library(
-    name = "netkit",
+    name = "koble",
     srcs = glob(
         ["*.go"],
         exclude = ["*_test.go"],
@@ -22,11 +22,12 @@ go_library(
 )
 
 go_test(
-    name="netkit_test",
+    name="koble_test",
     srcs = glob(
         ["*_test.go"],
     ),
+    external=True,
     deps = [
-        ":netkit"
+        ":koble"
     ],
 )

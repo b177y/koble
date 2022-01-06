@@ -174,7 +174,7 @@ func (m *Machine) Start(opts *driver.StartOptions) (err error) {
 		return fmt.Errorf("Could not setup management interface: %w", err)
 	}
 	// TODO autoconf with custom ip
-	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_netkit0=%s",
+	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_koble0=%s",
 		len(networks), ifaceName, mgmtIp))
 	// for _, mnt := range m.Volumes {
 	// 	if mnt.Type == "" {

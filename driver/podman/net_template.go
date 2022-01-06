@@ -4,10 +4,10 @@ var NET = `
 {
    "args": {
       "podman_labels": {
-         "netkit": "true",
-         "netkit:lab": "{{ .Lab }}",
-         "netkit:name": "{{ .Name }}",
-         "netkit:namespace": "{{ .Namespace }}"
+         "koble": "true",
+         "koble:lab": "{{ .Lab }}",
+         "koble:name": "{{ .Name }}",
+         "koble:namespace": "{{ .Namespace }}"
       }
    },
    "cniVersion": "0.4.0",

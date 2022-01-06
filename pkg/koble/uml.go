@@ -1,7 +1,7 @@
 //go:build !exclude_uml
 // +build !exclude_uml
 
-package netkit
+package koble
 
 import (
 	"github.com/b177y/netkit/driver"

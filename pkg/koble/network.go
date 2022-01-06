@@ -1,4 +1,4 @@
-package netkit
+package koble
 
 import (
 	"net"
@@ -15,7 +15,7 @@ type Network struct {
 	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
 }
 
-func (nk *Netkit) StartNetwork(name string) error {
+func (nk *Koble) StartNetwork(name string) error {
 	n, err := nk.Driver.Network(name, nk.Namespace)
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func (nk *Netkit) StartNetwork(name string) error {
 	return err
 }
 
-func (nk *Netkit) ListNetworks(all bool) error {
+func (nk *Koble) ListNetworks(all bool) error {
 	networks, err := nk.Driver.ListNetworks(nk.Lab.Name, all)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func (nk *Netkit) ListNetworks(all bool) error {
 	return nil
 }
 
-func (nk *Netkit) NetworkInfo(name string) error {
+func (nk *Koble) NetworkInfo(name string) error {
 	n, err := nk.Driver.Network(name, nk.Namespace)
 	if err != nil {
 		return err

@@ -18,13 +18,13 @@ import (
 	"github.com/docker/docker/pkg/broadcaster"
 )
 
-// Custom io.WriteCloser to check for netkit ready status
+// Custom io.WriteCloser to check for koble ready status
 type ReadyChecker struct {
 	Dir string
 }
 
 func (rc *ReadyChecker) Write(p []byte) (n int, err error) {
-	if bytes.Contains(p, []byte("Welcome to Netkit")) {
+	if bytes.Contains(p, []byte("Welcome to Koble")) {
 		err := updateState(rc.Dir, "running", 0)
 		if err != nil {
 			return 0, err
@@ -73,7 +73,7 @@ func RunShim() {
 	kern := os.Args[2]
 	kernArgs := os.Args[3:]
 	cmd := exec.Command(kern, kernArgs...)
-	fmt.Println("Starting exec of netkit kernel")
+	fmt.Println("Starting exec of koble kernel")
 	err = shimLog(fmt.Sprintf("starting kernel with %s %s\n", kern, kernArgs), dir, nil)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not write to shim log: %s", err.Error())

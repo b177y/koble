@@ -13,7 +13,7 @@ var detachMode bool
 
 var execCmd = &cobra.Command{
 	Use:               "exec [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "run a command on a netkit machine",
+	Short:             "run a command on a koble machine",
 	ValidArgsFunction: autocompRunningMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		if nk.Config.OpenTerms {
@@ -36,6 +36,6 @@ func init() {
 	execCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	execCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the command in detached mode (backgrounded)")
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
-	NetkitCLI.AddCommand(execCmd)
+	KobleCLI.AddCommand(execCmd)
 	machineCmd.AddCommand(execCmd)
 }

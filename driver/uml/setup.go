@@ -18,7 +18,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 		}
 	}
 	if !ud.Testing {
-		err = vecnet.CreateAndEnterUserNS("netkit")
+		err = vecnet.CreateAndEnterUserNS("koble")
 	} else if os.Getuid() != 0 {
 		return errors.New("Testing needs to be run within a new user/mount namespace: `unshare -mUr go test ...`")
 	}
@@ -33,7 +33,7 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	// ud.Kernel = "/home/billy/repos/netkit-jh-build/tmpbuild/linux-5.14.9/linux"
 	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
 	// ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/custom-fs", homedir)
-	ud.DefaultImage = "/home/billy/repos/netkit-fs/build/netkit-fs"
+	ud.DefaultImage = "/home/billy/repos/koble-fs/build/koble-fs"
 	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", os.Getenv("UML_ORIG_UID"))
 	ud.StorageDir = fmt.Sprintf("%s/.local/share/uml", homedir)
 	// override kernel with config option

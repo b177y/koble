@@ -3,7 +3,7 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/b177y/netkit/pkg/netkit"
+	"github.com/b177y/netkit/pkg/koble"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +17,7 @@ var labAllMachines bool
 
 var lstartCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
-	Short: "start a netkit lab",
+	Short: "start a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabStart(args)
 		if err != nil {
@@ -29,7 +29,7 @@ var lstartCmd = &cobra.Command{
 
 var ldestroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
-	Short: "clean up a netkit lab",
+	Short: "clean up a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabDestroy(args, labAllMachines)
 		if err != nil {
@@ -41,7 +41,7 @@ var ldestroyCmd = &cobra.Command{
 
 var lhaltCmd = &cobra.Command{
 	Use:   "halt [options] MACHINE [MACHINE...]",
-	Short: "halt machines in a netkit lab",
+	Short: "halt machines in a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabHalt(args, labHaltForce, labAllMachines)
 		if err != nil {
@@ -64,9 +64,9 @@ var linfoCmd = &cobra.Command{
 
 var linitCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initialise a new netkit lab",
+	Short: "initialise a new koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := netkit.InitLab(labName, labDescription, labAuthors, labEmails, labWeb)
+		err := koble.InitLab(labName, labDescription, labAuthors, labEmails, labWeb)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -75,7 +75,7 @@ var linitCmd = &cobra.Command{
 
 var lvalidateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "validate a netkit lab",
+	Short: "validate a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.Validate()
 		if err != nil {
@@ -86,7 +86,7 @@ var lvalidateCmd = &cobra.Command{
 
 var labCmd = &cobra.Command{
 	Use:   "lab",
-	Short: "control netkit labs",
+	Short: "control koble labs",
 }
 
 func init() {
@@ -103,7 +103,7 @@ func init() {
 	linitCmd.Flags().StringArrayVar(&labEmails, "emails", []string{}, "Comma separated list of lab author emails.")
 	linitCmd.Flags().StringArrayVar(&labWeb, "web", []string{}, "Comma separated list of lab web resource URLs.")
 
-	ldestroyCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Destroy all Netkit machines, including those not in the current lab.")
+	ldestroyCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Destroy all koble machines, including those not in the current lab.")
 	lhaltCmd.Flags().BoolVarP(&labHaltForce, "force", "f", false, "Force halt machines.")
-	lhaltCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Halt all Netkit machines, including those not in the current lab.")
+	lhaltCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Halt all koble machines, including those not in the current lab.")
 }

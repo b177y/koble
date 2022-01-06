@@ -13,7 +13,7 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	pd.Name = "Podman"
 	pd.URI = fmt.Sprintf("unix://run/user/%d/podman/podman.sock",
 		os.Getuid())
-	pd.DefaultImage = "localhost/netkit-deb-test"
+	pd.DefaultImage = "localhost/koble-deb-test"
 	// override uri with config option
 	if val, ok := conf["uri"]; ok {
 		if str, ok := val.(string); ok {

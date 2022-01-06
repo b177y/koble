@@ -1,6 +1,6 @@
 go_binary(
-    name = "netkit",
+    name = "koble",
     srcs = ["main.go"],
-    out = "netkit",
+    out = "koble",
     deps = ["//cmd"],
 )

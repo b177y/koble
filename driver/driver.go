@@ -1,4 +1,3 @@
-// defines driver interface for netkit compatible drivers
 package driver
 
 import (

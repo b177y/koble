@@ -14,14 +14,14 @@ import (
 
 func (n *Network) getNetLabels() map[string]string {
 	labels := make(map[string]string)
-	labels["netkit"] = "true"
-	labels["netkit:name"] = n.Name()
+	labels["koble"] = "true"
+	labels["koble:name"] = n.Name()
 	// if n.Lab != "" {
-	// 	labels["netkit:lab"] = n.Lab
+	// 	labels["koble:lab"] = n.Lab
 	// } else {
-	// 	labels["netkit:nolab"] = "true"
+	// 	labels["koble:nolab"] = "true"
 	// }
-	labels["netkit:namespace"] = n.namespace
+	labels["koble:namespace"] = n.namespace
 	return labels
 }
 
@@ -36,7 +36,7 @@ func (n *Network) Name() string {
 }
 
 func (n *Network) Id() string {
-	return "netkit_" + n.namespace + "_" + n.name
+	return "koble_" + n.namespace + "_" + n.name
 }
 
 func (n *Network) Create(opts *driver.NetCreateOptions) (err error) {
