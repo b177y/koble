@@ -1,0 +1,14 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name="tests",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps=[
+        "//driver",
+        "//third_party/go:github.com__onsi__ginkgo",
+        "//third_party/go:github.com__onsi__gomega",
+    ],
+)

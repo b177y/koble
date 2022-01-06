@@ -4,10 +4,8 @@ go 1.17
 
 replace github.com/containernetworking/plugins => github.com/containernetworking/plugins v0.9.1
 
-replace github.com/b177y/go-uml-utilities => ../uml-utilities
-
 require (
-	github.com/b177y/go-uml-utilities v0.0.0-20211227003103-92a347668a4d
+	github.com/b177y/go-uml-utilities v0.0.0-20220102233300-35a8780d7d55
 	github.com/containernetworking/plugins v0.9.1
 	github.com/containers/buildah v1.23.1
 	github.com/containers/image/v5 v5.16.0

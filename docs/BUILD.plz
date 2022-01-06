@@ -1,0 +1,30 @@
+docker="podman"
+# output module directory for antora
+genrule(
+    name="adoc-manpages",
+    srcs=["//cmd:manpages"],
+    outs=["MAN-MODULE"],
+    cmd=[
+        # convert
+        "mkdir -p MAN-MODULE/pages",
+        "export HOME=\"/home/billy\"",
+        docker+" run --rm -v ./cmd/out:/documents/ docker.io/asciidoctor/docker-asciidoctor find /documents -name '*.md' -exec sh -c 'kramdoc --heading-offset=-1 {}' {} \;",
+        # nav.adoc
+        "echo .Manpages > MAN-MODULE/nav.adoc",
+        "find ./cmd/out -name '*.adoc' -execdir echo \"* xref:{}[]\" >> navtmp.adoc \;",
+        "sort navtmp.adoc >> MAN-MODULE/nav.adoc",
+        "cp ./cmd/out/*.adoc MAN-MODULE/pages",
+    ]
+)
+
+# antora
+genrule(
+    name="site",
+    srcs=["./modules", "playbook.yml", "antora.yml", ":adoc-manpages"],
+    outs=["site"],
+    cmd=[
+        "mv docs/MAN-MODULE docs/modules",
+        "antora docs/playbook.yml --fetch",
+        "mv docs/build/site ."
+    ]
+)

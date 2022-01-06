@@ -1,0 +1,25 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name="cmd",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps=[
+        "//pkg/netkit",
+        "//driver",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__spf13__cobra",
+    ]
+)
+
+genrule(
+    name="manpages",
+    srcs = ["//cmd/man:gen-manpages"],
+    cmd=[
+        "./cmd/man/gen-manpages",
+    ],
+    outs=["out"],
+)
+

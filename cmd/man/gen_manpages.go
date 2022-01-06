@@ -8,22 +8,20 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-const OUTPUTDIR = "./build/man"
-
 func main() {
 	header := &doc.GenManHeader{
 		Title:   "Netkit",
 		Section: "1",
 	}
-	err := os.MkdirAll(OUTPUTDIR, 0700)
+	err := os.MkdirAll("out", 0700)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenManTree(cmd.NetkitCLI, header, OUTPUTDIR)
+	err = doc.GenManTree(cmd.NetkitCLI, header, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenMarkdownTree(cmd.NetkitCLI, OUTPUTDIR)
+	err = doc.GenMarkdownTree(cmd.NetkitCLI, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
