@@ -4,12 +4,3 @@ go_binary(
     out = "netkit",
     deps = ["//cmd"],
 )
-
-# tests
-
-# vendor
-
-# manpages
-# use BUILD in the docs dir?
-
-# docs site

@@ -13,3 +13,13 @@ go_library(
         "//third_party/go:gopkg.in__yaml.v2",
     ],
 )
+
+go_test(
+    name="netkit_test",
+    srcs = glob(
+        ["*_test.go"],
+    ),
+    deps = [
+        ":netkit"
+    ],
+)

@@ -1,0 +1,25 @@
+# output module directory for antora
+genrule(
+    name="adoc-manpages",
+    srcs=["//cmd:manpages"],
+    outs=["*.adoc"],
+    cmd=[
+        # convert
+        "find ./build/man -name '*.md' -exec sh -c 'echo \"converting {}\";kramdoc --heading-offset=-1 {}' {} \;"
+        # nav.adoc
+        "echo .Manpages > docs/modules/MAN/nav.adoc",
+        "find ./docs/modules/MAN/pages -name '*.adoc' -execdir echo \"* xref:{}[]\" >> docs/modules/MAN/navtmp.adoc \;",
+        "sort docs/modules/MAN/navtmp.adoc >> docs/modules/MAN/nav.adoc",
+    ]
+)
+
+# antora
+genrule(
+    name="site",
+    srcs=["./modules", "antora-playbook.yml", "antora.yml"],
+    outs=["site"],
+    cmd=[
+        "antora docs/antora-playbook.yml --fetch",
+        "mv docs/build/site ."
+    ]
+)

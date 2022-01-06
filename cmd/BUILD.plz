@@ -1,0 +1,26 @@
+go_library(
+    name="cmd",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps=[
+        "//pkg/netkit",
+        "//driver",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__spf13__cobra",
+    ]
+)
+
+genrule(
+    name="manpages",
+    srcs = glob(
+        ["*.go", "man/gen_manpages.go"],
+        exclude = ["*_test.go"],
+    ),
+    cmd=[
+        "go run cmd/man/gen_manpages.go" 
+    ],
+    deps = [":cmd"]
+    outs=["*.1", "*.md"],
+)
