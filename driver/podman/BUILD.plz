@@ -23,3 +23,18 @@ go_library(
         "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
     ],
 )
+
+go_test(
+    name="podman_test",
+    srcs = glob(
+        ["*_test.go"],
+    ),
+    external=True,
+    deps = [
+        ":podman",
+        "//driver",
+        "//driver/tests",
+        "//third_party/go:github.com__onsi__ginkgo",
+        "//third_party/go:github.com__onsi__gomega",
+    ],
+)

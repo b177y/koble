@@ -19,3 +19,18 @@ go_library(
         "//third_party/go:github.com__hpcloud__tail",
     ],
 )
+
+go_test(
+    name="uml_test",
+    srcs = glob(
+        ["*_test.go"],
+    ),
+    external=True,
+    deps = [
+        ":uml",
+        "//driver",
+        "//driver/tests",
+        "//third_party/go:github.com__onsi__ginkgo",
+        "//third_party/go:github.com__onsi__gomega",
+    ],
+)
