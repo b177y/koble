@@ -1,11 +1,11 @@
-= What is Netkit
+= Koble
 
 == Overview
 
-Netkit is a project for creating virtual network devices (routers, switches, servers etc)
+Koble is a project for creating virtual network devices (routers, switches, servers etc)
 which can be connected to form a full network on a single host machine.
 This can be useful for running network related experiments or for education.
-Netkit machines can be User-mode Linux instances or rootless Podman containers
+Koble machines can be User-mode Linux instances or rootless Podman containers
 which are lightweight and do not require root privileges to run.
 
 == Quick Start

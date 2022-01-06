@@ -1,5 +1,5 @@
-name: netkit-docs
-title: Netkit Docs
+name: koble-docs
+title: Koble Docs
 version: '0.1'
 start_page: ROOT:index.adoc
 nav:
