@@ -1,0 +1,22 @@
+; Please config file
+; Leaving this file as is is enough to use plz to build your project.
+; Please will stay on whatever version you currently have until you run
+; 'plz update', when it will download the latest available version.
+;
+; Or you can uncomment the following to pin everyone to a particular version;
+; when you change it all users will automatically get updated.
+[please]
+version = 16.17.1
+
+[go]
+;gotool = ...
+;goroot - ... 
+importpath = github.com/b177y/netkit
+
+[alias "godeps"]
+desc = Generate third-party dependency rules for a Go project
+cmd = run //tools:godeps -- -dir third_party/go -clean -builtin
+
+[alias "tidy"]
+desc = Tidy generates build targets for dependencies and makes sure that BUILD files are up-to-date.
+cmd = run //tools:plz-tidy

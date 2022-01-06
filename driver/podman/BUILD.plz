@@ -1,0 +1,14 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name="podman",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps=[
+        "//driver",
+        "//third_party/go:github.com__spf13__cobra",
+        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
+    ],
+)

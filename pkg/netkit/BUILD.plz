@@ -1,0 +1,15 @@
+go_library(
+    name = "netkit",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps = [
+        "//driver",
+        "//driver/podman",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__hokaccha__go-prettyjson",
+        "//third_party/go:github.com__go-playground__validator__v10",
+        "//third_party/go:gopkg.in__yaml.v2",
+    ],
+)
