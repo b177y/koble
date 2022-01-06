@@ -19,6 +19,8 @@ var addMachineImage string
 var mListAll bool
 var mListJson bool
 
+var mInfoJson bool
+
 var machineCmd = &cobra.Command{
 	Use:   "machine",
 	Short: "start and manage netkit machines",
@@ -73,7 +75,7 @@ var minfoCmd = &cobra.Command{
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.MachineInfo(args[0])
+		err := nk.MachineInfo(args[0], mInfoJson)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -94,8 +96,9 @@ var maddCmd = &cobra.Command{
 }
 
 var mlistCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List netkit machines",
+	Use:     "list",
+	Short:   "List netkit machines",
+	Aliases: []string{"ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		if !mListAll {
 			if nk.Namespace == "" {
@@ -129,4 +132,6 @@ func init() {
 
 	mlistCmd.Flags().BoolVarP(&mListAll, "all", "a", false, "List all machines (from all labs / non-labs)")
 	mlistCmd.Flags().BoolVar(&mListJson, "json", false, "Print machine list as json array to stdout")
+
+	minfoCmd.Flags().BoolVar(&mInfoJson, "json", false, "Print machine info as json object to stdout")
 }

@@ -62,49 +62,60 @@ func (nk *Netkit) StartMachine(name, image string, networks []string) error {
 	return m.Start(&opts)
 }
 
-func (nk *Netkit) MachineInfo(name string) error {
+func (nk *Netkit) MachineInfo(name string, json bool) error {
 	m, err := nk.Driver.Machine(name, nk.Namespace)
-	var infoTable [][]string
-	infoTable = append(infoTable, []string{"Name", m.Name()})
-	// if nk.Lab.Name != "" {
-	// 	for _, lm := range nk.Lab.Machines {
-	// 		if lm.Name == m.Name() {
-	// 			// lm.Lab = m.Lab
-	// 			// m = lm
-	// 			if lm.Image != "" {
-	// 				infoTable = append(infoTable,
-	// 					[]string{"Image", lm.Image})
-	// 			}
-	// 			// if len(lm.Dependencies) != 0 {
-	// 			// 	infoTable = append(infoTable,
-	// 			// 		[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
-	// 			// }
-	// 			if len(lm.Networks) != 0 {
-	// 				infoTable = append(infoTable,
-	// 					[]string{"Networks", strings.Join(lm.Networks, ",")})
-	// 			}
-	// 			if len(lm.Volumes) != 0 {
-	// 				var vols []string
-	// 				for _, v := range lm.Volumes {
-	// 					vols = append(vols, v.Source+":"+v.Destination)
-	// 				}
-	// 				infoTable = append(infoTable,
-	// 					[]string{"Volumes", strings.Join(vols, ",")})
-	// 			}
-	// 		}
-	// 	}
-	// }
-	info, err := m.Info()
-	if err != nil && err != driver.ErrNotExists {
+	if err != nil {
 		return err
 	}
-	if info.Image != "" {
-		infoTable = append(infoTable, []string{"Image", info.Image})
+	info, err := m.Info()
+	if err != nil {
+		return err
 	}
-	if info.State != "" {
-		infoTable = append(infoTable, []string{"State", info.State})
+	if json {
+		s, err := prettyjson.Marshal(info)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(s))
+	} else {
+		var infoTable [][]string
+		infoTable = append(infoTable, []string{"Name", m.Name()})
+		// if nk.Lab.Name != "" {
+		// 	for _, lm := range nk.Lab.Machines {
+		// 		if lm.Name == m.Name() {
+		// 			// lm.Lab = m.Lab
+		// 			// m = lm
+		// 			if lm.Image != "" {
+		// 				infoTable = append(infoTable,
+		// 					[]string{"Image", lm.Image})
+		// 			}
+		// 			// if len(lm.Dependencies) != 0 {
+		// 			// 	infoTable = append(infoTable,
+		// 			// 		[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
+		// 			// }
+		// 			if len(lm.Networks) != 0 {
+		// 				infoTable = append(infoTable,
+		// 					[]string{"Networks", strings.Join(lm.Networks, ",")})
+		// 			}
+		// 			if len(lm.Volumes) != 0 {
+		// 				var vols []string
+		// 				for _, v := range lm.Volumes {
+		// 					vols = append(vols, v.Source+":"+v.Destination)
+		// 				}
+		// 				infoTable = append(infoTable,
+		// 					[]string{"Volumes", strings.Join(vols, ",")})
+		// 			}
+		// 		}
+		// 	}
+		// }
+		if info.Image != "" {
+			infoTable = append(infoTable, []string{"Image", info.Image})
+		}
+		if info.State != "" {
+			infoTable = append(infoTable, []string{"State", info.State})
+		}
+		RenderTable([]string{}, infoTable)
 	}
-	RenderTable([]string{}, infoTable)
 	return nil
 }
 
