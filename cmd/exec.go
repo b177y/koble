@@ -36,4 +36,6 @@ func init() {
 	execCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	execCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the command in detached mode (backgrounded)")
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
+	NetkitCLI.AddCommand(execCmd)
+	machineCmd.AddCommand(execCmd)
 }

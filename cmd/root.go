@@ -45,10 +45,6 @@ var labName string
 
 func init() {
 	NetkitCLI.AddCommand(labCmd)
-	NetkitCLI.AddCommand(shellCmd)
-	NetkitCLI.AddCommand(execCmd)
-	NetkitCLI.AddCommand(attachCmd)
-	NetkitCLI.AddCommand(logsCmd)
 	NetkitCLI.AddCommand(machineCmd)
 	NetkitCLI.AddCommand(netCmd)
 	NetkitCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")

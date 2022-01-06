@@ -40,9 +40,9 @@ var mstartCmd = &cobra.Command{
 	},
 }
 
-var mhaltCmd = &cobra.Command{
-	Use:                   "halt [options] MACHINE",
-	Short:                 "halt a netkit machine",
+var mstopCmd = &cobra.Command{
+	Use:                   "stop [options] MACHINE",
+	Short:                 "stop a netkit machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     autocompRunningMachine,
 	DisableFlagsInUseLine: true,
@@ -62,6 +62,21 @@ var mdestroyCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.DestroyMachine(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+	},
+}
+
+var mremoveCmd = &cobra.Command{
+	Use:                   "remove [options] MACHINE",
+	Short:                 "remove a netkit machine",
+	Aliases:               []string{"rm"},
+	Args:                  cobra.ExactArgs(1),
+	ValidArgsFunction:     autocompMachine,
+	DisableFlagsInUseLine: true,
+	Run: func(cmd *cobra.Command, args []string) {
+		err := nk.RemoveMachine(args[0])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -117,12 +132,22 @@ var mlistCmd = &cobra.Command{
 }
 
 func init() {
+	// add subcommands to netkit machine ...
 	machineCmd.AddCommand(mstartCmd)
+	machineCmd.AddCommand(mstopCmd)
 	machineCmd.AddCommand(mdestroyCmd)
-	machineCmd.AddCommand(mhaltCmd)
+	machineCmd.AddCommand(mremoveCmd)
 	machineCmd.AddCommand(minfoCmd)
 	machineCmd.AddCommand(maddCmd)
 	machineCmd.AddCommand(mlistCmd)
+	// add subcommands to netkit ...
+	NetkitCLI.AddCommand(mstartCmd)
+	NetkitCLI.AddCommand(mstopCmd)
+	NetkitCLI.AddCommand(mdestroyCmd)
+	NetkitCLI.AddCommand(mremoveCmd)
+	NetkitCLI.AddCommand(minfoCmd)
+	NetkitCLI.AddCommand(maddCmd)
+	NetkitCLI.AddCommand(mlistCmd)
 
 	mstartCmd.Flags().StringVar(&machineImage, "image", "", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")

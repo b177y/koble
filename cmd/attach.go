@@ -43,4 +43,6 @@ var attachCmd = &cobra.Command{
 func init() {
 	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
 	attachCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
+	NetkitCLI.AddCommand(attachCmd)
+	machineCmd.AddCommand(attachCmd)
 }

@@ -50,4 +50,6 @@ func init() {
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	shellCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
 	shellCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
+	NetkitCLI.AddCommand(shellCmd)
+	machineCmd.AddCommand(shellCmd)
 }

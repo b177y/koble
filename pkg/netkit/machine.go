@@ -128,20 +128,27 @@ func (nk *Netkit) HaltMachine(machine string, force bool) error {
 	return m.Stop(force)
 }
 
+func (nk *Netkit) RemoveMachine(machine string) error {
+	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Removing machine %s\n", m.Name())
+	return m.Remove()
+}
+
 func (nk *Netkit) DestroyMachine(machine string) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("Crashing machine %s\n", m.Name())
-	m.Stop(true)
-	// err = m.Stop(true)
-	// if err != nil {
-	// TODO WARN instead of error or silent?
-	// 	return err
-	// }
+	err = m.Stop(true)
+	if err != nil {
+		return err
+	}
 	// TODO workout best way to delay until machine stopped
-	// time.Sleep(time.Second)
+	// m.WaitUntil() ?
 	fmt.Printf("Removing machine %s\n", m.Name())
 	return m.Remove()
 }

@@ -10,7 +10,7 @@ var logsTail int
 
 var logsCmd = &cobra.Command{
 	Use:               "logs [options] MACHINE",
-	Short:             "The 'logs' subcommand is used to get logs from a netkit machine",
+	Short:             "get logs from a netkit machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: autocompMachine,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -26,4 +26,6 @@ var logsCmd = &cobra.Command{
 func init() {
 	logsCmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Follow log output")
 	logsCmd.Flags().IntVar(&logsTail, "tail", -1, "Output the specified number of LINES at the end of the logs.  Defaults to -1, which prints all lines")
+	NetkitCLI.AddCommand(logsCmd)
+	machineCmd.AddCommand(logsCmd)
 }
