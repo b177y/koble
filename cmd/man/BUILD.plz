@@ -1,0 +1,12 @@
+package(default_visibility = ["PUBLIC"])
+
+go_binary(
+    name="gen-manpages",
+    srcs = ["gen_manpages.go"],
+    deps = [
+        "//cmd:cmd",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__spf13__cobra__doc",
+    ],
+)
+

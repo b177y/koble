@@ -2,9 +2,9 @@ site:
   title: Netkit Docs
 content:
   sources: 
-  # - url: https://github.com/b177y/netkit
-  #   start_path: docs
-  #   branches: main
+  - url: https://github.com/b177y/netkit
+    start_path: docs
+    branches: main
   # - url: https://github.com/b177y/netkit-fs
   #   branches: main
   #   start_path: docs

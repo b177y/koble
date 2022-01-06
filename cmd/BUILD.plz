@@ -16,13 +16,10 @@ go_library(
 
 genrule(
     name="manpages",
-    srcs = glob(
-        ["*.go", "man/gen_manpages.go"],
-        exclude = ["*_test.go"],
-    ),
+    srcs = ["//cmd/man:gen-manpages"],
     cmd=[
-        "go run cmd/man/gen_manpages.go" 
+        "./cmd/man/gen-manpages",
     ],
-    deps = [":cmd"],
-    outs=["*.1", "*.md"],
+    outs=["out"],
 )
+

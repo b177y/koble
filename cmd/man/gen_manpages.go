@@ -13,15 +13,15 @@ func main() {
 		Title:   "Netkit",
 		Section: "1",
 	}
-	err := os.MkdirAll(".", 0700)
+	err := os.MkdirAll("out", 0700)
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenManTree(cmd.NetkitCLI, header, ".")
+	err = doc.GenManTree(cmd.NetkitCLI, header, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenMarkdownTree(cmd.NetkitCLI, ".")
+	err = doc.GenMarkdownTree(cmd.NetkitCLI, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
