@@ -1,0 +1,21 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name="uml",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps=[
+        "//driver",
+        "//driver/uml/vecnet",
+        "//driver/uml/shim",
+        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
+        "//third_party/go:github.com__spf13__cobra",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
+        "//third_party/go:github.com__creasty__defaults",
+        "//third_party/go:github.com__docker__docker__pkg__reexec",
+        "//third_party/go:github.com__hpcloud__tail",
+    ],
+)

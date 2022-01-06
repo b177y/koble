@@ -1,0 +1,9 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name="topsort",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+)

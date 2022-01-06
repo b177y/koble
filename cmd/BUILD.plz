@@ -1,3 +1,5 @@
+package(default_visibility = ["PUBLIC"])
+
 go_library(
     name="cmd",
     srcs = glob(
@@ -21,6 +23,6 @@ genrule(
     cmd=[
         "go run cmd/man/gen_manpages.go" 
     ],
-    deps = [":cmd"]
+    deps = [":cmd"],
     outs=["*.1", "*.md"],
 )
