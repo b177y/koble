@@ -4,7 +4,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/b177y/netkit/driver/uml/shim"
+	"github.com/b177y/koble/driver/uml/shim"
 	"github.com/spf13/cobra"
 )
 

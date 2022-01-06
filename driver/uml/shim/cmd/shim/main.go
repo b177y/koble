@@ -6,7 +6,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/b177y/netkit/driver/uml/shim"
+	"github.com/b177y/koble/driver/uml/shim"
 	"github.com/docker/docker/pkg/reexec"
 	"github.com/spf13/cobra"
 )

@@ -43,7 +43,7 @@ To use the shim within a library you need docker's `reexec` package.
 [source,sh]
 ----
 go get github.com/docker/docker/pkg/reexec
-go get github.com/b177y/netkit/driver/uml/shim
+go get github.com/b177y/koble/driver/uml/shim
 ----
 
 Register the shim function as a reexec function:

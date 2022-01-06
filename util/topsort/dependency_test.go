@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/b177y/netkit/util/topsort"
+	"github.com/b177y/koble/util/topsort"
 )
 
 func TestTopographicalSort(t *testing.T) {

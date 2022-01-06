@@ -4,7 +4,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 )
 
 type Network struct {

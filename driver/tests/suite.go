@@ -3,7 +3,7 @@ package driver_test
 import (
 	"fmt"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	// log "github.com/sirupsen/logrus"
 )
 

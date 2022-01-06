@@ -1,7 +1,7 @@
 package koble
 
 import (
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 )
 
 type DriverInitialiser func() driver.Driver

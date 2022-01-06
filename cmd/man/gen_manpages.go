@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/b177y/netkit/cmd"
+	"github.com/b177y/koble/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra/doc"
 )

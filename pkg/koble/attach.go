@@ -1,6 +1,6 @@
 package koble
 
-import "github.com/b177y/netkit/driver"
+import "github.com/b177y/koble/driver"
 
 func (nk *Koble) AttachToMachine(machine string) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)

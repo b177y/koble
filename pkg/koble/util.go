@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/util/topsort"
+	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/util/topsort"
 	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"

@@ -3,7 +3,7 @@ package podman
 import (
 	"context"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	"github.com/spf13/cobra"
 )
 

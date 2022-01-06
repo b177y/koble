@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 )
 
 func (m *Machine) State() string {

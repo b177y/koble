@@ -4,8 +4,8 @@
 package koble
 
 import (
-	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/driver/uml"
+	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/driver/uml"
 )
 
 func init() {

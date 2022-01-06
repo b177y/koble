@@ -1,7 +1,7 @@
 package mock
 
 import (
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 )
 
 func (md *MockDriver) CreateNetwork(n driver.Network) (err error) {

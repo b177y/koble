@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )

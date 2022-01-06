@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/pkg/koble"
+	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
 )
 

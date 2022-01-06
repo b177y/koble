@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/b177y/netkit/driver"
-	"github.com/b177y/netkit/driver/uml/vecnet"
+	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/driver/uml/vecnet"
 	"github.com/creasty/defaults"
 )
 

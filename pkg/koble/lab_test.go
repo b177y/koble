@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/b177y/netkit/driver/mock"
-	"github.com/b177y/netkit/pkg/koble"
+	"github.com/b177y/koble/driver/mock"
+	"github.com/b177y/koble/pkg/koble"
 )
 
 var nk *koble.Koble

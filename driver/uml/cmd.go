@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/b177y/netkit/driver/uml/vecnet"
+	"github.com/b177y/koble/driver/uml/vecnet"
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/spf13/cobra"
 )

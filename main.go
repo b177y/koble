@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/b177y/netkit/cmd"
+	"github.com/b177y/koble/cmd"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 
-	"github.com/b177y/netkit/pkg/koble"
+	"github.com/b177y/koble/pkg/koble"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

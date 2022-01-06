@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v2"
 

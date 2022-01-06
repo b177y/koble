@@ -14,7 +14,7 @@ import (
 	"github.com/containers/image/v5/manifest"
 	"github.com/creasty/defaults"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"

@@ -1,6 +1,6 @@
 package uml
 
-import "github.com/b177y/netkit/driver"
+import "github.com/b177y/koble/driver"
 
 type UMLDriver struct {
 	Name         string

@@ -3,7 +3,7 @@ package podman
 import (
 	"strings"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 )
 

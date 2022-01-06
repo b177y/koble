@@ -1,4 +1,4 @@
-module github.com/b177y/netkit
+module github.com/b177y/koble
 
 go 1.17
 

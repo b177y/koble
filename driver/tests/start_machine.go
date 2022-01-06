@@ -3,7 +3,7 @@ package driver_test
 import (
 	"errors"
 
-	"github.com/b177y/netkit/driver"
+	"github.com/b177y/koble/driver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
