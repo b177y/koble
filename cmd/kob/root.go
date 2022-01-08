@@ -14,8 +14,6 @@ import (
 
 var verbose bool
 var quiet bool
-var plain bool
-var noColor bool
 var namespace string
 
 var (
@@ -33,7 +31,7 @@ var (
 			} else {
 				log.SetLevel(log.WarnLevel)
 			}
-			if plain || noColor {
+			if cli.Plain || cli.NoColor {
 				color.NoColor = true
 			}
 			var err error
@@ -57,8 +55,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
-	rootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "disable interactive / coloured output")
-	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable interactive / coloured output")
+	rootCmd.PersistentFlags().BoolVar(&cli.Plain, "plain", false, "disable interactive / coloured output")
+	rootCmd.PersistentFlags().BoolVar(&cli.NoColor, "no-color", false, "disable interactive / coloured output")
 	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
 	for _, c := range cli.Commands {
 		rootCmd.AddCommand(c)

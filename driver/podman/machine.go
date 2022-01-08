@@ -215,14 +215,11 @@ func (m *Machine) Stop(force bool) error {
 func (m *Machine) Remove() error {
 	exists, err := m.Exists()
 	if err != nil {
-		fmt.Println("hmm error checking exists", err)
 		return err
 	}
 	if !exists {
-		fmt.Println("doesnt exist so not removing")
 		return nil
 	}
-	fmt.Println("container exists so removing it now")
 	return containers.Remove(m.pd.conn, m.Id(), nil)
 }
 

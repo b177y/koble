@@ -8,6 +8,7 @@ go_library(
     ),
     deps=[
         "//pkg/koble",
+        "//pkg/output",
         "//cmd/kob/cli",
         "//driver",
         #"//third_party/go:github.com__sirupsen__logrus",

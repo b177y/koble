@@ -8,3 +8,6 @@ import (
 var Commands []*cobra.Command
 
 var NK *koble.Koble
+
+var Plain bool
+var NoColor bool
