@@ -3,13 +3,14 @@ package kob
 import (
 	"errors"
 
+	"github.com/b177y/koble/cmd/kob/cli"
+	"github.com/b177y/koble/cmd/kob/registry"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var NK *koble.Koble
 var verbose bool
 var quiet bool
 var plain bool
@@ -35,7 +36,7 @@ var (
 				color.NoColor = true
 			}
 			var err error
-			NK, err = koble.NewKoble(namespace)
+			cli.NK, err = koble.NewKoble(namespace)
 			return err
 		},
 		Version: koble.VERSION,
@@ -55,5 +56,8 @@ func init() {
 	RootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
 	RootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "disable interactive / coloured output")
 	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable interactive / coloured output")
-	RootCmd.RegisterFlagCompletionFunc("namespace", autocompNamespace)
+	RootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
+	for _, c := range registry.Commands {
+
+	}
 }

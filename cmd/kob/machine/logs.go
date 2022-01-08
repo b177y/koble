@@ -1,8 +1,7 @@
 package machine
 
 import (
-	"github.com/b177y/koble/cmd/kob"
-	log "github.com/sirupsen/logrus"
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -15,13 +14,10 @@ var logsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Example: `koble logs a0 -f
 	koble logs dh --tail 10`,
-	ValidArgsFunction: kob.AutocompMachine,
-	Run: func(cmd *cobra.Command, args []string) {
+	ValidArgsFunction: cli.AutocompMachine,
+	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]
-		err := kob.NK.MachineLogs(machine, logsFollow, logsTail)
-		if err != nil {
-			log.Fatal(err)
-		}
+		return cli.NK.MachineLogs(machine, logsFollow, logsTail)
 	},
 	DisableFlagsInUseLine: true,
 }
@@ -29,6 +25,6 @@ var logsCmd = &cobra.Command{
 func init() {
 	logsCmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Follow log output")
 	logsCmd.Flags().IntVar(&logsTail, "tail", -1, "Output the specified number of LINES at the end of the logs.  Defaults to -1, which prints all lines")
-	KobleCLI.AddCommand(logsCmd)
 	machineCmd.AddCommand(logsCmd)
+	cli.Commands = append(cli.Commands, logsCmd)
 }

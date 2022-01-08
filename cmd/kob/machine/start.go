@@ -1,8 +1,7 @@
 package machine
 
 import (
-	"github.com/b177y/koble/cmd/kob"
-	log "github.com/sirupsen/logrus"
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -11,12 +10,9 @@ var startCmd = &cobra.Command{
 	Short:                 "start a koble machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
-	ValidArgsFunction:     kob.AutocompNonRunningMachine,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := kob.NK.StartMachineWithStatus(args[0], machineImage, machineNetworks, machineWait, false) // TODO put plain into nk
-		if err != nil {
-			log.Fatal(err)
-		}
+	ValidArgsFunction:     cli.AutocompNonRunningMachine,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cli.NK.StartMachineWithStatus(args[0], machineImage, machineNetworks, machineWait, false) // TODO put plain into nk
 	},
 }
 
@@ -26,5 +22,5 @@ func init() {
 	startCmd.Flags().BoolVarP(&machineWait, "wait", "w", false, "wait for machine to boot up")
 
 	machineCmd.AddCommand(startCmd)
-	kob.RootCmd.AddCommand(startCmd)
+	cli.Commands = append(cli.Commands, startCmd)
 }

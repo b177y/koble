@@ -1,6 +1,9 @@
 package lab
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/b177y/koble/cmd/kob/cli"
+	"github.com/spf13/cobra"
+)
 
 var labCmd = &cobra.Command{
 	Use:   "lab",
@@ -8,5 +11,5 @@ var labCmd = &cobra.Command{
 }
 
 func init() {
-	kob.rootCmd.AddCommand(labCmd)
+	cli.Commands = append(cli.Commands, labCmd)
 }

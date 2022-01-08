@@ -2,10 +2,8 @@ package machine
 
 import (
 	"errors"
-	"os"
 
-	"github.com/b177y/koble/cmd/kob"
-	log "github.com/sirupsen/logrus"
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -13,32 +11,25 @@ var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
 	Short:             "attach to the main tty of a koble machine",
 	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: kob.AutocompRunningMachine,
+	ValidArgsFunction: cli.AutocompRunningMachine,
 	Example: `koble attach --terminal
 	koble attach --console`,
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if useTerm && useCon {
-			err := errors.New("CLI Flags --terminal and --console cannot be used together.")
-			log.Fatal(err)
+			return errors.New("CLI Flags --terminal and --console cannot be used together.")
 		} else if useTerm {
-			nk.Config.OpenTerms = true
+			cli.NK.Config.OpenTerms = true
 		} else if useCon {
-			nk.Config.OpenTerms = false
+			cli.NK.Config.OpenTerms = false
 		}
+		return nil
 	},
-	Run: func(cmd *cobra.Command, args []string) {
-		if nk.Config.OpenTerms {
-			err := nk.LaunchInTerm()
-			if err != nil {
-				log.Fatal(err)
-			}
-			os.Exit(0)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if cli.NK.Config.OpenTerms {
+			return cli.NK.LaunchInTerm()
 		}
 		machine := args[0]
-		err := nk.AttachToMachine(machine)
-		if err != nil {
-			log.Fatal(err)
-		}
+		return cli.NK.AttachToMachine(machine)
 	},
 	DisableFlagsInUseLine: true,
 }
@@ -46,6 +37,6 @@ var attachCmd = &cobra.Command{
 func init() {
 	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
 	attachCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
-	KobleCLI.AddCommand(attachCmd)
 	machineCmd.AddCommand(attachCmd)
+	cli.Commands = append(cli.Commands, attachCmd)
 }

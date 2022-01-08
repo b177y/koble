@@ -2,7 +2,6 @@ package lab
 
 import (
 	"github.com/b177y/koble/pkg/koble"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -11,11 +10,8 @@ var initOpts koble.InitOpts
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialise a new koble lab",
-	Run: func(cmd *cobra.Command, args []string) {
-		err := koble.InitLab(initOpts)
-		if err != nil {
-			log.Fatal(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return koble.InitLab(initOpts)
 	},
 }
 

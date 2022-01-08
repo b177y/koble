@@ -1,7 +1,7 @@
 package machine
 
 import (
-	"github.com/b177y/koble/cmd/kob"
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -20,5 +20,5 @@ var machineCmd = &cobra.Command{
 }
 
 func init() {
-	kob.RootCmd.AddCommand(machineCmd)
+	cli.Commands = append(cli.Commands, machineCmd)
 }

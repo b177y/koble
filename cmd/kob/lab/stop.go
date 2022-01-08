@@ -1,19 +1,15 @@
 package lab
 
 import (
-	"github.com/b177y/koble/cmd/kob"
-	log "github.com/sirupsen/logrus"
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
 
 var stopCmd = &cobra.Command{
 	Use:   "stop [options] MACHINE [MACHINE...]",
 	Short: "stop machines in a koble lab",
-	Run: func(cmd *cobra.Command, args []string) {
-		err := kob.NK.LabHalt(args, labHaltForce, labAllMachines)
-		if err != nil {
-			log.Fatal(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cli.NK.LabHalt(args, labHaltForce, labAllMachines)
 	},
 	DisableFlagsInUseLine: true,
 }

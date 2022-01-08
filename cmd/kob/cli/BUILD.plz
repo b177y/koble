@@ -1,17 +1,13 @@
 package(default_visibility = ["PUBLIC"])
 
 go_library(
-    name="machine",
+    name="cli",
     srcs = glob(
         ["*.go"],
         exclude = ["*_test.go"],
     ),
     deps=[
         "//pkg/koble",
-        "//cmd/kob/cli",
-        #"//driver",
-        #"//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",
-        #"//third_party/go:github.com__fatih__color",
     ]
 )
