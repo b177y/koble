@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/pkg/output"
@@ -25,7 +24,12 @@ func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, w
 		}
 		oc.Stop()
 	}()
-	err = nk.StartMachine(name, image, networks, out)
+	machine := Machine{
+		Name:  name,
+		Image: image,
+		//Networks: networks,
+	}
+	err = nk.StartMachine(machine, out)
 	if err != nil {
 		return err
 	}
@@ -35,19 +39,22 @@ func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, w
 			return err
 		}
 		out.Write([]byte("booting"))
-		return m.WaitUntil("running", 60)
+		return m.WaitUntil("running", 60*5)
 	}
 	return nil
 }
-func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
+
+func netStrList(nets []Network) (names []string) {
+	for _, n := range nets {
+		names = append(names, n.Name)
+	}
+	return names
+}
+
+//func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
+func (nk *Koble) StartMachine(machine Machine, out io.Writer) error {
 	// Start with defaults
-	out.Write([]byte("checking machine " + name))
-	time.Sleep(1 * time.Second)
-	out.Write([]byte("waiting for dep h2"))
-	time.Sleep(1 * time.Second)
-	out.Write([]byte("creating networks"))
-	time.Sleep(1 * time.Second)
-	m, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(machine.Name, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -55,11 +62,11 @@ func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writ
 		Lab:      nk.Lab.Name,
 		Hostlab:  nk.Lab.Directory,
 		HostHome: true,
-		Networks: networks,
+		Networks: netStrList(machine.Networks),
 	}
 
-	for _, n := range networks {
-		out.Write([]byte("creating network " + n))
+	for _, n := range machine.Networks {
+		out.Write([]byte("creating network " + n.Name))
 		err := nk.StartNetwork(n)
 		if err != nil && err != driver.ErrExists {
 			return err
@@ -77,8 +84,8 @@ func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writ
 		}
 	}
 	// Add options from command line flags
-	if image != "" {
-		opts.Image = image
+	if machine.Image != "" {
+		opts.Image = machine.Image
 	}
 	if opts.HostHome {
 		home, err := os.UserHomeDir()

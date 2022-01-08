@@ -15,8 +15,8 @@ type Network struct {
 	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
 }
 
-func (nk *Koble) StartNetwork(name string) error {
-	n, err := nk.Driver.Network(name, nk.Namespace)
+func (nk *Koble) StartNetwork(network Network) error {
+	n, err := nk.Driver.Network(network.Name, nk.Namespace)
 	if err != nil {
 		return err
 	}

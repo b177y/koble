@@ -281,7 +281,20 @@ func (nk *Koble) LabStart(mlist []string) error {
 				wg.Done()
 			}()
 			out.Start()
-			return nk.StartMachine(m.Name, m.Image, []string{}, out)
+			err = nk.StartMachine(m, out)
+			if err != nil {
+				return err
+			}
+			wait := true // TODO
+			if wait {
+				m, err := nk.Driver.Machine(m.Name, nk.Namespace)
+				if err != nil {
+					return err
+				}
+				out.Write([]byte("booting"))
+				return m.WaitUntil("running", 60)
+			}
+			return nil
 		}(m)
 	}
 	wg.Wait()

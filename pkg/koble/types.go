@@ -1,7 +1,7 @@
 package koble
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"fmt"
 
 	"github.com/b177y/koble/driver"
@@ -57,7 +57,7 @@ func NewKoble(namespace string) (*Koble, error) {
 		nk.Namespace = namespace
 	} else if labExists {
 		nk.Namespace = fmt.Sprintf("%x",
-			sha256.Sum256([]byte(lab.Directory)))
+			md5.Sum([]byte(lab.Directory)))
 	} else {
 		nk.Namespace = "GLOBAL"
 	}
