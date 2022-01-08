@@ -283,12 +283,7 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 	}
 	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.name)
 	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	err = shim.Attach(filepath.Join(m.mDir(), "attach.sock"))
-	if err.Error() == "read escape sequence" {
-		return nil
-	} else {
-		return err
-	}
+	return shim.Attach(filepath.Join(m.mDir(), "attach.sock"))
 }
 
 func (m *Machine) Exec(command string,

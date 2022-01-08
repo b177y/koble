@@ -4,6 +4,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/moby/term"
 	"golang.org/x/sync/errgroup"
@@ -28,20 +29,20 @@ func Attach(sock string) error {
 	eg.Go(func() error {
 		defer conn.Close()
 		_, err := io.Copy(conn, stdinWithEscape)
-		if err.Error() == "read escape sequence" {
-			return err
-		} else if err != nil {
-			return err
-		}
-		return nil
+		return err
 	})
 	eg.Go(func() error {
 		defer conn.Close()
-		io.Copy(os.Stdout, conn)
-		if err != nil {
-			return err
-		}
-		return nil
+		_, err := io.Copy(os.Stdout, conn)
+		return err
 	})
-	return eg.Wait()
+	err = eg.Wait()
+	if err == nil {
+		return nil
+	} else if err.Error() == "read escape sequence" {
+		return nil
+	} else if strings.Contains(err.Error(), "use of closed network connection") {
+		return nil
+	}
+	return err
 }
