@@ -75,7 +75,7 @@ go_mod_download(
     name = "github.com__b177y__go-uml-utilities",
     _tag = "download",
     module = "github.com/b177y/go-uml-utilities",
-    version = "v0.0.0-20220102233300-35a8780d7d55",
+    version = "9882ca8ecb0d626bcdf4b02b7c48dac7de5403f6",
 )
 
 go_module(
