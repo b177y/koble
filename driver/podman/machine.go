@@ -183,10 +183,10 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		return err
 	}
 	// TODO make m.CopyInFiles
-	err = m.CopyInFiles(opts.Hostlab)
-	if err != nil {
-		return err
-	}
+	// err = m.CopyInFiles(opts.Hostlab)
+	// if err != nil {
+	// 	return err
+	// }
 	// temporary fix to https://github.com/containers/podman/issues/12204
 	prev := log.GetLevel()
 	log.SetLevel(log.ErrorLevel)

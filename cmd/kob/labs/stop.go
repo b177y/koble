@@ -11,7 +11,7 @@ var stopCmd = &cobra.Command{
 	Use:   "stop [options] MACHINE [MACHINE...]",
 	Short: "stop machines in a koble lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.Lab.Stop(args, stopForce, labAllMachines)
+		return cli.NK.LabStop(args, stopForce, labAllMachines)
 	},
 	DisableFlagsInUseLine: true,
 }

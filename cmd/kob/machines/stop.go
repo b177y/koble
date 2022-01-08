@@ -14,7 +14,7 @@ var stopCmd = &cobra.Command{
 	ValidArgsFunction:     cli.AutocompRunningMachine,
 	DisableFlagsInUseLine: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.HaltMachine(args[0], false, os.Stdout)
+		return cli.NK.StopMachine(args[0], false, os.Stdout)
 	},
 }
 

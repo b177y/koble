@@ -6,7 +6,6 @@ import (
 
 	"github.com/b177y/koble/driver"
 	prettyjson "github.com/hokaccha/go-prettyjson"
-	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 // func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
@@ -40,7 +39,7 @@ import (
 //func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
 	// Start with defaults
-	dm, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
@@ -52,11 +51,11 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 			return err
 		}
 	}
-	conf.Volumes = append(conf.Volumes, spec.Mount{
-		Source:      nk.Lab.Directory,
-		Destination: "/hostlab",
-	})
-	return dm.Start(&conf)
+	// conf.Volumes = append(conf.Volumes, spec.Mount{
+	// 	Source:      nk.Lab.Directory,
+	// 	Destination: "/hostlab",
+	// })
+	return m.Start(&conf)
 }
 
 func (nk *Koble) MachineInfo(name string, json bool) error {
@@ -116,15 +115,15 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Koble) HaltMachine(name string, force bool, out io.Writer) error {
+func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
 	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
 	if force {
-		fmt.Fprintf(out, "Crashing machine %s\n", name)
+		fmt.Fprintf(out, "Crashing machine %s", name)
 	} else {
-		fmt.Fprintf(out, "Halting machine %s\n", name)
+		fmt.Fprintf(out, "Halting machine %s", name)
 	}
 	return m.Stop(force)
 }
@@ -134,7 +133,7 @@ func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "removing machine %s\n", name)
+	fmt.Fprintf(out, "removing machine %s", name)
 	return m.Remove()
 }
 
@@ -143,14 +142,14 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "Crashing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Crashing machine %s", m.Name())
 	err = m.Stop(true)
 	if err != nil {
 		return err
 	}
 	// TODO workout best way to delay until machine stopped
 	// m.WaitUntil() ?
-	fmt.Fprintf(out, "Removing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Removing machine %s", m.Name())
 	return m.Remove()
 }
 

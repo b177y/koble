@@ -40,7 +40,9 @@ var (
 			cli.NK, err = koble.NewKoble(namespace)
 			return err
 		},
-		Version: koble.VERSION,
+		Version:       koble.VERSION,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 )
 

@@ -13,7 +13,7 @@ var lstartCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
 	Short: "start a koble lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.Lab.Start(args)
+		return cli.NK.LabStart(args)
 	},
 	DisableFlagsInUseLine: true,
 }

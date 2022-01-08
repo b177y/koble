@@ -241,16 +241,16 @@ func (lab *Lab) Header() string {
 	return header + "\n"
 }
 
-func (lab *Lab) Start(mlist []string) error {
-	if lab.Name == "" {
+func (nk *Koble) LabStart(mlist []string) error {
+	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	oc := output.NewContainer(lab.Header, false) // TODO handle --plain
+	oc := output.NewContainer(nk.Lab.Header, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
 	//machines := filterMachines(lab.Machines, mlist)
 	var wg sync.WaitGroup
-	for name, mconf := range lab.Machines {
+	for name, mconf := range nk.Lab.Machines {
 		wg.Add(1)
 		go func(name string, m driver.MachineConfig) (err error) {
 			out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
@@ -263,13 +263,13 @@ func (lab *Lab) Start(mlist []string) error {
 				wg.Done()
 			}()
 			out.Start()
-			err = lab.nk.StartMachine(name, mconf, out)
+			err = nk.StartMachine(name, m, out)
 			if err != nil {
 				return err
 			}
 			wait := true // TODO
 			if wait {
-				m, err := lab.nk.Driver.Machine(name, lab.nk.Namespace)
+				m, err := nk.Driver.Machine(name, nk.Namespace)
 				if err != nil {
 					return err
 				}
@@ -325,14 +325,14 @@ func (nk *Koble) GetMachineList(mlist []string,
 	return machines, nil
 }
 
-func (lab *Lab) Destroy(mlist []string, all bool) error {
-	if lab.Name == "" {
+func (nk *Koble) LabDestroy(mlist []string, all bool) error {
+	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
 	oc := output.NewContainer(nil, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
-	machines := filterMachines(lab.Machines, mlist)
+	machines := filterMachines(nk.Lab.Machines, mlist)
 	var wg sync.WaitGroup
 	for name, mconf := range machines {
 		wg.Add(1)
@@ -347,7 +347,7 @@ func (lab *Lab) Destroy(mlist []string, all bool) error {
 				wg.Done()
 			}()
 			out.Start()
-			err = lab.nk.DestroyMachine(name, out)
+			err = nk.DestroyMachine(name, out)
 			if err != nil {
 				return err
 			}
@@ -359,15 +359,15 @@ func (lab *Lab) Destroy(mlist []string, all bool) error {
 	return nil
 }
 
-func (lab *Lab) Stop(mlist []string,
+func (nk *Koble) LabStop(mlist []string,
 	force, all bool) error {
-	if lab.Name == "" {
+	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
 	oc := output.NewContainer(nil, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
-	machines := filterMachines(lab.Machines, mlist)
+	machines := filterMachines(nk.Lab.Machines, mlist)
 	var wg sync.WaitGroup
 	for name, mconf := range machines {
 		wg.Add(1)
@@ -382,13 +382,13 @@ func (lab *Lab) Stop(mlist []string,
 				wg.Done()
 			}()
 			out.Start()
-			err = lab.nk.HaltMachine(name, force, out)
+			err = nk.StopMachine(name, force, out)
 			if err != nil {
 				return err
 			}
 			wait := true // TODO
 			if wait {
-				m, err := lab.nk.Driver.Machine(name, lab.nk.Namespace)
+				m, err := nk.Driver.Machine(name, nk.Namespace)
 				if err != nil {
 					return err
 				}
