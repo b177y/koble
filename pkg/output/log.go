@@ -3,32 +3,35 @@ package output
 import (
 	"fmt"
 	"io"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type LogOutput struct {
-	out      io.Writer
+	logger   *log.Logger
 	name     string
 	finished string
 }
 
 func (lo *LogOutput) Write(p []byte) (int, error) {
-	return fmt.Fprintf(lo.out, "[%s] %s\n", lo.name, string(p))
+	lo.logger.Infof("[%s] %s\n", lo.name, string(p))
+	return len(p), nil
 }
 
 func (lo *LogOutput) Start() {
-	fmt.Fprintf(lo.out, "%s\n", lo.name)
+	lo.logger.Infoln(lo.name)
 }
 
 func (lo *LogOutput) Finished(msg string) {
-	fmt.Fprintf(lo.out, "[%s] finished: %s\n", lo.name, msg)
+	lo.logger.Infof("[%s] finished: %s\n", lo.name, msg)
 }
 
 func (lo *LogOutput) Success(msg string) {
-	fmt.Fprintf(lo.out, "[%s] success: %s\n", lo.name, msg)
+	lo.logger.Infof("[%s] success: %s\n", lo.name, msg)
 }
 
 func (lo *LogOutput) Error(err error) {
-	fmt.Fprintf(lo.out, "[%s] error: %v\n", lo.name, err)
+	lo.logger.Errorf("[%s] error: %v\n", lo.name, err)
 }
 
 type LogContainer struct {
@@ -38,9 +41,11 @@ type LogContainer struct {
 }
 
 func (lc *LogContainer) AddOutput(name string) Output {
+	logger := log.New()
+	logger.Out = lc.Out
 	out := &LogOutput{
-		out:  lc.Out,
-		name: name,
+		name:   name,
+		logger: logger,
 	}
 	return out
 }

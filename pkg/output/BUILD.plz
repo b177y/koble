@@ -9,5 +9,6 @@ go_library(
     deps = [
         "//third_party/go:github.com__gosuri__uilive",
         "//third_party/go:github.com__fatih__color",
+        "//third_party/go:github.com__sirupsen__logrus",
     ],
 )
