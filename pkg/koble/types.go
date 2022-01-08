@@ -3,7 +3,6 @@ package koble
 import (
 	"crypto/md5"
 	"fmt"
-	"net"
 
 	"github.com/b177y/koble/driver"
 	"github.com/go-playground/validator/v10"
@@ -19,39 +18,20 @@ type Koble struct {
 }
 
 type Lab struct {
-	Name         string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	Directory    string    `yaml:"dir,omitempty"`
-	CreatedAt    string    `yaml:"created_at,omitempty" validate:"datetime"`
-	KobleVersion string    `yaml:"koble_version,omitempty"`
-	Description  string    `yaml:"description,omitempty"`
-	Authors      []string  `yaml:"authors,omitempty"`
-	Emails       []string  `yaml:"emails,omitempty" validate:"email"`
-	Web          []string  `yaml:"web,omitempty" validate:"url"`
-	Machines     []Machine `yaml:"machines,omitempty"`
-	Networks     []Network `yaml:"networks,omitempty"`
-	DefaultImage string    `yaml:"default_image,omitempty"`
-}
-
-type Machine struct {
 	nk           *Koble
-	Name         string
-	Image        string
-	Networks     []Network
-	Volumes      []string
-	Dependencies []string
-	HostHome     bool
+	Name         string                          `yaml:"name,omitempty" validate:"alphanum,max=30"`
+	Directory    string                          `yaml:"dir,omitempty"`
+	CreatedAt    string                          `yaml:"created_at,omitempty" validate:"datetime"`
+	KobleVersion string                          `yaml:"koble_version,omitempty"`
+	Description  string                          `yaml:"description,omitempty"`
+	Authors      []string                        `yaml:"authors,omitempty"`
+	Emails       []string                        `yaml:"emails,omitempty" validate:"email"`
+	Web          []string                        `yaml:"web,omitempty" validate:"url"`
+	Machines     map[string]driver.MachineConfig `yaml:"machines,omitempty"`
+	Networks     map[string]driver.NetConfig     `yaml:"networks,omitempty"`
+	DefaultImage string                          `yaml:"default_image,omitempty"`
 }
 
-type Network struct {
-	nk       *Koble
-	Name     string `yaml:"name" validate:"alphanum,max=30"`
-	External bool   `yaml:"external,omitempty"`
-	Gateway  net.IP `yaml:"gateway,omitempty" validate:"ip"`
-	Subnet   string `yaml:"subnet,omitempty" validate:"cidr"`
-	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
-}
-
-// TODO move this ?
 func NewKoble(namespace string) (*Koble, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")

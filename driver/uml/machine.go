@@ -66,7 +66,7 @@ func (m *Machine) Running() bool {
 	return m.Pid() > 0
 }
 
-func getKernelCMD(m *Machine, opts driver.StartOptions, networks []string) (cmd []string, err error) {
+func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd []string, err error) {
 	cmd = []string{m.ud.Kernel}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
@@ -107,9 +107,9 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 	})
 }
 
-func (m *Machine) Start(opts *driver.StartOptions) (err error) {
+func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	if opts == nil {
-		opts = new(driver.StartOptions)
+		opts = new(driver.MachineConfig)
 	}
 	if err := defaults.Set(opts); err != nil {
 		return err

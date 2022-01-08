@@ -128,12 +128,15 @@ func AddMachineToLab(name string, networks []string, image string) error {
 		return err
 	}
 
-	for _, m := range lab.Machines {
-		if m.Name == name {
+	for mn, _ := range lab.Machines {
+		if mn == name {
 			return fmt.Errorf("A machine with the name %s already exists.", name)
 		}
 	}
-	lab.Machines = append(lab.Machines, Machine{Name: name})
+	lab.Machines[name] = driver.MachineConfig{
+		Networks: networks,
+		Image:    image,
+	}
 	err = SaveLab(&lab)
 	// TODO print help for getting started with machine
 	if err != nil {
@@ -163,33 +166,27 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 	if err != nil {
 		return err
 	}
-	for _, n := range lab.Networks {
-		if n.Name == name {
+	for nn, _ := range lab.Networks {
+		if nn == name {
 			return fmt.Errorf("A network with the name %s already exists.", name)
 		}
 	}
-	net := Network{
-		Name:     name,
+	net := driver.NetConfig{
 		External: external,
-		Gateway:  gateway,
-		Subnet:   subnet.String(),
-		IPv6:     ipv6,
+		//Gateway:  gateway,
+		Subnet: subnet.String(),
+		//IPv6:     ipv6,
 	}
 
 	if net.Subnet == "<nil>" {
 		net.Subnet = ""
 	}
-	lab.Networks = append(lab.Networks, net)
+	lab.Networks[name] = net
 	err = SaveLab(&lab)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("Created new network %s.\n", name)
-	return nil
-}
-
-func (nk *Koble) Validate() error {
-	// do some extra validation here
 	return nil
 }
 
@@ -223,7 +220,7 @@ func itemTextArray(key string, values []string, width int) string {
 	return itemText(key, strings.Join(values, ", "), width)
 }
 
-func (nk *Koble) LabHeader() string {
+func (lab *Lab) Header() string {
 	var header string
 	width, _, err := terminal.GetSize(0)
 	if err != nil {
@@ -233,46 +230,46 @@ func (nk *Koble) LabHeader() string {
 		width = MAXPRINTWIDTH
 	}
 	header += barText('=', "Starting Lab", width)
-	header += itemText("Lab Directory", nk.Lab.Directory, width)
-	header += itemText("Created At", nk.Lab.CreatedAt, width)
-	header += itemText("Version", nk.Lab.KobleVersion, width)
-	header += itemTextArray("Author", nk.Lab.Authors, width)
-	header += itemTextArray("Email", nk.Lab.Emails, width)
-	header += itemTextArray("Web", nk.Lab.Web, width)
-	header += itemText("Description", nk.Lab.Description, width)
+	header += itemText("Lab Directory", lab.Directory, width)
+	header += itemText("Created At", lab.CreatedAt, width)
+	header += itemText("Version", lab.KobleVersion, width)
+	header += itemTextArray("Author", lab.Authors, width)
+	header += itemTextArray("Email", lab.Emails, width)
+	header += itemTextArray("Web", lab.Web, width)
+	header += itemText("Description", lab.Description, width)
 	header += barText('=', "", width)
 	return header + "\n"
 }
 
-func (nk *Koble) LabStart(mlist []string) error {
-	if nk.Lab.Name == "" {
+func (lab *Lab) Start(mlist []string) error {
+	if lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	oc := output.NewContainer(nk.LabHeader, false) // TODO handle --plain
+	oc := output.NewContainer(lab.Header, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
-	machines := filterMachines(nk.Lab.Machines, mlist)
+	//machines := filterMachines(lab.Machines, mlist)
 	var wg sync.WaitGroup
-	for _, m := range machines {
+	for name, mconf := range lab.Machines {
 		wg.Add(1)
-		go func(m Machine) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Starting machine %s", m.Name))
+		go func(name string, m driver.MachineConfig) (err error) {
+			out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
 			defer func() {
 				if err != nil {
 					out.Error(err)
 				} else {
-					out.Success(fmt.Sprintf("Started machine %s", m.Name))
+					out.Success(fmt.Sprintf("Started machine %s", name))
 				}
 				wg.Done()
 			}()
 			out.Start()
-			err = nk.StartMachine(m, out)
+			err = lab.nk.StartMachine(name, mconf, out)
 			if err != nil {
 				return err
 			}
 			wait := true // TODO
 			if wait {
-				m, err := nk.Driver.Machine(m.Name, nk.Namespace)
+				m, err := lab.nk.Driver.Machine(name, lab.nk.Namespace)
 				if err != nil {
 					return err
 				}
@@ -280,7 +277,7 @@ func (nk *Koble) LabStart(mlist []string) error {
 				return m.WaitUntil("running", 60)
 			}
 			return nil
-		}(m)
+		}(name, mconf)
 	}
 	wg.Wait()
 	return nil
@@ -295,16 +292,16 @@ func contains(arr []string, item string) bool {
 	return false
 }
 
-func filterMachines(machines []Machine,
-	filter []string) (mList []Machine) {
+func filterMachines(machines map[string]driver.MachineConfig,
+	filter []string) (mList map[string]driver.MachineConfig) {
 	// if no machines in filter then all machines are included
 	if len(filter) == 0 {
 		return machines
 	}
 	// only keep machines which are in the filter list
-	for _, m := range machines {
-		if contains(filter, m.Name) {
-			mList = append(mList, m)
+	for _, name := range filter {
+		if val, ok := machines[name]; ok {
+			mList[name] = val
 		}
 	}
 	return mList
@@ -328,70 +325,70 @@ func (nk *Koble) GetMachineList(mlist []string,
 	return machines, nil
 }
 
-func (nk *Koble) LabDestroy(mlist []string, all bool) error {
-	if nk.Lab.Name == "" {
+func (lab *Lab) Destroy(mlist []string, all bool) error {
+	if lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
 	oc := output.NewContainer(nil, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
-	machines := filterMachines(nk.Lab.Machines, mlist)
+	machines := filterMachines(lab.Machines, mlist)
 	var wg sync.WaitGroup
-	for _, m := range machines {
+	for name, mconf := range machines {
 		wg.Add(1)
-		go func(m Machine) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Destroying machine %s", m.Name))
+		go func(name string, m driver.MachineConfig) (err error) {
+			out := oc.AddOutput(fmt.Sprintf("Destroying machine %s", name))
 			defer func() {
 				if err != nil {
 					out.Error(err)
 				} else {
-					out.Success(fmt.Sprintf("Destroyed machine %s", m.Name))
+					out.Success(fmt.Sprintf("Destroyed machine %s", name))
 				}
 				wg.Done()
 			}()
 			out.Start()
-			err = nk.DestroyMachine(m.Name, out)
+			err = lab.nk.DestroyMachine(name, out)
 			if err != nil {
 				return err
 			}
 			// TODO waitUntil not exists
 			return nil
-		}(m)
+		}(name, mconf)
 	}
 	wg.Wait()
 	return nil
 }
 
-func (nk *Koble) LabHalt(mlist []string,
+func (lab *Lab) Stop(mlist []string,
 	force, all bool) error {
-	if nk.Lab.Name == "" {
+	if lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
 	oc := output.NewContainer(nil, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
-	machines := filterMachines(nk.Lab.Machines, mlist)
+	machines := filterMachines(lab.Machines, mlist)
 	var wg sync.WaitGroup
-	for _, m := range machines {
+	for name, mconf := range machines {
 		wg.Add(1)
-		go func(m Machine) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Stopping machine %s", m.Name))
+		go func(name string, m driver.MachineConfig) (err error) {
+			out := oc.AddOutput(fmt.Sprintf("Stopping machine %s", name))
 			defer func() {
 				if err != nil {
 					out.Error(err)
 				} else {
-					out.Success(fmt.Sprintf("Stopped machine %s", m.Name))
+					out.Success(fmt.Sprintf("Stopped machine %s", name))
 				}
 				wg.Done()
 			}()
 			out.Start()
-			err = nk.HaltMachine(m.Name, force, out)
+			err = lab.nk.HaltMachine(name, force, out)
 			if err != nil {
 				return err
 			}
 			wait := true // TODO
 			if wait {
-				m, err := nk.Driver.Machine(m.Name, nk.Namespace)
+				m, err := lab.nk.Driver.Machine(name, lab.nk.Namespace)
 				if err != nil {
 					return err
 				}
@@ -399,37 +396,22 @@ func (nk *Koble) LabHalt(mlist []string,
 				return m.WaitUntil("exited", 60*5)
 			}
 			return nil
-		}(m)
+		}(name, mconf)
 	}
 	wg.Wait()
 	return nil
 }
 
-func (nk *Koble) LabInfo() error {
-	if nk.Lab.Name == "" {
+func (lab *Lab) Info() error {
+	if lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
-	fmt.Println("============================ Lab ===============================")
-	var info [][]string
-	info = append(info, []string{"Name", nk.Lab.Name})
-	info = append(info, []string{"Directory", nk.Lab.Directory})
-	info = append(info, []string{"Created At", nk.Lab.CreatedAt})
-	info = append(info, []string{"Koble Version", nk.Lab.KobleVersion})
-	authorHeading, authors := multiHeading("Author", nk.Lab.Authors)
-	info = append(info, []string{authorHeading, authors})
-	emailHeading, emails := multiHeading("Email", nk.Lab.Emails)
-	info = append(info, []string{emailHeading, emails})
-	webHeading, web := multiHeading("URL", nk.Lab.Web)
-	info = append(info, []string{webHeading, web})
-	info = append(info, []string{"Description", nk.Lab.Description})
-	RenderTable([]string{}, info)
-	fmt.Printf("================================================================\n\n")
-	err := nk.ListMachines(false, false)
+	err := lab.nk.ListMachines(false, false)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("\n")
-	err = nk.ListNetworks(false)
+	err = lab.nk.ListNetworks(false)
 	fmt.Printf("\n")
 	return err
 }

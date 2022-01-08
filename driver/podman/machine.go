@@ -110,9 +110,9 @@ func getFilters(machine, lab, namespace string, all bool) map[string][]string {
 	return filters
 }
 
-func (m *Machine) Start(opts *driver.StartOptions) (err error) {
+func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	if opts == nil {
-		opts = new(driver.StartOptions)
+		opts = new(driver.MachineConfig)
 	}
 	if err := defaults.Set(opts); err != nil {
 		return err

@@ -39,7 +39,7 @@ func (n *Network) Id() string {
 	return "koble_" + n.namespace + "_" + n.name
 }
 
-func (n *Network) Create(opts *driver.NetCreateOptions) (err error) {
+func (n *Network) Create(opts *driver.NetConfig) (err error) {
 	exists, err := n.Exists()
 	if err != nil {
 		return err

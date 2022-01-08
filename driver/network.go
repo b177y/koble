@@ -11,7 +11,7 @@ type NetInfo struct {
 	IPv6      string
 }
 
-type NetCreateOptions struct {
+type NetConfig struct {
 	External bool   `default:"false"`
 	Gateway  string `default:""`
 	IpRange  string `default:""`
@@ -22,7 +22,7 @@ type NetCreateOptions struct {
 type Network interface {
 	Name() string
 	Id() string
-	Create(opts *NetCreateOptions) error
+	Create(opts *NetConfig) error
 	Start() error
 	Stop() error
 	Remove() error

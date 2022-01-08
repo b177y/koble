@@ -79,7 +79,7 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	info.Pid = m.Pid()
 	info.StartedAt = m.StartedAt()
 
-	var saveInfo driver.StartOptions
+	var saveInfo driver.MachineConfig
 	err = loadInfo(m.mDir(), &saveInfo)
 	if err != nil {
 		return info, err

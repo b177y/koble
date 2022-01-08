@@ -5,17 +5,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var stopForce bool
+
 var stopCmd = &cobra.Command{
 	Use:   "stop [options] MACHINE [MACHINE...]",
 	Short: "stop machines in a koble lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.LabHalt(args, labHaltForce, labAllMachines)
+		return cli.NK.Lab.Stop(args, stopForce, labAllMachines)
 	},
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
-	stopCmd.Flags().BoolVarP(&labHaltForce, "force", "f", false, "Force halt machines.")
-	stopCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Halt all koble machines, including those not in the current lab.")
+	stopCmd.Flags().BoolVarP(&stopForce, "force", "f", false, "Force halt machines.")
 	labCmd.AddCommand(stopCmd)
 }

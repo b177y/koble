@@ -25,9 +25,9 @@ func (n *Network) Name() string {
 	return n.name
 }
 
-func (n *Network) Create(opts *driver.NetCreateOptions) error {
+func (n *Network) Create(opts *driver.NetConfig) error {
 	if opts == nil {
-		opts = new(driver.NetCreateOptions)
+		opts = new(driver.NetConfig)
 	}
 	if err := defaults.Set(opts); err != nil {
 		return err
@@ -86,7 +86,7 @@ func (n *Network) Info() (nInfo driver.NetInfo, err error) {
 	if !exists {
 		return nInfo, driver.ErrNotExists
 	}
-	var info driver.NetCreateOptions
+	var info driver.NetConfig
 	err = loadInfo(filepath.Join(n.ud.RunDir, "net", n.Id()), info)
 	return nInfo, err
 }

@@ -187,30 +187,27 @@ func (nk *Koble) LaunchInTerm() error {
 	return err
 }
 
-func orderMachines(machines []Machine) (ordered []Machine,
+func orderMachines(machines map[string]driver.MachineConfig) (ordered map[string]driver.MachineConfig,
 	err error) {
 	dg := topsort.NewGraph()
-	mappedMachines := map[string]Machine{}
-	for _, m := range machines {
-		mappedMachines[m.Name] = m
-	}
-	for _, m := range machines {
-		dg.AddNode(m.Name)
+	for name, m := range machines {
+		dg.AddNode(name)
 		for _, d := range m.Dependencies {
-			if d == m.Name {
-				return ordered, fmt.Errorf("Machine %s cannot depend on itself!", m.Name)
-			} else if _, ok := mappedMachines[d]; !ok {
+			if d == name {
+				return ordered, fmt.Errorf("Machine %s cannot depend on itself!", name)
+			} else if _, ok := machines[d]; !ok {
 				return ordered, fmt.Errorf("Machine %s does not exist!", d)
 			}
-			dg.AddEdge(m.Name, d)
+			dg.AddEdge(name, d)
 		}
 	}
 	sorted, err := dg.Sort()
 	if err != nil {
 		return ordered, err
 	}
-	for _, m := range sorted {
-		ordered = append(ordered, mappedMachines[m])
+	ordered = make(map[string]driver.MachineConfig, 0)
+	for _, name := range sorted {
+		ordered[name] = machines[name]
 	}
 	return ordered, nil
 }

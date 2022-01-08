@@ -6,16 +6,16 @@ import (
 	"github.com/b177y/koble/driver"
 )
 
-func (n *Network) Start() error {
-	dn, err := n.nk.Driver.Network(n.Name, n.nk.Namespace)
+func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
+	n, err := nk.Driver.Network(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	err = dn.Create(nil) // TODO add options
+	err = n.Create(nil) // TODO add options
 	if err != nil {
 		return err
 	}
-	err = dn.Start()
+	err = n.Start()
 	return err
 }
 
@@ -29,15 +29,15 @@ func (nk *Koble) ListNetworks(all bool) error {
 	return nil
 }
 
-func (n *Network) Info() error {
-	dn, err := n.nk.Driver.Network(n.Name, n.nk.Namespace)
+func (nk *Koble) NetworkInfo(name string) error {
+	n, err := nk.Driver.Network(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
 	var infoTable [][]string
-	infoTable = append(infoTable, []string{"Name", n.Name})
+	infoTable = append(infoTable, []string{"Name", name})
 	// get machines connected
-	info, err := dn.Info()
+	info, err := n.Info()
 	if err != nil && err != driver.ErrNotExists {
 		return err
 	}

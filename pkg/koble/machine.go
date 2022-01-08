@@ -3,106 +3,60 @@ package koble
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/b177y/koble/driver"
-	"github.com/b177y/koble/pkg/output"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
-	oc := output.NewContainer(nil, plain)
-	oc.Start()
-	out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
-	out.Start()
-	defer func() {
-		if err != nil {
-			out.Error(err)
-		} else {
-			out.Success(fmt.Sprintf("Started machine %s", name))
-		}
-		oc.Stop()
-	}()
-	machine := Machine{
-		Name:  name,
-		Image: image,
-		//Networks: networks,
-	}
-	err = nk.StartMachine(machine, out)
-	if err != nil {
-		return err
-	}
-	if wait {
-		m, err := nk.Driver.Machine(name, nk.Namespace)
-		if err != nil {
-			return err
-		}
-		out.Write([]byte("booting"))
-		return m.WaitUntil("running", 60*5)
-	}
-	return nil
-}
-
-func netStrList(nets []Network) (names []string) {
-	for _, n := range nets {
-		names = append(names, n.Name)
-	}
-	return names
-}
+// func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
+// 	oc := output.NewContainer(nil, plain)
+// 	oc.Start()
+// 	out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
+// 	out.Start()
+// 	defer func() {
+// 		if err != nil {
+// 			out.Error(err)
+// 		} else {
+// 			out.Success(fmt.Sprintf("Started machine %s", name))
+// 		}
+// 		oc.Stop()
+// 	}()
+// 	err = machine.Start(out)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	if wait {
+// 		m, err := nk.Driver.Machine(name, nk.Namespace)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		out.Write([]byte("booting"))
+// 		return m.WaitUntil("running", 60*5)
+// 	}
+// 	return nil
+// }
 
 //func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
-func (nk *Koble) StartMachine(machine Machine, out io.Writer) error {
+func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
 	// Start with defaults
-	m, err := nk.Driver.Machine(machine.Name, nk.Namespace)
+	dm, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	opts := driver.StartOptions{
-		Lab:      nk.Lab.Name,
-		Hostlab:  nk.Lab.Directory,
-		HostHome: true,
-		Networks: netStrList(machine.Networks),
-	}
 
-	for _, n := range machine.Networks {
-		out.Write([]byte("creating network " + n.Name))
-		err := n.Start()
+	for _, n := range conf.Networks {
+		fmt.Fprintf(out, "creating network %s", n)
+		err := nk.StartNetwork(n, driver.NetConfig{})
 		if err != nil && err != driver.ErrExists {
 			return err
 		}
 	}
-	// Add options from lab
-	for _, lm := range nk.Lab.Machines {
-		if lm.Name == m.Name() {
-			// opts.Volumes = lm.Volumes
-			opts.HostHome = lm.HostHome
-			if lm.Image != "" {
-				opts.Image = lm.Image
-			}
-			// opts.Networks = lm.Networks
-		}
-	}
-	// Add options from command line flags
-	if machine.Image != "" {
-		opts.Image = machine.Image
-	}
-	if opts.HostHome {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return err
-		}
-		opts.Volumes = append(opts.Volumes, spec.Mount{
-			Source:      home,
-			Destination: "/hosthome",
-		})
-	}
-	opts.Volumes = append(opts.Volumes, spec.Mount{
+	conf.Volumes = append(conf.Volumes, spec.Mount{
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	// fmt.Printf("Starting machine %s\n", m.Name())
-	return m.Start(&opts)
+	return dm.Start(&conf)
 }
 
 func (nk *Koble) MachineInfo(name string, json bool) error {
@@ -162,25 +116,25 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Koble) HaltMachine(machine string, force bool, out io.Writer) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+func (nk *Koble) HaltMachine(name string, force bool, out io.Writer) error {
+	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
 	if force {
-		fmt.Fprintf(out, "Crashing machine %s\n", m.Name())
+		fmt.Fprintf(out, "Crashing machine %s\n", name)
 	} else {
-		fmt.Fprintf(out, "Halting machine %s\n", m.Name())
+		fmt.Fprintf(out, "Halting machine %s\n", name)
 	}
 	return m.Stop(force)
 }
 
-func (nk *Koble) RemoveMachine(machine string, out io.Writer) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
+	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "removing machine %s\n", m.Name())
+	fmt.Fprintf(out, "removing machine %s\n", name)
 	return m.Remove()
 }
 

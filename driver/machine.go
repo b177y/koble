@@ -26,14 +26,15 @@ type MachineInfo struct {
 	ExitedAt  int64                `json:"exited_at,omitempty"`
 }
 
-type StartOptions struct {
-	Image       string                 `default:""`
-	HostHome    bool                   `default:"false"`
-	Hostlab     string                 `default:""`
-	Networks    []string               `default:"[]"`
-	Volumes     []spec.Mount           `default:"[]"`
-	DriverExtra map[string]interface{} `default:"{}"`
-	Lab         string                 `default:""`
+type MachineConfig struct {
+	Image        string                 `default:""`
+	HostHome     bool                   `default:"false"`
+	Hostlab      string                 `default:""`
+	Networks     []string               `default:"[]"`
+	Volumes      []spec.Mount           `default:"[]"`
+	Dependencies []string               `default:"[]"`
+	DriverExtra  map[string]interface{} `default:"{}"`
+	Lab          string                 `default:""`
 }
 
 type ExecOptions struct {
@@ -61,7 +62,7 @@ type Machine interface {
 	Running() bool
 	Info() (MachineInfo, error)
 	Networks() ([]Network, error)
-	Start(*StartOptions) error
+	Start(*MachineConfig) error
 	Stop(force bool) error
 	Remove() error
 	Attach(opts *AttachOptions) error
