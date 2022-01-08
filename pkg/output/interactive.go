@@ -17,6 +17,7 @@ type InteractiveContainer struct {
 	ticker          *time.Ticker
 	tdone           chan bool
 	mtx             *sync.RWMutex
+	headerFunc      func() string
 }
 
 func (c *InteractiveContainer) AddOutput(main, finished string) Output {
@@ -48,6 +49,9 @@ func (c *InteractiveContainer) Listen() {
 func (c *InteractiveContainer) print() {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
+	if c.headerFunc != nil {
+		fmt.Fprint(c.lw, c.headerFunc())
+	}
 	for _, spinner := range c.Spinners {
 		fmt.Fprintln(c.lw, spinner.String())
 	}

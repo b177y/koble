@@ -13,7 +13,7 @@ import (
 )
 
 func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
-	oc := output.NewContainer(plain)
+	oc := output.NewContainer(nil, plain)
 	oc.Start()
 	output := oc.AddOutput(fmt.Sprintf("Starting machine %s", name), fmt.Sprintf("Started machine %s", name))
 	output.Start()

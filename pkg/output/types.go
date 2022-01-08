@@ -21,11 +21,12 @@ type Container interface {
 	AddOutput(main, finished string) Output
 }
 
-func NewContainer(plain bool) (c Container) {
+func NewContainer(headerFunc func() string, plain bool) (c Container) {
 	if plain {
 		c = &LogContainer{
-			Out:     os.Stdout,
-			Outputs: make([]*LogOutput, 0),
+			Out:        os.Stdout,
+			Outputs:    make([]*LogOutput, 0),
+			headerFunc: headerFunc,
 		}
 	} else {
 		lw := uilive.New()
@@ -37,6 +38,7 @@ func NewContainer(plain bool) (c Container) {
 			tdone:           make(chan bool),
 			lw:              lw,
 			mtx:             &sync.RWMutex{},
+			headerFunc:      headerFunc,
 		}
 	}
 	return c

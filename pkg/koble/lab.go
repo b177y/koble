@@ -238,33 +238,37 @@ func itemTextArray(key string, values []string, width int) string {
 	return itemText(key, strings.Join(values, ", "), width)
 }
 
-func (nk *Koble) LabHeader() (header string) {
-	width, _, err := terminal.GetSize(0)
-	if err != nil {
-		return fmt.Sprintf("Could not get terminal size to render lab header: %v", err)
+func (nk *Koble) LabHeader() func() string {
+	return func() string {
+		var header string
+		width, _, err := terminal.GetSize(0)
+		if err != nil {
+			return fmt.Sprintf("Could not get terminal size to render lab header: %v", err)
+		}
+		if width > MAXPRINTWIDTH {
+			width = MAXPRINTWIDTH
+		}
+		header += barText('=', "Starting Lab", width)
+		header += itemText("Lab Directory", nk.Lab.Directory, width)
+		header += itemText("Created At", nk.Lab.CreatedAt, width)
+		header += itemText("Version", nk.Lab.KobleVersion, width)
+		header += itemTextArray("Author", nk.Lab.Authors, width)
+		header += itemTextArray("Email", nk.Lab.Emails, width)
+		header += itemTextArray("Web", nk.Lab.Web, width)
+		header += itemText("Description", nk.Lab.Description, width)
+		header += barText('=', "", width)
+		return header + "\n"
 	}
-	if width > MAXPRINTWIDTH {
-		width = MAXPRINTWIDTH
-	}
-	header += barText('=', "Starting Lab", width)
-	header += itemText("Lab Directory", nk.Lab.Directory, width)
-	header += itemText("Version", nk.Lab.KobleVersion, width)
-	header += itemTextArray("Author", nk.Lab.Authors, width)
-	header += itemTextArray("Email", nk.Lab.Emails, width)
-	header += itemTextArray("Web", nk.Lab.Web, width)
-	header += itemText("Description", nk.Lab.Description, width)
-	header += barText('=', "", width)
-	return header + "\n"
 }
 
 func (nk *Koble) LabStart(mlist []string) error {
-	oc := output.NewContainer(false)
+	oc := output.NewContainer(nk.LabHeader(), false)
 	oc.Start()
 	defer oc.Stop()
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	fmt.Printf(nk.LabHeader())
+	//fmt.Printf(nk.LabHeader())
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	var wg sync.WaitGroup
 	for _, m := range machines {
