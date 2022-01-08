@@ -1,8 +1,9 @@
-package kob
+package main
 
 import (
 	"fmt"
 
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
@@ -23,5 +24,5 @@ func init() {
 			driverCmd.AddCommand(dCmd)
 		}
 	}
-	KobleCLI.AddCommand(driverCmd)
+	cli.Commands = append(cli.Commands, driverCmd)
 }

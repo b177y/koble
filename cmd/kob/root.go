@@ -1,10 +1,11 @@
-package kob
+package main
 
 import (
 	"errors"
 
 	"github.com/b177y/koble/cmd/kob/cli"
-	"github.com/b177y/koble/cmd/kob/registry"
+	_ "github.com/b177y/koble/cmd/kob/labs"
+	_ "github.com/b177y/koble/cmd/kob/machines"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ var noColor bool
 var namespace string
 
 var (
-	RootCmd = &cobra.Command{
+	rootCmd = &cobra.Command{
 		Use:   "koble",
 		Short: "Koble is a network emulation tool",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -51,13 +52,13 @@ var machine string
 var labName string
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
-	RootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
-	RootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
-	RootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "disable interactive / coloured output")
-	RootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable interactive / coloured output")
-	RootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
-	for _, c := range registry.Commands {
-
+	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
+	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
+	rootCmd.PersistentFlags().BoolVar(&plain, "plain", false, "disable interactive / coloured output")
+	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable interactive / coloured output")
+	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
+	for _, c := range cli.Commands {
+		rootCmd.AddCommand(c)
 	}
 }

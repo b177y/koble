@@ -7,7 +7,7 @@ import (
 
 var labCmd = &cobra.Command{
 	Use:   "lab",
-	Short: "control koble labs",
+	Short: "manage labs",
 }
 
 func init() {

@@ -16,7 +16,7 @@ var mInfoJson bool
 
 var machineCmd = &cobra.Command{
 	Use:   "machine",
-	Short: "start and manage koble machines",
+	Short: "manage machines",
 }
 
 func init() {

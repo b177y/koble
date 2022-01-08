@@ -7,6 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	useTerm bool
+	useCon  bool
+)
+
 var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
 	Short:             "attach to the main tty of a koble machine",

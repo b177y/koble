@@ -1,4 +1,4 @@
-package kob
+package main
 
 import (
 	"fmt"
