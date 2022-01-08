@@ -48,7 +48,7 @@ var mstopCmd = &cobra.Command{
 	ValidArgsFunction:     autocompRunningMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.HaltMachine(args[0], false)
+		err := nk.HaltMachine(args[0], false, os.Stdout)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -62,7 +62,7 @@ var mdestroyCmd = &cobra.Command{
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.DestroyMachine(args[0])
+		err := nk.DestroyMachine(args[0], os.Stdout)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -77,7 +77,7 @@ var mremoveCmd = &cobra.Command{
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.RemoveMachine(args[0])
+		err := nk.RemoveMachine(args[0], os.Stdout)
 		if err != nil {
 			log.Fatal(err)
 		}

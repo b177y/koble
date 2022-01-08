@@ -162,37 +162,41 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Koble) HaltMachine(machine string, force bool) error {
+func (nk *Koble) HaltMachine(machine string, force bool, out io.Writer) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Halting machine %s\n", m.Name())
+	if force {
+		fmt.Fprintf(out, "Crashing machine %s\n", m.Name())
+	} else {
+		fmt.Fprintf(out, "Halting machine %s\n", m.Name())
+	}
 	return m.Stop(force)
 }
 
-func (nk *Koble) RemoveMachine(machine string) error {
+func (nk *Koble) RemoveMachine(machine string, out io.Writer) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Removing machine %s\n", m.Name())
+	fmt.Fprintf(out, "removing machine %s\n", m.Name())
 	return m.Remove()
 }
 
-func (nk *Koble) DestroyMachine(machine string) error {
+func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	m, err := nk.Driver.Machine(machine, nk.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Crashing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Crashing machine %s\n", m.Name())
 	err = m.Stop(true)
 	if err != nil {
 		return err
 	}
 	// TODO workout best way to delay until machine stopped
 	// m.WaitUntil() ?
-	fmt.Printf("Removing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Removing machine %s\n", m.Name())
 	return m.Remove()
 }
 

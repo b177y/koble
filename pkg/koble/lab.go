@@ -260,12 +260,12 @@ func (nk *Koble) LabHeader() string {
 }
 
 func (nk *Koble) LabStart(mlist []string) error {
-	oc := output.NewContainer(nk.LabHeader, false) // TODO handle --plain
-	oc.Start()
-	defer oc.Stop()
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
+	oc := output.NewContainer(nk.LabHeader, false) // TODO handle --plain
+	oc.Start()
+	defer oc.Stop()
 	machines := filterMachines(nk.Lab.Machines, mlist)
 	var wg sync.WaitGroup
 	for _, m := range machines {
@@ -347,13 +347,33 @@ func (nk *Koble) LabDestroy(mlist []string, all bool) error {
 	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
+	oc := output.NewContainer(nil, false) // TODO handle --plain
+	oc.Start()
+	defer oc.Stop()
 	machines := filterMachines(nk.Lab.Machines, mlist)
+	var wg sync.WaitGroup
 	for _, m := range machines {
-		err := nk.DestroyMachine(m.Name)
-		if err != nil {
-			fmt.Println(err)
-		}
+		wg.Add(1)
+		go func(m Machine) (err error) {
+			out := oc.AddOutput(fmt.Sprintf("Destroying machine %s", m.Name))
+			defer func() {
+				if err != nil {
+					out.Error(err)
+				} else {
+					out.Success(fmt.Sprintf("Destroyed machine %s", m.Name))
+				}
+				wg.Done()
+			}()
+			out.Start()
+			err = nk.DestroyMachine(m.Name, out)
+			if err != nil {
+				return err
+			}
+			// TODO waitUntil not exists
+			return nil
+		}(m)
 	}
+	wg.Wait()
 	return nil
 }
 
@@ -362,7 +382,7 @@ func (nk *Koble) LabHalt(mlist []string,
 	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
-	oc := output.NewContainer(nk.LabHeader, false) // TODO handle --plain
+	oc := output.NewContainer(nil, false) // TODO handle --plain
 	oc.Start()
 	defer oc.Stop()
 	machines := filterMachines(nk.Lab.Machines, mlist)
@@ -380,7 +400,7 @@ func (nk *Koble) LabHalt(mlist []string,
 				wg.Done()
 			}()
 			out.Start()
-			err = nk.HaltMachine(m.Name, force)
+			err = nk.HaltMachine(m.Name, force, out)
 			if err != nil {
 				return err
 			}
