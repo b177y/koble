@@ -2,6 +2,7 @@ package output
 
 import (
 	"bytes"
+	"fmt"
 	"sync"
 	"time"
 
@@ -12,6 +13,7 @@ var SPINCHARS = []string{"⠋", "⠙", "⠚", "⠒", "⠂", "⠂", "⠒", "⠲",
 
 var green = color.New(color.FgGreen).SprintFunc()
 var red = color.New(color.FgRed).SprintFunc()
+var cyan = color.New(color.FgCyan).SprintFunc()
 
 type Spinner struct {
 	mtx      *sync.RWMutex
@@ -33,7 +35,7 @@ func (s *Spinner) String() string {
 	} else if s.err != nil {
 		return red(" ✗") + " " + s.err.Error()
 	}
-	return s.charset[s.spinchar] + " " + s.main + " : " + s.status
+	return fmt.Sprintf(" %s %s : %s", cyan(s.charset[s.spinchar]), s.main, s.status)
 }
 
 func (s *Spinner) Error(err error) {

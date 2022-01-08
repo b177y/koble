@@ -6,14 +6,24 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/output"
+	"github.com/fatih/color"
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/yaml.v2"
 
 	log "github.com/sirupsen/logrus"
 )
+
+var blue = color.New(color.FgBlue).Add(color.Bold).SprintFunc()
+var magBold = color.New(color.FgMagenta).Add(color.Bold).SprintFunc()
+var mag = color.New(color.FgHiMagenta).SprintFunc()
+var MAXPRINTWIDTH = 100
 
 type Lab struct {
 	Name         string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
@@ -198,29 +208,95 @@ func (nk *Koble) Validate() error {
 	return nil
 }
 
+func barText(char byte, msg string, length int) string {
+	remaining := length - len(msg) - 4
+	space := " "
+	if msg == "" {
+		space = "="
+	}
+	if remaining%2 != 0 {
+		msg = msg + space
+	}
+	msg = space + msg + space
+	padding := strings.Repeat(string(char), remaining/2)
+	return blue(fmt.Sprintf(" %s%s%s \n", padding, msg, padding))
+}
+
+func itemText(key, value string, width int) string {
+	if value == "" {
+		value = "<unknown>"
+	}
+	remaining := width - len(key+value) - 3
+	padding := strings.Repeat(" ", remaining)
+	return fmt.Sprintf(" %s:%s%s \n", magBold(key), padding, mag(value))
+}
+
+func itemTextArray(key string, values []string, width int) string {
+	if len(values) >= 2 {
+		key = key + "s"
+	}
+	return itemText(key, strings.Join(values, ", "), width)
+}
+
+func (nk *Koble) LabHeader() (header string) {
+	width, _, err := terminal.GetSize(0)
+	if err != nil {
+		return fmt.Sprintf("Could not get terminal size to render lab header: %v", err)
+	}
+	if width > MAXPRINTWIDTH {
+		width = MAXPRINTWIDTH
+	}
+	header += barText('=', "Starting Lab", width)
+	header += itemText("Lab Directory", nk.Lab.Directory, width)
+	header += itemText("Version", nk.Lab.KobleVersion, width)
+	header += itemTextArray("Author", nk.Lab.Authors, width)
+	header += itemTextArray("Email", nk.Lab.Emails, width)
+	header += itemTextArray("Web", nk.Lab.Web, width)
+	header += itemText("Description", nk.Lab.Description, width)
+	header += barText('=', "", width)
+	return header + "\n"
+}
+
 func (nk *Koble) LabStart(mlist []string) error {
+	oc := output.NewContainer(false)
+	oc.Start()
+	defer oc.Stop()
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	fmt.Println("======================== Starting lab ===========================")
-	fmt.Printf("Lab Directory: %s\n", nk.Lab.Directory)
-	fmt.Println("Version(s):       <unknown>")     // TODO
-	fmt.Println("Author(s):       <unknown>")      // TODO
-	fmt.Println("Email(s):       <unknown>")       // TODO
-	fmt.Println("Web(s):       <unknown>")         // TODO
-	fmt.Println("Description(s):       <unknown>") // TODO
-	fmt.Printf("=================================================================\n\n")
+	fmt.Printf(nk.LabHeader())
 	machines := filterMachines(nk.Lab.Machines, mlist)
+	var wg sync.WaitGroup
 	for _, m := range machines {
-		m, err := nk.Driver.Machine(m.Name, nk.Namespace)
-		if err != nil {
-			return err
-		}
-		err = m.Start(nil)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func(m Machine) error {
+			defer wg.Done()
+			output := oc.AddOutput(fmt.Sprintf("Starting machine %s", m.Name), fmt.Sprintf("Started machine %s", m.Name))
+			output.Start()
+			time.Sleep(1 * time.Second)
+			output.Write([]byte("loading"))
+			time.Sleep(1 * time.Second)
+			output.Write([]byte("waiting"))
+			time.Sleep(1 * time.Second)
+			output.Write([]byte("starting networks"))
+			time.Sleep(1 * time.Second)
+			output.Write([]byte("starting machine"))
+			time.Sleep(1 * time.Second)
+			output.Write([]byte("booting"))
+			time.Sleep(2 * time.Second)
+			output.Finished()
+			return nil
+			// m, err := nk.Driver.Machine(m.Name, nk.Namespace)
+			// if err != nil {
+			// 	return err
+			// }
+			// err = m.Start(nil)
+			// if err != nil {
+			// 	return err
+			// }
+		}(m)
 	}
+	wg.Wait()
 	return nil
 }
 
