@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/b177y/koble/pkg/koble"
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -11,6 +12,7 @@ import (
 var nk *koble.Koble
 var verbose bool
 var quiet bool
+var plain bool
 var namespace string
 
 var KobleCLI = &cobra.Command{
@@ -26,6 +28,9 @@ var KobleCLI = &cobra.Command{
 			log.SetLevel(log.ErrorLevel)
 		} else {
 			log.SetLevel(log.WarnLevel)
+		}
+		if plain {
+			color.NoColor = true
 		}
 		var err error
 		nk, err = koble.NewKoble(namespace)
@@ -50,5 +55,6 @@ func init() {
 	KobleCLI.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
 	KobleCLI.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	KobleCLI.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
+	KobleCLI.PersistentFlags().BoolVar(&plain, "plain", false, "disable interactive / coloured output")
 	KobleCLI.RegisterFlagCompletionFunc("namespace", autocompNamespace)
 }

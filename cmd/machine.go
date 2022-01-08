@@ -12,6 +12,7 @@ import (
 
 var machineNetworks []string
 var machineImage string
+var machineWait bool
 
 var addMachineNetworks []string
 var addMachineImage string
@@ -33,7 +34,7 @@ var mstartCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	ValidArgsFunction:     autocompNonRunningMachine,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.StartMachineWithStatus(args[0], machineImage, machineNetworks, true)
+		err := nk.StartMachineWithStatus(args[0], machineImage, machineNetworks, machineWait, plain)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -151,6 +152,7 @@ func init() {
 
 	mstartCmd.Flags().StringVar(&machineImage, "image", "", "Image to run machine with.")
 	mstartCmd.Flags().StringArrayVar(&machineNetworks, "networks", []string{}, "Networks to attach to machine")
+	mstartCmd.Flags().BoolVarP(&machineWait, "wait", "w", false, "wait for machine to boot up")
 
 	maddCmd.Flags().StringVar(&addMachineImage, "image", "", "Image to use for new machine.")
 	maddCmd.Flags().StringArrayVar(&addMachineNetworks, "networks", []string{}, "Networks to add to new machine.")

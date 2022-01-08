@@ -12,8 +12,8 @@ import (
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait bool) (err error) {
-	oc := output.NewContainer(true)
+func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
+	oc := output.NewContainer(plain)
 	oc.Start()
 	output := oc.AddOutput(fmt.Sprintf("Starting machine %s", name), fmt.Sprintf("Started machine %s", name))
 	output.Start()
