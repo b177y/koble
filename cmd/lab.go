@@ -29,7 +29,7 @@ var lstartCmd = &cobra.Command{
 
 var ldestroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
-	Short: "clean up a koble lab",
+	Short: "crash and remove all machines in a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabDestroy(args, labAllMachines)
 		if err != nil {
@@ -40,8 +40,8 @@ var ldestroyCmd = &cobra.Command{
 }
 
 var lhaltCmd = &cobra.Command{
-	Use:   "halt [options] MACHINE [MACHINE...]",
-	Short: "halt machines in a koble lab",
+	Use:   "stop [options] MACHINE [MACHINE...]",
+	Short: "stop machines in a koble lab",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := nk.LabHalt(args, labHaltForce, labAllMachines)
 		if err != nil {
