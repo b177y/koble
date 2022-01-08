@@ -15,17 +15,17 @@ import (
 func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
 	oc := output.NewContainer(nil, plain)
 	oc.Start()
-	output := oc.AddOutput(fmt.Sprintf("Starting machine %s", name), fmt.Sprintf("Started machine %s", name))
-	output.Start()
+	out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
+	out.Start()
 	defer func() {
 		if err != nil {
-			output.Error(err)
+			out.Error(err)
 		} else {
-			output.Finished()
+			out.Success(fmt.Sprintf("Started machine %s", name))
 		}
 		oc.Stop()
 	}()
-	err = nk.StartMachine(name, image, networks, output)
+	err = nk.StartMachine(name, image, networks, out)
 	if err != nil {
 		return err
 	}
@@ -34,18 +34,18 @@ func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, w
 		if err != nil {
 			return err
 		}
-		output.Write([]byte("booting"))
+		out.Write([]byte("booting"))
 		return m.WaitUntil("running", 60)
 	}
 	return nil
 }
-func (nk *Koble) StartMachine(name, image string, networks []string, output io.Writer) error {
+func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
 	// Start with defaults
-	output.Write([]byte("checking machine " + name))
+	out.Write([]byte("checking machine " + name))
 	time.Sleep(1 * time.Second)
-	output.Write([]byte("waiting for dep h2"))
+	out.Write([]byte("waiting for dep h2"))
 	time.Sleep(1 * time.Second)
-	output.Write([]byte("creating networks"))
+	out.Write([]byte("creating networks"))
 	time.Sleep(1 * time.Second)
 	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
@@ -59,7 +59,7 @@ func (nk *Koble) StartMachine(name, image string, networks []string, output io.W
 	}
 
 	for _, n := range networks {
-		output.Write([]byte("creating network " + n))
+		out.Write([]byte("creating network " + n))
 		err := nk.StartNetwork(n)
 		if err != nil && err != driver.ErrExists {
 			return err

@@ -11,14 +11,15 @@ import (
 type Output interface {
 	Write(p []byte) (int, error)
 	Start()
-	Finished()
+	Finished(string)
+	Success(string)
 	Error(error)
 }
 
 type Container interface {
 	Start()
 	Stop()
-	AddOutput(main, finished string) Output
+	AddOutput(name string) Output
 }
 
 func NewContainer(headerFunc func() string, plain bool) (c Container) {

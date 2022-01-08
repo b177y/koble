@@ -7,22 +7,28 @@ import (
 
 type LogOutput struct {
 	out      io.Writer
-	main     string
+	name     string
 	finished string
 }
 
 func (lo *LogOutput) Write(p []byte) (int, error) {
-	return fmt.Fprintf(lo.out, "[%s] %s\n", lo.main, string(p))
+	return fmt.Fprintf(lo.out, "[%s] %s\n", lo.name, string(p))
 }
 
 func (lo *LogOutput) Start() {
-	fmt.Fprintf(lo.out, "%s\n", lo.main)
+	fmt.Fprintf(lo.out, "%s\n", lo.name)
 }
-func (lo *LogOutput) Finished() {
-	fmt.Fprintf(lo.out, "[%s] %s\n", lo.main, lo.finished)
+
+func (lo *LogOutput) Finished(msg string) {
+	fmt.Fprintf(lo.out, "[%s] finished: %s\n", lo.name, msg)
 }
+
+func (lo *LogOutput) Success(msg string) {
+	fmt.Fprintf(lo.out, "[%s] success: %s\n", lo.name, msg)
+}
+
 func (lo *LogOutput) Error(err error) {
-	fmt.Fprintf(lo.out, "[%s] %v\n", lo.main, err)
+	fmt.Fprintf(lo.out, "[%s] error: %v\n", lo.name, err)
 }
 
 type LogContainer struct {
@@ -31,11 +37,10 @@ type LogContainer struct {
 	headerFunc func() string
 }
 
-func (lc *LogContainer) AddOutput(main, finished string) Output {
+func (lc *LogContainer) AddOutput(name string) Output {
 	out := &LogOutput{
-		out:      lc.Out,
-		main:     main,
-		finished: finished,
+		out:  lc.Out,
+		name: name,
 	}
 	return out
 }

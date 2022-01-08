@@ -18,31 +18,31 @@ var cyan = color.New(color.FgCyan).SprintFunc()
 type Spinner struct {
 	mtx      *sync.RWMutex
 	buf      *bytes.Buffer
-	main     string
+	name     string
 	finished string
 	status   string
 	charset  []string
 	spinchar int
 	done     bool
+	success  bool
 	err      error
 }
 
 func (s *Spinner) String() string {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	if s.done {
-		return green(" ✔") + " " + s.finished
-	} else if s.err != nil {
+	if s.err != nil {
 		return red(" ✗") + " " + s.err.Error()
+	} else if s.done {
+		return s.finished
 	}
-	return fmt.Sprintf(" %s %s : %s", cyan(s.charset[s.spinchar]), s.main, s.status)
+	return fmt.Sprintf(" %s %s : %s", cyan(s.charset[s.spinchar]), s.name, s.status)
 }
 
 func (s *Spinner) Error(err error) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	s.err = err
-	s.done = true
 }
 
 func (s *Spinner) Spin() {
@@ -68,17 +68,24 @@ func (s *Spinner) Start() {
 	go s.Spin()
 }
 
-func (s *Spinner) Finished() {
+func (s *Spinner) Finished(msg string) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
+	s.finished = cyan(" ✔") + " " + msg
 	s.done = true
 }
 
-func NewSpinner(main string, finished string) *Spinner {
+func (s *Spinner) Success(msg string) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	s.finished = green(" ✔") + " " + msg
+	s.done = true
+}
+
+func NewSpinner(name string) *Spinner {
 	return &Spinner{
 		mtx:      &sync.RWMutex{},
-		main:     main,
-		finished: finished,
+		name:     name,
 		charset:  SPINCHARS,
 		spinchar: 0,
 	}

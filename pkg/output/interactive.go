@@ -20,11 +20,11 @@ type InteractiveContainer struct {
 	headerFunc      func() string
 }
 
-func (c *InteractiveContainer) AddOutput(main, finished string) Output {
+func (c *InteractiveContainer) AddOutput(name string) Output {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
-	spinner := NewSpinner(main, finished)
+	spinner := NewSpinner(name)
 	c.Spinners = append(c.Spinners, spinner)
 	return spinner
 }
