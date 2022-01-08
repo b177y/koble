@@ -3582,6 +3582,22 @@ go_module(
 )
 
 go_mod_download(
+    name = "github.com__gosuri__uilive",
+    _tag = "download",
+    module = "github.com/gosuri/uilive",
+    version = "v0.0.4",
+)
+
+go_module(
+    name = "github.com__gosuri__uilive",
+    download = ":_github.com__gosuri__uilive#download",
+    install = ["."],
+    module = "github.com/gosuri/uilive",
+    visibility = ["PUBLIC"],
+    deps = [],
+)
+
+go_mod_download(
     name = "github.com__hashicorp__errwrap",
     _tag = "download",
     module = "github.com/hashicorp/errwrap",
@@ -6000,7 +6016,7 @@ go_mod_download(
     name = "golang.org__x__sys",
     _tag = "download",
     module = "golang.org/x/sys",
-    version = "v0.0.0-20211205182925-97ca703d548d",
+    version = "v0.0.0-20211216021012-1d35b9e2eb4e",
 )
 
 go_module(
@@ -6034,7 +6050,7 @@ go_mod_download(
     name = "golang.org__x__term",
     _tag = "download",
     module = "golang.org/x/term",
-    version = "v0.0.0-20210615171337-6886f2dfbf5b",
+    version = "v0.0.0-20210927222741-03fcf44c2211",
 )
 
 go_module(

@@ -33,7 +33,7 @@ var mstartCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	ValidArgsFunction:     autocompNonRunningMachine,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.StartMachine(args[0], machineImage, machineNetworks)
+		err := nk.StartMachineWithStatus(args[0], machineImage, machineNetworks, true)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -56,7 +56,7 @@ var mstopCmd = &cobra.Command{
 
 var mdestroyCmd = &cobra.Command{
 	Use:                   "destroy [options] MACHINE",
-	Short:                 "destroy a koble machine",
+	Short:                 "force stop and remove a koble machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     autocompMachine,
 	DisableFlagsInUseLine: true,

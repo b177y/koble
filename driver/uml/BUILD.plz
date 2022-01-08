@@ -28,7 +28,6 @@ go_test(
     external=True,
     deps = [
         ":uml",
-        "//driver",
         "//driver/tests",
         "//third_party/go:github.com__onsi__ginkgo",
         "//third_party/go:github.com__onsi__gomega",

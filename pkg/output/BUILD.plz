@@ -1,0 +1,13 @@
+package(default_visibility = ["PUBLIC"])
+
+go_library(
+    name = "output",
+    srcs = glob(
+        ["*.go"],
+        exclude = ["*_test.go"],
+    ),
+    deps = [
+        "//third_party/go:github.com__gosuri__uilive",
+        "//third_party/go:github.com__fatih__color",
+    ],
+)

@@ -2,15 +2,51 @@ package koble
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"time"
 
 	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/output"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
-func (nk *Koble) StartMachine(name, image string, networks []string) error {
+func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait bool) (err error) {
+	oc := output.NewContainer(true)
+	oc.Start()
+	output := oc.AddOutput(fmt.Sprintf("Starting machine %s", name), fmt.Sprintf("Started machine %s", name))
+	output.Start()
+	defer func() {
+		if err != nil {
+			output.Error(err)
+		} else {
+			output.Finished()
+		}
+		oc.Stop()
+	}()
+	err = nk.StartMachine(name, image, networks, output)
+	if err != nil {
+		return err
+	}
+	if wait {
+		m, err := nk.Driver.Machine(name, nk.Namespace)
+		if err != nil {
+			return err
+		}
+		output.Write([]byte("booting"))
+		return m.WaitUntil("running", 60)
+	}
+	return nil
+}
+func (nk *Koble) StartMachine(name, image string, networks []string, output io.Writer) error {
 	// Start with defaults
+	output.Write([]byte("checking machine " + name))
+	time.Sleep(1 * time.Second)
+	output.Write([]byte("waiting for dep h2"))
+	time.Sleep(1 * time.Second)
+	output.Write([]byte("creating networks"))
+	time.Sleep(1 * time.Second)
 	m, err := nk.Driver.Machine(name, nk.Namespace)
 	if err != nil {
 		return err
@@ -23,12 +59,12 @@ func (nk *Koble) StartMachine(name, image string, networks []string) error {
 	}
 
 	for _, n := range networks {
+		output.Write([]byte("creating network " + n))
 		err := nk.StartNetwork(n)
 		if err != nil && err != driver.ErrExists {
 			return err
 		}
 	}
-
 	// Add options from lab
 	for _, lm := range nk.Lab.Machines {
 		if lm.Name == m.Name() {
@@ -58,7 +94,7 @@ func (nk *Koble) StartMachine(name, image string, networks []string) error {
 		Source:      nk.Lab.Directory,
 		Destination: "/hostlab",
 	})
-	fmt.Printf("Starting machine %s\n", m.Name())
+	// fmt.Printf("Starting machine %s\n", m.Name())
 	return m.Start(&opts)
 }
 
