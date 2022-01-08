@@ -10,7 +10,7 @@ import (
 
 var removeCmd = &cobra.Command{
 	Use:                   "remove [options] MACHINE",
-	Short:                 "remove a koble machine",
+	Short:                 "remove a machine",
 	Aliases:               []string{"rm"},
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompNonRunningMachine,

@@ -7,14 +7,13 @@ import (
 
 var destroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
-	Short: "crash and remove all machines in a koble lab",
+	Short: "crash and remove machines in a lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.LabDestroy(args, labAllMachines)
+		return cli.NK.LabDestroy(args)
 	},
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
-	destroyCmd.Flags().BoolVarP(&labAllMachines, "all", "a", false, "Destroy all koble machines, including those not in the current lab.")
 	labCmd.AddCommand(destroyCmd)
 }

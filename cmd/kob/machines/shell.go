@@ -13,7 +13,7 @@ var workDir string
 
 var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "get a shell on a koble machine",
+	Short:             "get a shell on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if useTerm && useCon {

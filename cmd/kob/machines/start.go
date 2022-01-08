@@ -13,7 +13,7 @@ var startOpts driver.MachineConfig
 
 var startCmd = &cobra.Command{
 	Use:                   "start [options] MACHINENAME",
-	Short:                 "start a koble machine",
+	Short:                 "start a machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	ValidArgsFunction:     cli.AutocompNonRunningMachine,
@@ -23,7 +23,7 @@ var startCmd = &cobra.Command{
 func init() {
 	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "Image to run machine with.")
 	startCmd.Flags().StringArrayVar(&startOpts.Networks, "networks", []string{}, "Networks to attach to machine")
-	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for machine to boot up")
+	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for machine to boot")
 
 	machineCmd.AddCommand(startCmd)
 	cli.Commands = append(cli.Commands, startCmd)

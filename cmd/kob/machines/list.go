@@ -13,7 +13,7 @@ var mListJson bool
 
 var listCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List koble machines",
+	Short:   "List machines",
 	Aliases: []string{"ls"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !mListAll {

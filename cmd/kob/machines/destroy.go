@@ -10,7 +10,7 @@ import (
 
 var destroyCmd = &cobra.Command{
 	Use:                   "destroy [options] MACHINE",
-	Short:                 "force stop and remove a koble machine",
+	Short:                 "force stop and remove a machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompMachine,
 	DisableFlagsInUseLine: true,

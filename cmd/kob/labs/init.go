@@ -9,7 +9,7 @@ var initOpts koble.InitOpts
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "initialise a new koble lab",
+	Short: "initialise a new lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return koble.InitLab(initOpts)
 	},

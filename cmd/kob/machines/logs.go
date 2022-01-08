@@ -10,7 +10,7 @@ var logsTail int
 
 var logsCmd = &cobra.Command{
 	Use:   "logs [options] MACHINE",
-	Short: "get logs from a koble machine",
+	Short: "get logs from a machine",
 	Args:  cobra.ExactArgs(1),
 	Example: `koble logs a0 -f
 	koble logs dh --tail 10`,

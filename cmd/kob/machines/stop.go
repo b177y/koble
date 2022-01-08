@@ -12,7 +12,7 @@ var forceStop bool
 
 var stopCmd = &cobra.Command{
 	Use:                   "stop [options] MACHINE",
-	Short:                 "stop a koble machine",
+	Short:                 "stop a machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompRunningMachine,
 	DisableFlagsInUseLine: true,

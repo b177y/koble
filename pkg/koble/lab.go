@@ -128,7 +128,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 		return err
 	}
 
-	for mn, _ := range lab.Machines {
+	for mn := range lab.Machines {
 		if mn == name {
 			return fmt.Errorf("A machine with the name %s already exists.", name)
 		}
@@ -241,46 +241,33 @@ func (lab *Lab) Header() string {
 	return header + "\n"
 }
 
-func (nk *Koble) LabStart(mlist []string) error {
-	if nk.Lab.Name == "" {
-		return errors.New("You are not currently in a lab directory.")
-	}
-	oc := output.NewContainer(nk.Lab.Header, false) // TODO handle --plain
-	oc.Start()
-	defer oc.Stop()
-	//machines := filterMachines(lab.Machines, mlist)
-	var wg sync.WaitGroup
-	for name, mconf := range nk.Lab.Machines {
-		wg.Add(1)
-		go func(name string, m driver.MachineConfig) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
-			defer func() {
-				if err != nil {
-					out.Error(err)
-				} else {
-					out.Success(fmt.Sprintf("Started machine %s", name))
-				}
-				wg.Done()
-			}()
-			out.Start()
-			err = nk.StartMachine(name, m, out)
+func (nk *Koble) LabStart(mlist []string, wait bool) error {
+	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+		mconf driver.MachineConfig,
+		c output.Container) (err error) {
+		out := c.AddOutput(fmt.Sprintf("Starting machine %s", name))
+		defer func() {
+			if err != nil {
+				out.Error(err)
+			} else {
+				out.Success(fmt.Sprintf("Started machine %s", name))
+			}
+		}()
+		out.Start()
+		err = nk.StartMachine(name, mconf, out)
+		if err != nil {
+			return err
+		}
+		if wait {
+			m, err := nk.Driver.Machine(name, nk.Namespace)
 			if err != nil {
 				return err
 			}
-			wait := true // TODO
-			if wait {
-				m, err := nk.Driver.Machine(name, nk.Namespace)
-				if err != nil {
-					return err
-				}
-				out.Write([]byte("booting"))
-				return m.WaitUntil("running", 60)
-			}
-			return nil
-		}(name, mconf)
-	}
-	wg.Wait()
-	return nil
+			out.Write([]byte("booting"))
+			return m.WaitUntil("running", 60)
+		}
+		return nil
+	})
 }
 
 func contains(arr []string, item string) bool {
@@ -325,93 +312,100 @@ func (nk *Koble) GetMachineList(mlist []string,
 	return machines, nil
 }
 
-func (nk *Koble) LabDestroy(mlist []string, all bool) error {
-	if nk.Lab.Name == "" {
-		return errors.New("You are not in a lab right now...")
-	}
-	oc := output.NewContainer(nil, false) // TODO handle --plain
-	oc.Start()
-	defer oc.Stop()
-	machines := filterMachines(nk.Lab.Machines, mlist)
-	var wg sync.WaitGroup
-	for name, mconf := range machines {
-		wg.Add(1)
-		go func(name string, m driver.MachineConfig) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Destroying machine %s", name))
-			defer func() {
-				if err != nil {
-					out.Error(err)
-				} else {
-					out.Success(fmt.Sprintf("Destroyed machine %s", name))
-				}
-				wg.Done()
-			}()
-			out.Start()
-			err = nk.DestroyMachine(name, out)
+func (nk *Koble) LabDestroy(mlist []string) error {
+	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+		mconf driver.MachineConfig,
+		c output.Container) (err error) {
+		out := c.AddOutput(fmt.Sprintf("Destroying machine %s", name))
+		defer func() {
 			if err != nil {
-				return err
+				out.Error(err)
+			} else {
+				out.Success(fmt.Sprintf("Destroyed machine %s", name))
 			}
-			// TODO waitUntil not exists
-			return nil
-		}(name, mconf)
-	}
-	wg.Wait()
-	return nil
+		}()
+		out.Start()
+		return nk.DestroyMachine(name, out)
+	})
+}
+
+func (nk *Koble) LabRemove(mlist []string) error {
+	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+		mconf driver.MachineConfig,
+		c output.Container) (err error) {
+		out := c.AddOutput(fmt.Sprintf("Removing machine %s", name))
+		defer func() {
+			if err != nil {
+				out.Error(err)
+			} else {
+				out.Success(fmt.Sprintf("Removed machine %s", name))
+			}
+		}()
+		out.Start()
+		return nk.RemoveMachine(name, out)
+	})
 }
 
 func (nk *Koble) LabStop(mlist []string,
-	force, all bool) error {
-	if nk.Lab.Name == "" {
-		return errors.New("You are not in a lab right now...")
-	}
-	oc := output.NewContainer(nil, false) // TODO handle --plain
-	oc.Start()
-	defer oc.Stop()
-	machines := filterMachines(nk.Lab.Machines, mlist)
-	var wg sync.WaitGroup
-	for name, mconf := range machines {
-		wg.Add(1)
-		go func(name string, m driver.MachineConfig) (err error) {
-			out := oc.AddOutput(fmt.Sprintf("Stopping machine %s", name))
-			defer func() {
-				if err != nil {
-					out.Error(err)
-				} else {
-					out.Success(fmt.Sprintf("Stopped machine %s", name))
-				}
-				wg.Done()
-			}()
-			out.Start()
-			err = nk.StopMachine(name, force, out)
+	force, wait bool) error {
+	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+		mconf driver.MachineConfig,
+		c output.Container) (err error) {
+		out := c.AddOutput(fmt.Sprintf("Stopping machine %s", name))
+		defer func() {
+			if err != nil {
+				out.Error(err)
+			} else {
+				out.Success(fmt.Sprintf("Stopped machine %s", name))
+			}
+		}()
+		out.Start()
+		err = nk.StopMachine(name, force, out)
+		if err != nil {
+			return err
+		}
+		if wait {
+			m, err := nk.Driver.Machine(name, nk.Namespace)
 			if err != nil {
 				return err
 			}
-			wait := true // TODO
-			if wait {
-				m, err := nk.Driver.Machine(name, nk.Namespace)
-				if err != nil {
-					return err
-				}
-				out.Write([]byte("halting"))
-				return m.WaitUntil("exited", 60*5)
-			}
-			return nil
-		}(name, mconf)
-	}
-	wg.Wait()
-	return nil
+			out.Write([]byte("halting"))
+			return m.WaitUntil("exited", 60*5)
+		}
+		return nil
+	})
 }
 
-func (lab *Lab) Info() error {
-	if lab.Name == "" {
+func (nk *Koble) LabInfo() error {
+	if nk.Lab.Name == "" {
 		return errors.New("You are not in a lab right now...")
 	}
-	err := lab.nk.ListMachines(false, false)
+	err := nk.ListMachines(false, false)
 	if err != nil {
 		return err
 	}
 	fmt.Printf("\n")
-	err = lab.nk.ListNetworks(false)
+	err = nk.ListNetworks(false)
 	fmt.Printf("\n")
 	return err
+}
+
+func (nk *Koble) ForMachine(headerFunc func() string, filterList []string, toRun func(name string, mconf driver.MachineConfig, c output.Container) error) error {
+	if nk.Lab.Name == "" {
+		return errors.New("You are not currently in a lab directory.")
+	}
+	oc := output.NewContainer(nk.Lab.Header, false) // TODO handle --plain
+	oc.Start()
+	defer oc.Stop()
+	machines := filterMachines(nk.Lab.Machines, filterList)
+	var wg sync.WaitGroup
+	for name, mconf := range machines {
+		wg.Add(1)
+		go func(name string, mconf driver.MachineConfig, c output.Container) error {
+			defer wg.Done()
+			return toRun(name, mconf, oc)
+		}(name, mconf, oc)
+	}
+	wg.Wait()
+	return nil
 }

@@ -9,7 +9,7 @@ var infoJson bool
 
 var infoCmd = &cobra.Command{
 	Use:                   "info [options] MACHINE",
-	Short:                 "get info about a koble machine",
+	Short:                 "get info about a machine",
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompMachine,
 	DisableFlagsInUseLine: true,

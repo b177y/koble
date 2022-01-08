@@ -6,18 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var labHaltForce bool
-var labAllMachines bool
-
-var lstartCmd = &cobra.Command{
+var startCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
-	Short: "start a koble lab",
+	Short: "start a lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.LabStart(args)
+		return cli.NK.LabStart(args, wait)
 	},
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
-	labCmd.AddCommand(lstartCmd)
+	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for all machines to boot")
+	labCmd.AddCommand(startCmd)
 }

@@ -14,7 +14,7 @@ var (
 
 var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
-	Short:             "attach to the main tty of a koble machine",
+	Short:             "attach to the main tty of a machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	Example: `koble attach --terminal

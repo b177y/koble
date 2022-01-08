@@ -12,7 +12,7 @@ var detachMode bool
 
 var execCmd = &cobra.Command{
 	Use:               "exec [options] MACHINE [COMMAND [ARG...]]",
-	Short:             "run a command on a koble machine",
+	Short:             "run a command on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cli.NK.Config.OpenTerms {
