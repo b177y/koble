@@ -1,13 +1,11 @@
-package main
+package kob
 
 import (
 	"fmt"
-
-	"github.com/b177y/koble/cmd"
 )
 
 func main() {
-	err := cmd.KobleCLI.Execute()
+	err := rootCmd.Execute()
 	if err != nil && err.Error() != "" {
 		fmt.Println(err)
 	}

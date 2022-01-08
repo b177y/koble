@@ -1,6 +1,7 @@
-package cmd
+package machine
 
 import (
+	"github.com/b177y/koble/cmd/kob"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -14,10 +15,10 @@ var logsCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Example: `koble logs a0 -f
 	koble logs dh --tail 10`,
-	ValidArgsFunction: autocompMachine,
+	ValidArgsFunction: kob.AutocompMachine,
 	Run: func(cmd *cobra.Command, args []string) {
 		machine := args[0]
-		err := nk.MachineLogs(machine, logsFollow, logsTail)
+		err := kob.NK.MachineLogs(machine, logsFollow, logsTail)
 		if err != nil {
 			log.Fatal(err)
 		}

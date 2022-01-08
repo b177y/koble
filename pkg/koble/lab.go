@@ -25,32 +25,17 @@ var magBold = color.New(color.FgMagenta).Add(color.Bold).SprintFunc()
 var mag = color.New(color.FgHiMagenta).SprintFunc()
 var MAXPRINTWIDTH = 100
 
-type Lab struct {
-	Name         string    `yaml:"name,omitempty" validate:"alphanum,max=30"`
-	Directory    string    `yaml:"dir,omitempty"`
-	CreatedAt    string    `yaml:"created_at,omitempty" validate:"datetime"`
-	KobleVersion string    `yaml:"koble_version,omitempty"`
-	Description  string    `yaml:"description,omitempty"`
-	Authors      []string  `yaml:"authors,omitempty"`
-	Emails       []string  `yaml:"emails,omitempty" validate:"email"`
-	Web          []string  `yaml:"web,omitempty" validate:"url"`
-	Machines     []Machine `yaml:"machines,omitempty"`
-	Networks     []Network `yaml:"networks,omitempty"`
-	DefaultImage string    `yaml:"default_image,omitempty"`
+type InitOpts struct {
+	Name        string
+	Description string
+	Authors     []string
+	Emails      []string
+	Webs        []string
 }
 
-type Machine struct {
-	Name         string
-	Image        string
-	Networks     []Network
-	Volumes      []string
-	Dependencies []string
-	HostHome     bool
-}
-
-func InitLab(name string, description string, authors []string, emails []string, web []string) error {
+func InitLab(options InitOpts) error {
 	newDir := true
-	if name == "" {
+	if options.Name == "" {
 		log.Debug("Name not given, initialising lab in current directory.")
 		newDir = false
 		exists, err := fileExists("lab.yml")
@@ -64,40 +49,40 @@ func InitLab(name string, description string, authors []string, emails []string,
 		if err != nil {
 			return err
 		}
-		name = filepath.Base(dir)
+		options.Name = filepath.Base(dir)
 	}
-	err := validator.New().Var(name, "alphanum,max=30")
+	err := validator.New().Var(options.Name, "alphanum,max=30")
 	if err != nil {
 		return err
 	}
-	exists, err := fileExists(name)
+	exists, err := fileExists(options.Name)
 	if err != nil {
 		return err
 	}
 	if exists {
-		info, err := os.Stat(name)
+		info, err := os.Stat(options.Name)
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
-			return fmt.Errorf("%s already exists as a directory. To initialise it as a Koble lab directory, cd to it then run init with no name.", name)
+			return fmt.Errorf("%s already exists as a directory. To initialise it as a Koble lab directory, cd to it then run init with no name.", options.Name)
 		} else {
-			return fmt.Errorf("A file named %s exists. Please use a different name to initialise the lab or rename the file.", name)
+			return fmt.Errorf("A file named %s exists. Please use a different name to initialise the lab or rename the file.", options.Name)
 		}
 	}
 	pathPrefix := ""
 	if newDir {
-		os.Mkdir(name, 0755)
-		pathPrefix = name
+		os.Mkdir(options.Name, 0755)
+		pathPrefix = options.Name
 	}
 	// TODO check if in script mode
 	// ask for name, description etc
 	lab := Lab{
-		Description:  description,
+		Description:  options.Description,
 		KobleVersion: VERSION,
-		Authors:      authors,
-		Emails:       emails,
-		Web:          web,
+		Authors:      options.Authors,
+		Emails:       options.Emails,
+		Web:          options.Webs,
 	}
 	lab.CreatedAt = time.Now().Format("02-01-2006")
 	bytes, err := yaml.Marshal(lab)

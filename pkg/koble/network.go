@@ -1,30 +1,21 @@
 package koble
 
 import (
-	"net"
 	"strconv"
 
 	"github.com/b177y/koble/driver"
 )
 
-type Network struct {
-	Name     string `yaml:"name" validate:"alphanum,max=30"`
-	External bool   `yaml:"external,omitempty"`
-	Gateway  net.IP `yaml:"gateway,omitempty" validate:"ip"`
-	Subnet   string `yaml:"subnet,omitempty" validate:"cidr"`
-	IPv6     bool   `yaml:"ipv6,omitempty" validate:"ipv6"`
-}
-
-func (nk *Koble) StartNetwork(network Network) error {
-	n, err := nk.Driver.Network(network.Name, nk.Namespace)
+func (n *Network) Start() error {
+	dn, err := n.nk.Driver.Network(n.Name, n.nk.Namespace)
 	if err != nil {
 		return err
 	}
-	err = n.Create(nil) // TODO add options
+	err = dn.Create(nil) // TODO add options
 	if err != nil {
 		return err
 	}
-	err = n.Start()
+	err = dn.Start()
 	return err
 }
 
@@ -38,15 +29,15 @@ func (nk *Koble) ListNetworks(all bool) error {
 	return nil
 }
 
-func (nk *Koble) NetworkInfo(name string) error {
-	n, err := nk.Driver.Network(name, nk.Namespace)
+func (n *Network) Info() error {
+	dn, err := n.nk.Driver.Network(n.Name, n.nk.Namespace)
 	if err != nil {
 		return err
 	}
 	var infoTable [][]string
-	infoTable = append(infoTable, []string{"Name", n.Name()})
+	infoTable = append(infoTable, []string{"Name", n.Name})
 	// get machines connected
-	info, err := n.Info()
+	info, err := dn.Info()
 	if err != nil && err != driver.ErrNotExists {
 		return err
 	}

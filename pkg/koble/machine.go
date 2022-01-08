@@ -67,7 +67,7 @@ func (nk *Koble) StartMachine(machine Machine, out io.Writer) error {
 
 	for _, n := range machine.Networks {
 		out.Write([]byte("creating network " + n.Name))
-		err := nk.StartNetwork(n)
+		err := n.Start()
 		if err != nil && err != driver.ErrExists {
 			return err
 		}

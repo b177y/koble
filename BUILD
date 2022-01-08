@@ -1,6 +1,6 @@
 go_binary(
     name = "koble",
-    srcs = ["main.go"],
+    srcs = ["cmd/kob/main.go"],
     out = "koble",
-    deps = ["//cmd"],
+    deps = ["//cmd/kob"],
 )

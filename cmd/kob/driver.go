@@ -1,4 +1,4 @@
-package cmd
+package kob
 
 import (
 	"fmt"

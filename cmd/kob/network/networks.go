@@ -28,10 +28,11 @@ var ninfoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "get info about a koble network",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := nk.NetworkInfo(args[0])
-		if err != nil {
-			log.Fatal(err)
-		}
+		// TODO
+		// err := nk.NetworkInfo(args[0])
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 	},
 }
 

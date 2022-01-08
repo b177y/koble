@@ -1,9 +1,8 @@
-package main
+package generate
 
 import (
 	"os"
 
-	"github.com/b177y/koble/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra/doc"
 )
@@ -17,7 +16,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenManTree(cmd.KobleCLI, header, "out")
+	err = doc.GenManTree(kob.rootCmd, header, "out")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,20 +1,5 @@
 package(default_visibility = ["PUBLIC"])
 
-go_library(
-    name="cmd",
-    srcs = glob(
-        ["*.go"],
-        exclude = ["*_test.go"],
-    ),
-    deps=[
-        "//pkg/koble",
-        "//driver",
-        "//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__spf13__cobra",
-        "//third_party/go:github.com__fatih__color",
-    ]
-)
-
 genrule(
     name="manpages",
     srcs = ["//cmd/man:gen-manpages"],

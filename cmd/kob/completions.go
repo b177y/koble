@@ -1,21 +1,21 @@
-package cmd
+package kob
 
 import (
 	"github.com/spf13/cobra"
 )
 
-func autocompNamespace(cmd *cobra.Command, args []string,
+func AutocompNamespace(cmd *cobra.Command, args []string,
 	toComplete string) ([]string, cobra.ShellCompDirective) {
-	namespaces, err := nk.Driver.ListAllNamespaces()
+	namespaces, err := NK.Driver.ListAllNamespaces()
 	if err != nil {
 		return []string{}, cobra.ShellCompDirectiveError
 	}
 	return namespaces, cobra.ShellCompDirectiveNoFileComp
 }
 
-func autocompMachine(cmd *cobra.Command, args []string,
+func AutocompMachine(cmd *cobra.Command, args []string,
 	toComplete string) ([]string, cobra.ShellCompDirective) {
-	machineList, err := nk.Driver.ListMachines(namespace, true)
+	machineList, err := NK.Driver.ListMachines(namespace, true)
 	if err != nil {
 		return []string{}, cobra.ShellCompDirectiveError
 	}
@@ -26,9 +26,9 @@ func autocompMachine(cmd *cobra.Command, args []string,
 	return machines, cobra.ShellCompDirectiveNoFileComp
 }
 
-func autocompRunningMachine(cmd *cobra.Command, args []string,
+func AutocompRunningMachine(cmd *cobra.Command, args []string,
 	toComplete string) ([]string, cobra.ShellCompDirective) {
-	machineList, err := nk.Driver.ListMachines(namespace, true)
+	machineList, err := NK.Driver.ListMachines(namespace, true)
 	if err != nil {
 		return []string{}, cobra.ShellCompDirectiveError
 	}
@@ -41,9 +41,9 @@ func autocompRunningMachine(cmd *cobra.Command, args []string,
 	return machines, cobra.ShellCompDirectiveNoFileComp
 }
 
-func autocompNonRunningMachine(cmd *cobra.Command, args []string,
+func AutocompNonRunningMachine(cmd *cobra.Command, args []string,
 	toComplete string) ([]string, cobra.ShellCompDirective) {
-	machineList, err := nk.Driver.ListMachines(namespace, true)
+	machineList, err := NK.Driver.ListMachines(namespace, true)
 	if err != nil {
 		return []string{}, cobra.ShellCompDirectiveError
 	}

@@ -1,9 +1,10 @@
-package cmd
+package machine
 
 import (
 	"errors"
 	"os"
 
+	"github.com/b177y/koble/cmd/kob"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -15,7 +16,7 @@ var workDir string
 var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
 	Short:             "get a shell on a koble machine",
-	ValidArgsFunction: autocompRunningMachine,
+	ValidArgsFunction: kob.AutocompRunningMachine,
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if useTerm && useCon {
 			err := errors.New("CLI Flags --terminal and --console cannot be used together.")

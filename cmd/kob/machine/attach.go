@@ -1,9 +1,10 @@
-package cmd
+package machine
 
 import (
 	"errors"
 	"os"
 
+	"github.com/b177y/koble/cmd/kob"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +13,7 @@ var attachCmd = &cobra.Command{
 	Use:               "attach [options] MACHINE",
 	Short:             "attach to the main tty of a koble machine",
 	Args:              cobra.ExactArgs(1),
-	ValidArgsFunction: autocompRunningMachine,
+	ValidArgsFunction: kob.AutocompRunningMachine,
 	Example: `koble attach --terminal
 	koble attach --console`,
 	PreRun: func(cmd *cobra.Command, args []string) {
