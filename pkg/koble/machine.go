@@ -142,6 +142,14 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	exists, err := m.Exists()
+	if err != nil {
+		return err
+	}
+	if !exists {
+		fmt.Fprintf(out, "no machine to remove")
+		return nil
+	}
 	fmt.Fprintf(out, "Crashing machine %s", m.Name())
 	err = m.Stop(true)
 	if err != nil {
@@ -149,6 +157,10 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	}
 	// TODO workout best way to delay until machine stopped
 	// m.WaitUntil() ?
+	err = m.WaitUntil("exited", 120)
+	if err != nil {
+		return err
+	}
 	fmt.Fprintf(out, "Removing machine %s", m.Name())
 	return m.Remove()
 }

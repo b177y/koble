@@ -201,9 +201,17 @@ func (m *Machine) Stop(force bool) error {
 		return err
 	}
 	if !exists {
+		// make force stop immutable (like how `rm -f` doesn't error if file doesn't exist)
+		if force {
+			return nil
+		}
 		return fmt.Errorf("Machine %s does not exist", m.Name())
 	}
 	if !m.Running() {
+		// make force stop immutable
+		if force {
+			return nil
+		}
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name())
 	}
 	if force {
