@@ -2,7 +2,6 @@ package uml
 
 import (
 	"bufio"
-	"context"
 	"crypto/md5"
 	"errors"
 	"fmt"
@@ -335,21 +334,9 @@ func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 	return nil
 }
 
-func (m *Machine) WaitUntil(state string,
-	timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
-	defer cancel()
-	for {
-		// once condition is met return
-		if m.State() == state {
-			return nil
-		}
-		if err := ctx.Err(); err != nil {
-			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
-				m.name, state, m.State(), err)
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
+func (m *Machine) WaitUntil(timeout time.Duration,
+	target, failOn *driver.MachineState) error {
+	return driver.WaitUntil(m, timeout, target, failOn)
 }
 
 func (m *Machine) Networks() ([]driver.Network, error) {

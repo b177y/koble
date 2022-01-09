@@ -2,7 +2,6 @@ package podman
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"os"
@@ -49,24 +48,22 @@ func (m *Machine) Running() bool {
 	return inspect.State.Running
 }
 
-func (m *Machine) State() (state string, err error) {
+func (m *Machine) State() (state driver.MachineState, err error) {
+	exists, err := m.Exists()
+	if err != nil {
+		return state, err
+	} else if !exists {
+		return driver.MachineState{Exists: false}, driver.ErrNotExists
+	}
+	state.Exists = true
 	inspect, err := containers.Inspect(m.pd.conn, m.Id(), nil)
 	if err != nil {
-		return "", err
+		return state, err
 	}
-	if inspect.State.Status == "running" {
-		hc, err := containers.RunHealthCheck(m.pd.conn, m.Id(), nil)
-		if err != nil {
-			return "", err
-		}
-		if hc.Status != "healthy" {
-			return "booting", nil
-		} else {
-			return "running", nil
-		}
-	} else {
-		return inspect.State.Status, nil
-	}
+	state.State = &inspect.State.Status
+	state.ExitCode = &inspect.State.ExitCode
+	state.Running = &inspect.State.Running
+	return state, nil
 }
 
 func (m *Machine) getLabels() map[string]string {
@@ -402,25 +399,9 @@ func (m *Machine) CopyInFiles(hostlab string) error {
 	return nil
 }
 
-func (m *Machine) WaitUntil(state string, timeout time.Duration) error {
-	// TODO make this global method within driver package?
-	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
-	defer cancel()
-	for {
-		// once condition is met return
-		mState, err := m.State()
-		if err != nil {
-			return err
-		}
-		if mState == state {
-			return nil
-		}
-		if err := ctx.Err(); err != nil {
-			return fmt.Errorf("timed out waiting for %s to be in state %s (currently in state %s): %w",
-				m.name, state, mState, err)
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
+func (m *Machine) WaitUntil(timeout time.Duration,
+	target, failOn *driver.MachineState) error {
+	return driver.WaitUntil(m, timeout, target, failOn)
 }
 
 func (m *Machine) Networks() ([]driver.Network, error) {

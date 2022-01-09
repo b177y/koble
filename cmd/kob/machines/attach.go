@@ -13,12 +13,12 @@ var (
 )
 
 var attachCmd = &cobra.Command{
-	Use:               "attach [options] MACHINE",
+	Use:               "attach MACHINE [options]",
 	Short:             "attach to the main tty of a machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: cli.AutocompRunningMachine,
-	Example: `koble attach --terminal
-	koble attach --console`,
+	Example: `koble attach a0 --terminal
+koble attach dh --console`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if useTerm && useCon {
 			return errors.New("CLI Flags --terminal and --console cannot be used together.")

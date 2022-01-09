@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/b177y/koble/cmd/kob/cli"
+	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/pkg/output"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +47,7 @@ var stop = func(cmd *cobra.Command, args []string) error {
 				if err != nil {
 					return err
 				}
-				return m.WaitUntil("exited", 60*5)
+				return m.WaitUntil(60*5, driver.ExitedState(), nil)
 			}
 			return nil
 		})

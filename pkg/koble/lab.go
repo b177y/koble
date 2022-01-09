@@ -264,7 +264,7 @@ func (nk *Koble) LabStart(mlist []string, wait bool) error {
 				return err
 			}
 			out.Write([]byte("booting"))
-			return m.WaitUntil("running", 60)
+			return m.WaitUntil(60*5, driver.BootedState(), driver.ExitedState())
 		}
 		return nil
 	})
@@ -370,7 +370,7 @@ func (nk *Koble) LabStop(mlist []string,
 				return err
 			}
 			out.Write([]byte("halting"))
-			return m.WaitUntil("exited", 60*5)
+			return m.WaitUntil(60*5, driver.ExitedState(), nil)
 		}
 		return nil
 	})

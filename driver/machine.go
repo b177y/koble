@@ -26,15 +26,22 @@ type MachineInfo struct {
 	ExitedAt  int64                `json:"exited_at,omitempty"`
 }
 
+type MachineState struct {
+	Exists   bool
+	State    *string
+	Running  *bool
+	ExitCode *int32
+}
+
 type MachineConfig struct {
-	Image        string                 `default:""`
-	HostHome     bool                   `default:"false"`
-	Hostlab      string                 `default:""`
-	Networks     []string               `default:"[]"`
-	Volumes      []spec.Mount           `default:"[]"`
-	Dependencies []string               `default:"[]"`
-	DriverExtra  map[string]interface{} `default:"{}"`
-	Lab          string                 `default:""`
+	Image        string                 `default:"" yaml:"image,omitempty"`
+	HostHome     bool                   `default:"false" yaml:"hosthome,omitempty"`
+	Hostlab      string                 `default:"" yaml:"hostlab,omitempty"`
+	Networks     []string               `default:"[]" yaml:"networks,omitempty"`
+	Volumes      []spec.Mount           `default:"[]" yaml:"volumes,omitempty"`
+	Dependencies []string               `default:"[]" yaml:"depends_on,omitempty"`
+	DriverExtra  map[string]interface{} `default:"{}" yaml:"driver,omitempty"`
+	Lab          string                 `default:"" yaml:"-"`
 }
 
 type ExecOptions struct {
@@ -61,6 +68,7 @@ type Machine interface {
 	Exists() (bool, error)
 	Running() bool
 	Info() (MachineInfo, error)
+	State() (MachineState, error)
 	Networks() ([]Network, error)
 	Start(*MachineConfig) error
 	Stop(force bool) error
@@ -70,5 +78,5 @@ type Machine interface {
 		opts *ExecOptions) error
 	Shell(opts *ShellOptions) error
 	Logs(opts *LogOptions) error
-	WaitUntil(state string, timeout time.Duration) error
+	WaitUntil(timeout time.Duration, target, failOn *MachineState) error
 }

@@ -30,7 +30,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	listCmd.Flags().BoolVarP(&mListAll, "all", "a", false, "List all machines (from all labs / non-labs)")
+	listCmd.Flags().BoolVarP(&mListAll, "all", "a", false, "List from all namespaces. This overrides the --namespace option.")
 	listCmd.Flags().BoolVar(&mListJson, "json", false, "Print machine list as json array to stdout")
 	machineCmd.AddCommand(listCmd)
 	cli.Commands = append(cli.Commands, listCmd)

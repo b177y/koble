@@ -12,31 +12,35 @@ import (
 	"github.com/b177y/koble/driver"
 )
 
-func (m *Machine) State() string {
-	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	stateFile := filepath.Join(mDir, "state")
-	p, err := os.ReadFile(stateFile)
+func (m *Machine) State() (state driver.MachineState, err error) {
+	exists, err := m.Exists()
 	if err != nil {
-		return ""
+		return state, err
+	} else if !exists {
+		return driver.MachineState{Exists: false}, driver.ErrNotExists
 	}
-	return string(p)
-}
-
-func (m *Machine) Status() (string, int32) {
-	status := m.State()
-	if status != "exited" {
-		return status, 0
+	state.Exists = true
+	running := m.Running()
+	state.Running = &running
+	p, err := os.ReadFile(filepath.Join(m.mDir(), "state"))
+	if err != nil {
+		return state, err
 	}
-	mDir := filepath.Join(m.ud.RunDir, "machine", m.Id())
-	ecFile := filepath.Join(mDir, "exitcode")
-	p, err := os.ReadFile(ecFile)
-	if err == nil {
-		ec, err := strconv.ParseInt(string(p), 10, 32)
-		if err == nil {
-			return fmt.Sprintf("%s (%d)", status, ec), int32(ec)
+	stateString := string(p)
+	state.State = &stateString
+	if stateString == "exited" {
+		ecBytes, err := os.ReadFile(filepath.Join(m.mDir(), "exitcode"))
+		if err != nil {
+			return state, err
 		}
+		ec, err := strconv.ParseInt(string(ecBytes), 10, 32)
+		if err != nil {
+			return state, err
+		}
+		exit := int32(ec)
+		state.ExitCode = &exit
 	}
-	return fmt.Sprintf("%s (?)", status), 0
+	return state, nil
 }
 
 func (m *Machine) StartedAt() time.Time {
@@ -71,13 +75,22 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	if !exists {
 		return driver.MachineInfo{}, driver.ErrNotExists
 	}
-	info.Name = m.Name()
-	info.Running = m.Running()
-	info.Namespace = m.namespace
-	info.State = m.State()
-	info.Status, info.ExitCode = m.Status()
+	state, err := m.State()
+	if err != nil {
+		return info, err
+	}
+	info.State = *state.State
+	info.ExitCode = *state.ExitCode
+	info.Running = *state.Running
 	info.Pid = m.Pid()
+	info.Name = m.Name()
+	info.Namespace = m.namespace
 	info.StartedAt = m.StartedAt()
+	if info.State == "exited" {
+		info.Status = fmt.Sprintf("exited (%d)", info.ExitCode)
+	} else {
+		info.Status = info.State
+	}
 
 	var saveInfo driver.MachineConfig
 	err = loadInfo(m.mDir(), &saveInfo)

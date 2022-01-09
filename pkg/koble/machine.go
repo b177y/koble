@@ -3,38 +3,11 @@ package koble
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/b177y/koble/driver"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
-
-// func (nk *Koble) StartMachineWithStatus(name, image string, networks []string, wait, plain bool) (err error) {
-// 	oc := output.NewContainer(nil, plain)
-// 	oc.Start()
-// 	out := oc.AddOutput(fmt.Sprintf("Starting machine %s", name))
-// 	out.Start()
-// 	defer func() {
-// 		if err != nil {
-// 			out.Error(err)
-// 		} else {
-// 			out.Success(fmt.Sprintf("Started machine %s", name))
-// 		}
-// 		oc.Stop()
-// 	}()
-// 	err = machine.Start(out)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if wait {
-// 		m, err := nk.Driver.Machine(name, nk.Namespace)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		out.Write([]byte("booting"))
-// 		return m.WaitUntil("running", 60*5)
-// 	}
-// 	return nil
-// }
 
 //func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
@@ -46,15 +19,30 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 
 	for _, n := range conf.Networks {
 		fmt.Fprintf(out, "creating network %s", n)
-		err := nk.StartNetwork(n, driver.NetConfig{})
+		err := nk.StartNetwork(n, driver.NetConfig{}) // TODO get netconfig from Lab
 		if err != nil && err != driver.ErrExists {
 			return err
+		}
+	}
+
+	for _, dependency := range conf.Dependencies {
+		dep, err := nk.Driver.Machine(dependency, nk.Namespace)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(out, "waiting for dependency %s to boot", dependency)
+		err = dep.WaitUntil(60*5, driver.BootedState(), nil)
+		if err != nil {
+			return fmt.Errorf("Error waiting for dependency %s to boot: %w", dependency, err)
 		}
 	}
 	// conf.Volumes = append(conf.Volumes, spec.Mount{
 	// 	Source:      nk.Lab.Directory,
 	// 	Destination: "/hostlab",
 	// })
+	fmt.Fprintf(out, "booting")
+	time.Sleep(4 * time.Second)
+
 	return m.Start(&conf)
 }
 
@@ -155,9 +143,7 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	// TODO workout best way to delay until machine stopped
-	// m.WaitUntil() ?
-	err = m.WaitUntil("exited", 120)
+	err = m.WaitUntil(120, driver.ExitedState(), nil)
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@ import (
 var startOpts driver.MachineConfig
 
 var startCmd = &cobra.Command{
-	Use:                   "start [options] MACHINENAME",
+	Use:                   "start [options] MACHINE",
 	Short:                 "start a machine",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
@@ -50,7 +50,7 @@ var start = func(cmd *cobra.Command, args []string) error {
 					return err
 				}
 				fmt.Fprintf(out, "booting")
-				return m.WaitUntil("running", 60*5)
+				return m.WaitUntil(60*5, driver.BootedState(), driver.ExitedState())
 			}
 			return nil
 
