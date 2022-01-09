@@ -17,25 +17,21 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 			return fmt.Errorf("Driver 'testing' in config must be a bool.")
 		}
 	}
-	if !ud.Testing {
+	if !ud.Testing && os.Getuid() != 0 {
 		err = vecnet.CreateAndEnterUserNS("koble")
+		if err != nil {
+			return fmt.Errorf("Cannot create / enter user ns (%v): %w", os.Environ(), err)
+		}
 	} else if os.Getuid() != 0 {
 		return errors.New("Testing needs to be run within a new user/mount namespace: `unshare -mUr go test ...`")
 	}
-	if err != nil {
-		return fmt.Errorf("Cannot create / enter user ns: %w", err)
-	}
 	ud.Name = "UserMode Linux"
-	homedir, err := os.UserHomeDir()
-	if err != nil {
-		return fmt.Errorf("Could not get user home dir: %w", err)
-	}
 	// ud.Kernel = "/home/billy/repos/netkit-jh-build/tmpbuild/linux-5.14.9/linux"
-	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", homedir)
+	ud.Kernel = fmt.Sprintf("%s/netkit-jh/kernel/netkit-kernel", os.Getenv("UML_ORIG_HOME"))
 	// ud.DefaultImage = fmt.Sprintf("%s/netkit-jh/fs/custom-fs", homedir)
 	ud.DefaultImage = "/home/billy/repos/koble-fs/build/koble-fs"
 	ud.RunDir = fmt.Sprintf("/run/user/%s/uml", os.Getenv("UML_ORIG_UID"))
-	ud.StorageDir = fmt.Sprintf("%s/.local/share/uml", homedir)
+	ud.StorageDir = fmt.Sprintf("%s/.local/share/uml", os.Getenv("UML_ORIG_HOME"))
 	// override kernel with config option
 	if val, ok := conf["kernel"]; ok {
 		if str, ok := val.(string); ok {

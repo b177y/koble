@@ -102,7 +102,12 @@ func ExecUserNS(name string) error {
 		return err
 	}
 	env := os.Environ()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
 	env = append(env, "UML_NS_PID="+string(pid))
+	env = append(env, "UML_ORIG_HOME="+home)
 	env = append(env, "UML_ORIG_UID="+fmt.Sprint(os.Getuid()))
 	env = append(env, "UML_ORIG_EUID="+fmt.Sprint(os.Geteuid()))
 	env = append(env, "UML_ORIG_GID="+fmt.Sprint(os.Getgid()))
@@ -153,7 +158,13 @@ func CreateAndEnterUserNS(name string) error {
 			return errors.New("environment vairable UML_ORIG_EUID has not been set")
 		} else if os.Getenv("UML_ORIG_GID") == "" {
 			return errors.New("environment vairable UML_ORIG_GID has not been set")
+		} else if os.Getenv("UML_ORIG_WD") == "" {
+			return errors.New("environment vairable UML_ORIG_WD has not been set")
+		} else if os.Getenv("UML_ORIG_HOME") == "" {
+			return errors.New("environment vairable UML_ORIG_HOME has not been set")
 		}
+		// for compatibility with viper / other libraries that are not aware of UML_ORIG_HOME
+		os.Setenv("HOME", os.Getenv("UML_ORIG_HOME"))
 		return NSStatus()
 	}
 }

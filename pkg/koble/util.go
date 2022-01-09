@@ -183,6 +183,7 @@ func (nk *Koble) LaunchInTerm() error {
 	}
 	log.Info("Relaunching current command in terminal with:", term.Name, args)
 	cmd := exec.Command(term.Command[0], args...)
+	cmd.Env = os.Environ()
 	err = cmd.Start()
 	return err
 }

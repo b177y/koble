@@ -77,11 +77,7 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	cmd = append(cmd, networks...)
 	if opts.HostHome {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return []string{}, err
-		}
-		cmd = append(cmd, "hosthome="+home)
+		cmd = append(cmd, "hosthome="+os.Getenv("UML_ORIG_HOME"))
 	}
 	if opts.Hostlab != "" {
 		cmd = append(cmd, "hostlab="+opts.Hostlab)
