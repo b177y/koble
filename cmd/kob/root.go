@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var verbose bool
@@ -21,6 +22,11 @@ var (
 		Use:   "koble",
 		Short: "Koble is a network emulation tool",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			// err = cli.SetupConfig()
+			// if err != nil {
+			// 	return err
+			// }
 			if verbose && quiet {
 				log.Fatal(errors.New("CLI Flags --verbose and --quiet cannot be used together."))
 			}
@@ -31,12 +37,17 @@ var (
 			} else {
 				log.SetLevel(log.WarnLevel)
 			}
-			if cli.Plain || cli.NoColor {
+			// if cli.Plain || cli.NoColor {
+			// 	color.NoColor = true
+			// }
+			cli.NK, err = koble.NewKoble(namespace)
+			if err != nil {
+				return err
+			}
+			if cli.NK.Config.NoColor {
 				color.NoColor = true
 			}
-			var err error
-			cli.NK, err = koble.NewKoble(namespace)
-			return err
+			return nil
 		},
 		Version:       koble.VERSION,
 		SilenceUsage:  true,
@@ -53,11 +64,13 @@ var labName string
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
+	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
-	rootCmd.PersistentFlags().BoolVar(&cli.Plain, "plain", false, "disable interactive and coloured output")
-	rootCmd.PersistentFlags().BoolVar(&cli.NoColor, "no-color", false, "disable coloured output")
-	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
+	rootCmd.PersistentFlags().Bool("plain", false, "disable interactive and coloured output")
+	viper.BindPFlag("noninteractive", rootCmd.PersistentFlags().Lookup("plain"))
+	rootCmd.PersistentFlags().Bool("no-color", false, "disable coloured output")
+	viper.BindPFlag("nocolor", rootCmd.PersistentFlags().Lookup("no-color"))
 	for _, c := range cli.Commands {
 		rootCmd.AddCommand(c)
 	}

@@ -394,7 +394,7 @@ func (nk *Koble) ForMachine(headerFunc func() string, filterList []string, toRun
 	if nk.Lab.Name == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
-	oc := output.NewContainer(nk.Lab.Header, false) // TODO handle --plain
+	oc := output.NewContainer(nk.Lab.Header, nk.Config.NonInteractive)
 	oc.Start()
 	defer oc.Stop()
 	machines := filterMachines(nk.Lab.Machines, filterList)

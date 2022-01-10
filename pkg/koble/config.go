@@ -25,7 +25,7 @@ type Config struct {
 	Terms []Terminal `mapstructure:"terminals"`
 	// Use plain output, e.g. no spinners, no prompts
 	// default is false
-	Plain bool `mapstructure:"noninteractive"`
+	NonInteractive bool `mapstructure:"noninteractive"`
 	// Do not use colour in output
 	// default is false
 	NoColor bool `mapstructure:"nocolor"`

@@ -3,7 +3,6 @@ package koble
 import (
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/b177y/koble/driver"
 	prettyjson "github.com/hokaccha/go-prettyjson"
@@ -40,8 +39,6 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 	// 	Source:      nk.Lab.Directory,
 	// 	Destination: "/hostlab",
 	// })
-	fmt.Fprintf(out, "booting")
-	time.Sleep(4 * time.Second)
 
 	return m.Start(&conf)
 }
