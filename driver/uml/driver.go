@@ -3,12 +3,8 @@ package uml
 import "github.com/b177y/koble/driver"
 
 type UMLDriver struct {
-	Name         string
-	DefaultImage string
-	Kernel       string
-	RunDir       string
-	StorageDir   string
-	Testing      bool
+	Name   string
+	Config Config
 }
 
 func (ud *UMLDriver) Machine(name, namespace string) (m driver.Machine,

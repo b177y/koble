@@ -8,10 +8,9 @@ import (
 )
 
 type PodmanDriver struct {
-	conn         context.Context
-	Name         string
-	DefaultImage string
-	URI          string
+	conn   context.Context
+	Name   string
+	Config Config
 }
 
 func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,

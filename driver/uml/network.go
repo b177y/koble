@@ -46,7 +46,7 @@ func (n *Network) Create(opts *driver.NetConfig) error {
 	if opts.External {
 		return vecnet.MakeNetExternal(n.name, n.namespace, "")
 	}
-	err = saveInfo(filepath.Join(n.ud.RunDir, "net", n.Id()), opts)
+	err = saveInfo(filepath.Join(n.ud.Config.RunDir, "net", n.Id()), opts)
 	if err != nil {
 		return err
 	}
@@ -87,6 +87,6 @@ func (n *Network) Info() (nInfo driver.NetInfo, err error) {
 		return nInfo, driver.ErrNotExists
 	}
 	var info driver.NetConfig
-	err = loadInfo(filepath.Join(n.ud.RunDir, "net", n.Id()), info)
+	err = loadInfo(filepath.Join(n.ud.Config.RunDir, "net", n.Id()), info)
 	return nInfo, err
 }

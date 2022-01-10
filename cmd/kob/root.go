@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/b177y/koble/cmd/kob/cli"
 	_ "github.com/b177y/koble/cmd/kob/labs"
@@ -26,6 +25,7 @@ var (
 			if verbose && quiet {
 				log.Fatal(errors.New("CLI Flags --verbose and --quiet cannot be used together."))
 			}
+			// TODO do this in koble.Load
 			if verbose {
 				log.SetLevel(log.DebugLevel)
 			} else if quiet {
@@ -37,10 +37,6 @@ var (
 			if err != nil {
 				return err
 			}
-			fmt.Println("loaded netkit", cli.NK)
-			fmt.Println("loaded netkit lab", cli.NK.Lab)
-			fmt.Println("loaded netkit config", cli.NK.Config)
-
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {

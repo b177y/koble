@@ -66,7 +66,7 @@ func (m *Machine) Running() bool {
 }
 
 func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd []string, err error) {
-	cmd = []string{m.ud.Kernel}
+	cmd = []string{m.ud.Config.Kernel}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
@@ -110,7 +110,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		return err
 	}
 	if opts.Image == "" {
-		opts.Image = m.ud.DefaultImage
+		opts.Image = m.ud.Config.DefaultImage
 	}
 	exists, err := m.Exists()
 	if err != nil {
@@ -129,7 +129,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 			m.Remove()
 		}
 	}()
-	nsMdir := filepath.Join(m.ud.RunDir, "ns", m.namespace)
+	nsMdir := filepath.Join(m.ud.Config.RunDir, "ns", m.namespace)
 	err = os.MkdirAll(nsMdir, 0744)
 	if err != nil && err != os.ErrExist {
 		return err
@@ -212,7 +212,7 @@ func (m *Machine) Stop(force bool) (err error) {
 		}
 		return fmt.Errorf("can't stop %s as it isn't running", m.name)
 	}
-	umlDir := filepath.Join(m.ud.RunDir, "machine", m.Id(), m.Id())
+	umlDir := filepath.Join(m.ud.Config.RunDir, "machine", m.Id(), m.Id())
 	if !force {
 		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
 			filepath.Join(umlDir, "mconsole"))
@@ -303,7 +303,7 @@ func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 	if opts == nil {
 		opts = new(driver.LogOptions)
 	}
-	fn := filepath.Join(m.ud.RunDir, "machine", m.Id(), "machine.log")
+	fn := filepath.Join(m.ud.Config.RunDir, "machine", m.Id(), "machine.log")
 	if opts.Follow {
 		t, err := ht.TailFile(fn, ht.Config{Follow: true})
 		if err != nil {

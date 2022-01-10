@@ -115,7 +115,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		return err
 	}
 	if opts.Image == "" {
-		opts.Image = m.pd.DefaultImage
+		opts.Image = m.pd.Config.DefaultImage
 	}
 	exists, err := m.Exists()
 	if err != nil {
@@ -133,7 +133,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		}
 	}
 	if opts.Image == "" {
-		opts.Image = m.pd.DefaultImage
+		opts.Image = m.pd.Config.DefaultImage
 	}
 	imExists, err := images.Exists(m.pd.conn, opts.Image, nil)
 	if err != nil {

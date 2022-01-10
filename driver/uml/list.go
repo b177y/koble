@@ -29,7 +29,7 @@ func removeDuplicates(list []string) []string {
 }
 
 func (ud *UMLDriver) ListAllNamespaces() (namespaces []string, err error) {
-	nsEntries, err := os.ReadDir(filepath.Join(ud.RunDir, "ns"))
+	nsEntries, err := os.ReadDir(filepath.Join(ud.Config.RunDir, "ns"))
 	for _, n := range nsEntries {
 		namespaces = append(namespaces, n.Name())
 	}
@@ -66,7 +66,7 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	}
 	// find machines from dir list
 	// if these machines aren't running they wont have shown up in ps list
-	dir := filepath.Join(ud.RunDir, "ns", namespace)
+	dir := filepath.Join(ud.Config.RunDir, "ns", namespace)
 	entries, err := os.ReadDir(dir)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		// TODO WARN

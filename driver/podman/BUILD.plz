@@ -9,6 +9,7 @@ go_library(
     deps=[
         "//driver",
         "//third_party/go:github.com__spf13__cobra",
+        "//third_party/go:github.com__spf13__viper",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
         "//third_party/go:github.com__containers__buildah__copier",
         "//third_party/go:github.com__containers__image__v5__manifest",
@@ -21,6 +22,7 @@ go_library(
         "//third_party/go:github.com__containers__podman__v3__pkg__domain__entities",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings",
         "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
+        "//third_party/go:github.com__go-playground__validator__v10",
     ],
 )
 
