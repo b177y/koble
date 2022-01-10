@@ -45,7 +45,7 @@ var start = func(cmd *cobra.Command, args []string) error {
 				return err
 			}
 			if wait {
-				m, err := cli.NK.Driver.Machine(args[0], cli.NK.Namespace)
+				m, err := cli.NK.Driver.Machine(args[0], cli.NK.Config.Namespace)
 				if err != nil {
 					return err
 				}

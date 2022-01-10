@@ -255,7 +255,7 @@ func (nk *Koble) LabStart(mlist []string, wait bool) error {
 			return err
 		}
 		if wait {
-			m, err := nk.Driver.Machine(name, nk.Namespace)
+			m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 			if err != nil {
 				return err
 			}
@@ -361,7 +361,7 @@ func (nk *Koble) LabStop(mlist []string,
 			return err
 		}
 		if wait {
-			m, err := nk.Driver.Machine(name, nk.Namespace)
+			m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 			if err != nil {
 				return err
 			}

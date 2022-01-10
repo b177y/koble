@@ -23,3 +23,8 @@ driver:
 terminals:
   - name: "alacritty"
     command: ["alacritty", "--hold", "-e"]
+
+## default namespace to use
+## when in a lab directory the namespace will be md5sum(/path/to/lab) instead of the default
+## this can be overriden in lab.yml or with --namespace
+# namespace: "GLOBAL"

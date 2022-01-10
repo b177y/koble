@@ -7,7 +7,7 @@ import (
 )
 
 func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
-	n, err := nk.Driver.Network(name, nk.Namespace)
+	n, err := nk.Driver.Network(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (nk *Koble) ListNetworks(all bool) error {
 }
 
 func (nk *Koble) NetworkInfo(name string) error {
-	n, err := nk.Driver.Network(name, nk.Namespace)
+	n, err := nk.Driver.Network(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}

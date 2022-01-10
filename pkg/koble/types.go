@@ -9,7 +9,6 @@ type Koble struct {
 	LabRoot        string
 	InitialWorkDir string
 	Config         Config
-	Namespace      string
 	Driver         driver.Driver
 }
 
@@ -24,5 +23,4 @@ type Lab struct {
 	Web          []string                        `mapstructure:"web,omitempty" validate:"url"`
 	Machines     map[string]driver.MachineConfig `mapstructure:"machines,omitempty"`
 	Networks     map[string]driver.NetConfig     `mapstructure:"networks,omitempty"`
-	DriverExtra  DriverConfig                    `mapstructure:"driver_extra,omitempty"`
 }

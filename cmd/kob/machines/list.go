@@ -17,7 +17,7 @@ var listCmd = &cobra.Command{
 	Aliases: []string{"ls"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if !mListAll {
-			fmt.Fprintf(os.Stderr, "Listing all machines within the namespace (%s).\n", cli.NK.Namespace)
+			fmt.Fprintf(os.Stderr, "Listing all machines within the namespace (%s).\n", cli.NK.Config.Namespace)
 			fmt.Fprintf(os.Stderr, "To see all machines use `koble machine list --all`\n\n")
 		}
 		return cli.NK.ListMachines(mListAll, mListJson)

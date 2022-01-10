@@ -3,7 +3,7 @@ package koble
 import "github.com/b177y/koble/driver"
 
 func (nk *Koble) AttachToMachine(machine string) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -12,7 +12,7 @@ func (nk *Koble) AttachToMachine(machine string) error {
 
 func (nk *Koble) Exec(machine, command, user string,
 	detach bool, workdir string) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (nk *Koble) Exec(machine, command, user string,
 }
 
 func (nk *Koble) Shell(machine, user, workdir string) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}

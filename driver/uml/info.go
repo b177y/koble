@@ -79,9 +79,21 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	if err != nil {
 		return info, err
 	}
-	info.State = *state.State
-	info.ExitCode = *state.ExitCode
-	info.Running = *state.Running
+	if state.State != nil {
+		info.State = *state.State
+	} else {
+		info.State = ""
+	}
+	if state.ExitCode != nil {
+		info.ExitCode = *state.ExitCode
+	} else {
+		info.ExitCode = 0
+	}
+	if state.Running != nil {
+		info.Running = *state.Running
+	} else {
+		info.Running = false
+	}
 	info.Pid = m.Pid()
 	info.Name = m.Name()
 	info.Namespace = m.namespace

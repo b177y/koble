@@ -7,66 +7,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/b177y/koble/driver"
 	"github.com/fatih/color"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 )
-
-func Load(namespace string) (*Koble, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/koble")
-	viper.SetDefault("driver.name", "podman")
-	viper.SetDefault("terminal", "gnome")
-	viper.SetDefault("launch_terms", true)
-	viper.SetDefault("launch_shell", false)
-	viper.SetDefault("noninteractive", false)
-	viper.SetDefault("nocolor", false)
-	viper.SetDefault("default_namespace", "GLOBAL")
-	viper.SetDefault("machine_memory", 128)
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	var config Config
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		return nil, err
-	}
-	var d driver.Driver
-	if initialiser, ok := AvailableDrivers[config.Driver.Name]; ok {
-		d = initialiser()
-		err = d.SetupDriver(config.Driver.ExtraConf)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("Driver %s is not currently supported.", config.Driver.Name)
-	}
-	nk := &Koble{
-		Driver: d,
-		Config: config,
-	}
-	nk.LabRoot, err = getLabRoot()
-	if err != nil {
-		return nil, err
-	}
-	if namespace != "" {
-		nk.Namespace = namespace
-	} else if nk.LabRoot != "" {
-		nk.Namespace = fmt.Sprintf("%x",
-			md5.Sum([]byte(nk.LabRoot)))
-	} else {
-		nk.Namespace = config.DefaultNamespace
-	}
-	err = validator.New().Var(nk.Namespace, "alphanum,max=32")
-	if err != nil {
-		return nil, err
-	}
-	color.NoColor = config.NoColor
-	return nk, nil
-}
 
 func (nk *Koble) LoadLab() (err error) {
 	if nk.LabRoot == "" {
@@ -92,18 +36,25 @@ func (nk *Koble) LoadLab() (err error) {
 	if err != nil {
 		return fmt.Errorf("could not read lab.yml: %w", err)
 	}
+
+	// if lab does not set namespace, set it to lab path hash
+	if vpl.Get("namespace") == nil {
+		vpl.Set("namespace", fmt.Sprintf("%x", md5.Sum([]byte(nk.LabRoot))))
+	}
 	err = vpl.Unmarshal(&nk.Lab)
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
+
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
 	if err != nil {
 		return fmt.Errorf("could not order lab machines by dependency: %w", err)
 	}
 
-	cm := make(map[string]interface{}, 0)
-	cm["driver"] = vpl.Get("driver")
-	err = viper.MergeConfigMap(cm)
+	// cm := make(map[string]interface{}, 0)
+	// cm["driver"] = vpl.Get("driver")
+	// viper.AllSettings()
+	err = viper.MergeConfigMap(vpl.AllSettings())
 	if err != nil {
 		return fmt.Errorf("Could not merge lab driver config to default driver config")
 	}
@@ -112,8 +63,57 @@ func (nk *Koble) LoadLab() (err error) {
 	return nil
 }
 
+func Load() (*Koble, error) {
+	var nk Koble
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("$HOME/.config/koble")
+	viper.SetDefault("driver.name", "podman")
+	viper.SetDefault("terminal", "gnome")
+	viper.SetDefault("launch_terms", true)
+	viper.SetDefault("launch_shell", false)
+	viper.SetDefault("noninteractive", false)
+	viper.SetDefault("nocolor", false)
+	viper.SetDefault("namespace", "GLOBAL")
+	viper.SetDefault("machine_memory", 128)
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	nk.LabRoot, err = getLabRoot()
+	if err != nil {
+		return nil, err
+	}
+	// set up lab if in one
+	if nk.LabRoot != "" {
+		err = nk.LoadLab()
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = viper.Unmarshal(&nk.Config)
+	if err != nil {
+		return nil, err
+	}
+	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
+		nk.Driver = initialiser()
+		err = nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
+	}
+	err = validator.New().Var(nk.Config.Namespace, "alphanum,max=32")
+	if err != nil {
+		return nil, err
+	}
+	color.NoColor = nk.Config.NoColor
+	return &nk, nil
+}
+
 // Return to initial working directory from labroot
-func (nk *Koble) ExitLab() (err error) {
+func (nk *Koble) Cleanup() (err error) {
 	if nk.LabRoot == "" {
 		return nil
 	}

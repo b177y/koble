@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/b177y/koble/cmd/kob/cli"
 	_ "github.com/b177y/koble/cmd/kob/labs"
@@ -32,18 +33,18 @@ var (
 			} else {
 				log.SetLevel(log.WarnLevel)
 			}
-			cli.NK, err = koble.Load(namespace)
+			cli.NK, err = koble.Load()
 			if err != nil {
 				return err
 			}
-			err = cli.NK.LoadLab()
-			if err != nil {
-				return err
-			}
+			fmt.Println("loaded netkit", cli.NK)
+			fmt.Println("loaded netkit lab", cli.NK.Lab)
+			fmt.Println("loaded netkit config", cli.NK.Config)
+
 			return nil
 		},
 		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
-			return cli.NK.ExitLab()
+			return cli.NK.Cleanup()
 		},
 		Version:       koble.VERSION,
 		SilenceUsage:  true,
@@ -59,10 +60,14 @@ var machine string
 var labName string
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&namespace, "namespace", "", "namespace to use")
+	rootCmd.PersistentFlags().String("namespace", "", "namespace to use")
+	viper.BindPFlag("namespace", rootCmd.PersistentFlags().Lookup("namespace"))
 	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 	rootCmd.PersistentFlags().BoolVar(&quiet, "quiet", false, "only show warnings and errors")
+	rootCmd.PersistentFlags().String("driver", "", "disable interactive and coloured output")
+	viper.BindPFlag("driver.name", rootCmd.PersistentFlags().Lookup("driver"))
+	// TODO add autocomp for --driver (list available drivers)
 	rootCmd.PersistentFlags().Bool("plain", false, "disable interactive and coloured output")
 	viper.BindPFlag("noninteractive", rootCmd.PersistentFlags().Lookup("plain"))
 	rootCmd.PersistentFlags().Bool("no-color", false, "disable coloured output")

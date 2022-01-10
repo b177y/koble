@@ -11,7 +11,7 @@ import (
 //func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
 	// Start with defaults
-	m, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 	}
 
 	for _, dependency := range conf.Dependencies {
-		dep, err := nk.Driver.Machine(dependency, nk.Namespace)
+		dep, err := nk.Driver.Machine(dependency, nk.Config.Namespace)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 }
 
 func (nk *Koble) MachineInfo(name string, json bool) error {
-	m, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 }
 
 func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
-	m, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
 }
 
 func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
-	m, err := nk.Driver.Machine(name, nk.Namespace)
+	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
 }
 
 func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 }
 
 func (nk *Koble) MachineLogs(machine string, follow bool, tail int) error {
-	m, err := nk.Driver.Machine(machine, nk.Namespace)
+	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
@@ -161,7 +161,7 @@ func (nk *Koble) MachineLogs(machine string, follow bool, tail int) error {
 }
 
 func (nk *Koble) ListMachines(all, json bool) error {
-	machines, err := nk.Driver.ListMachines(nk.Namespace, all)
+	machines, err := nk.Driver.ListMachines(nk.Config.Namespace, all)
 	if err != nil {
 		return err
 	}

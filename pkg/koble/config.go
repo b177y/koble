@@ -30,9 +30,9 @@ type Config struct {
 	// Do not use colour in output
 	// default is false
 	NoColor bool `mapstructure:"nocolor"`
-	// default namespace to use when not in a lab
+	// namespace to use when not in a lab
 	// default is "GLOBAL"
-	DefaultNamespace string `mapstructure:"default_namespace"`
+	Namespace string `mapstructure:"namespace"`
 	// Amount of memory in MB to use for each machine
 	// default is 128
 	MachineMemory int `mapstructure:"machine_memory"`
