@@ -21,16 +21,10 @@ func (nk *Koble) LoadLab() (err error) {
 	if err != nil {
 		return err
 	}
-	if nk.LabRoot != nk.InitialWorkDir {
-		err = os.Chdir(nk.LabRoot)
-		if err != nil {
-			return err
-		}
-	}
 	vpl := viper.New()
 	vpl.SetConfigName("lab")
 	vpl.SetConfigType("yaml")
-	vpl.AddConfigPath(".")
+	vpl.AddConfigPath(nk.LabRoot)
 
 	err = vpl.ReadInConfig()
 	if err != nil {
@@ -113,6 +107,12 @@ func Load() (*Koble, error) {
 	err = validator.New().Struct(nk.Config)
 	if err != nil {
 		return nil, err
+	}
+	if nk.LabRoot != nk.InitialWorkDir {
+		err = os.Chdir(nk.LabRoot)
+		if err != nil {
+			return nil, err
+		}
 	}
 	color.NoColor = nk.Config.NoColor
 	return &nk, nil

@@ -1,6 +1,7 @@
 package lab
 
 import (
+	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
 )
@@ -11,7 +12,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialise a new lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return koble.InitLab(initOpts)
+		return cli.NK.InitLab(initOpts)
 	},
 }
 

@@ -14,8 +14,8 @@ import (
 	"github.com/b177y/koble/pkg/output"
 	"github.com/fatih/color"
 	"github.com/go-playground/validator/v10"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
-	"gopkg.in/yaml.v2"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -33,107 +33,111 @@ type InitOpts struct {
 	Webs        []string
 }
 
-func InitLab(options InitOpts) error {
-	newDir := true
+func (nk *Koble) InitLab(options InitOpts) error {
+	if nk.LabRoot == nk.InitialWorkDir {
+		fmt.Println("nk labroot", nk.LabRoot, nk.InitialWorkDir)
+		return fmt.Errorf("lab.yml already exists in this directory.")
+	} else if nk.LabRoot != "" {
+		log.Warnf("There is already a lab at %s, creating a new lab in %s\n", nk.LabRoot, nk.InitialWorkDir)
+		err := os.Chdir(nk.InitialWorkDir)
+		if err != nil {
+			return err
+		}
+	}
 	if options.Name == "" {
 		log.Debug("Name not given, initialising lab in current directory.")
-		newDir = false
-		exists := fileExists("lab.yml")
-		if exists {
-			return errors.New("lab.yml already exists in this directory.")
-		}
-		dir, err := os.Getwd()
+		options.Name = filepath.Base(nk.InitialWorkDir)
+		err := validator.New().Var(options.Name, "alphanum,max=30")
 		if err != nil {
 			return err
 		}
-		options.Name = filepath.Base(dir)
-	}
-	err := validator.New().Var(options.Name, "alphanum,max=30")
-	if err != nil {
-		return err
-	}
-	exists := fileExists(options.Name)
-	if exists {
-		info, err := os.Stat(options.Name)
+	} else {
+		err := validator.New().Var(options.Name, "alphanum,max=30")
 		if err != nil {
 			return err
 		}
-		if info.IsDir() {
-			return fmt.Errorf("%s already exists as a directory. To initialise it as a Koble lab directory, cd to it then run init with no name.", options.Name)
-		} else {
-			return fmt.Errorf("A file named %s exists. Please use a different name to initialise the lab or rename the file.", options.Name)
+		if fileExists(options.Name) {
+			return fmt.Errorf("file or directory %s already exists", options.Name)
 		}
-	}
-	pathPrefix := ""
-	if newDir {
-		os.Mkdir(options.Name, 0755)
-		pathPrefix = options.Name
+		err = os.Mkdir(options.Name, 0755)
+		if err != nil {
+			return err
+		}
+		err = os.Chdir(options.Name)
+		if err != nil {
+			return err
+		}
 	}
 	// TODO check if in script mode
 	// ask for name, description etc
-	lab := Lab{
-		Description:  options.Description,
-		KobleVersion: VERSION,
-		Authors:      options.Authors,
-		Emails:       options.Emails,
-		Web:          options.Webs,
+	vpl := viper.New()
+	vpl.Set("koble_version", VERSION)
+	vpl.Set("created_at", time.Now().Format("02-01-2006"))
+	if options.Description != "" {
+		vpl.Set("description", options.Description)
 	}
-	lab.CreatedAt = time.Now().Format("02-01-2006")
-	bytes, err := yaml.Marshal(lab)
+	if len(options.Authors) != 0 {
+		vpl.Set("authors", options.Authors)
+	}
+	if len(options.Emails) != 0 {
+		vpl.Set("emails", options.Emails)
+	}
+	if len(options.Webs) != 0 {
+		vpl.Set("webs", options.Webs)
+	}
+	err := vpl.SafeWriteConfigAs("lab.yml")
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(filepath.Join(pathPrefix, "lab.yml"), bytes, 0644)
-	err = os.Mkdir(filepath.Join(pathPrefix, "shared"), 0755)
-	if err != nil {
-		// TODO warn but not error if already exists
+	err = os.Mkdir("shared", 0755)
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		return err
 	}
-	err = os.WriteFile(filepath.Join(pathPrefix, "shared.startup"), []byte(SHARED_STARTUP), 0644)
-	if err != nil {
-		// TODO warn but not error if already exists
+	err = os.WriteFile("shared.startup", []byte(SHARED_STARTUP), 0644)
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		return err
 	}
-	return err
+	return nil
 }
 
 // redo with new viper config
-func AddMachineToLab(name string, networks []string, image string) error {
-	lab := Lab{}
-	// exists, err := GetLab(&lab)
-	// if err != nil {
-	// 	return err
-	// }
-	// if !exists {
-	// 	return errors.New("lab.yml does not exist, are you in a lab directory?")
-	// }
+func (nk *Koble) AddMachineToLab(name string, conf driver.MachineConfig) error {
+	if nk.LabRoot == "" {
+		return errors.New("lab.yml does not exist, are you in a lab directory?")
+	}
 	err := validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
-		return fmt.Errorf("Machine name %s must be alphanumeric and shorter than 30 characters: %w", name, err)
+		return err
 	}
+
+	if _, ok := nk.Lab.Machines[name]; ok {
+		return fmt.Errorf("a machine named %s already exists", name)
+	}
+
 	err = os.Mkdir(name, 0755)
-	if err != nil {
-		// TODO warn but not error if already exists
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		return err
 	}
 	fn := name + ".startup"
 	err = os.WriteFile(fn, []byte(DEFAULT_STARTUP), 0644)
-	if err != nil {
-		// TODO warn but not error if already exists
+	if err != nil && !errors.Is(err, os.ErrExist) {
 		return err
 	}
 
-	for mn := range lab.Machines {
-		if mn == name {
-			return fmt.Errorf("A machine with the name %s already exists.", name)
-		}
+	vpl := viper.New()
+	vpl.SetConfigName("lab")
+	vpl.SetConfigType("yaml")
+	vpl.AddConfigPath(nk.LabRoot)
+	err = vpl.ReadInConfig()
+	if err != nil {
+		return fmt.Errorf("could not read lab.yml: %w", err)
 	}
-	lab.Machines[name] = driver.MachineConfig{
-		Networks: networks,
-		Image:    image,
+	// write networks even if empty, so that machine gets added to lab.yml
+	vpl.Set("machines."+name+".networks", conf.Networks)
+	if conf.Image != "" {
+		vpl.Set("machines."+name+".image", conf.Image)
 	}
-	err = SaveLab(&lab)
-	// TODO print help for getting started with machine
+	err = vpl.WriteConfigAs("lab.yml")
 	if err != nil {
 		return err
 	}
@@ -162,7 +166,7 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 	if err != nil {
 		return err
 	}
-	for nn, _ := range lab.Networks {
+	for nn := range lab.Networks {
 		if nn == name {
 			return fmt.Errorf("A network with the name %s already exists.", name)
 		}

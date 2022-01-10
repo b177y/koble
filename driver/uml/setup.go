@@ -10,6 +10,10 @@ import (
 )
 
 func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
+	err = ud.loadConfig(conf)
+	if err != nil {
+		return err
+	}
 	if !ud.Config.Testing && os.Getuid() != 0 {
 		err = vecnet.CreateAndEnterUserNS("koble")
 		if err != nil {

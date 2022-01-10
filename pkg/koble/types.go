@@ -13,7 +13,7 @@ type Koble struct {
 }
 
 type Lab struct {
-	Name         string                          `mapstructure:"name,omitempty" validate:"alphanum,max=30"`
+	Name         string                          `mapstructure:"-" validate:"alphanum,max=30"`
 	Directory    string                          `mapstructure:"-"`
 	CreatedAt    string                          `mapstructure:"created_at,omitempty" validate:"datetime=02-01-2006"`
 	KobleVersion string                          `mapstructure:"koble_version,omitempty"`
