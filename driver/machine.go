@@ -34,14 +34,14 @@ type MachineState struct {
 }
 
 type MachineConfig struct {
-	Image        string                 `default:"" yaml:"image,omitempty"`
-	HostHome     bool                   `default:"false" yaml:"hosthome,omitempty"`
-	Hostlab      string                 `default:"" yaml:"hostlab,omitempty"`
-	Networks     []string               `default:"[]" yaml:"networks,omitempty"`
-	Volumes      []spec.Mount           `default:"[]" yaml:"volumes,omitempty"`
-	Dependencies []string               `default:"[]" yaml:"depends_on,omitempty"`
-	DriverExtra  map[string]interface{} `default:"{}" yaml:"driver,omitempty"`
-	Lab          string                 `default:"" yaml:"-"`
+	Image        string                 `default:"" mapstructure:"image,omitempty"`
+	HostHome     bool                   `default:"false" mapstructure:"hosthome,omitempty"`
+	Hostlab      string                 `default:"" mapstructure:"hostlab,omitempty"`
+	Networks     []string               `default:"[]" mapstructure:"networks,omitempty"`
+	Volumes      []spec.Mount           `default:"[]" mapstructure:"volumes,omitempty"`
+	Dependencies []string               `default:"[]" mapstructure:"depends_on,omitempty"`
+	DriverExtra  map[string]interface{} `default:"{}" mapstructure:"driver,omitempty"`
+	Lab          string                 `default:"" mapstructure:"-"`
 }
 
 type ExecOptions struct {

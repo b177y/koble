@@ -3,9 +3,9 @@ package koble
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,44 +17,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func fileExists(name string) (exists bool, err error) {
-	if _, err := os.Stat(name); err == nil {
-		return true, nil
-	} else if os.IsNotExist(err) {
-		return false, nil
-	} else {
-		return false, err
-	}
-}
-
-func GetLab(lab *Lab) (exists bool, err error) {
-	exists, err = fileExists("lab.yml")
-	if err != nil {
-		// not necessarily false, so check err before exists
-		return false, err
-	}
-	if !exists {
-		return false, nil
-	}
-	f, err := ioutil.ReadFile("lab.yml")
-	if err != nil {
-		return true, err
-	}
-	err = yaml.Unmarshal(f, &lab)
-	if err != nil {
-		return true, err
-	}
-	dir, err := os.Getwd()
-	if err != nil {
-		return true, err
-	}
-	lab.Machines, err = orderMachines(lab.Machines)
-	if err != nil {
-		return true, err
-	}
-	lab.Name = filepath.Base(dir)
-	lab.Directory = dir
-	return true, nil
+func fileExists(name string) (exists bool) {
+	_, err := os.Lstat(name)
+	return err == nil
 }
 
 func SaveLab(lab *Lab) error {
@@ -221,4 +186,20 @@ func multiHeading(heading string, list []string) (header string, value string) {
 	}
 	value = strings.Join(list, ",")
 	return header, value
+}
+
+// Walk up directories looking for a "lab.yml" file
+func getLabRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	for dir != "" {
+		if fileExists(path.Join(dir, "lab.yml")) {
+			return dir, nil
+		}
+		dir, _ = path.Split(dir)
+		dir = strings.TrimRight(dir, "/")
+	}
+	return "", nil
 }

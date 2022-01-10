@@ -7,7 +7,6 @@ import (
 	_ "github.com/b177y/koble/cmd/kob/labs"
 	_ "github.com/b177y/koble/cmd/kob/machines"
 	"github.com/b177y/koble/pkg/koble"
-	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,10 +22,6 @@ var (
 		Short: "Koble is a network emulation tool",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			var err error
-			// err = cli.SetupConfig()
-			// if err != nil {
-			// 	return err
-			// }
 			if verbose && quiet {
 				log.Fatal(errors.New("CLI Flags --verbose and --quiet cannot be used together."))
 			}
@@ -37,17 +32,18 @@ var (
 			} else {
 				log.SetLevel(log.WarnLevel)
 			}
-			// if cli.Plain || cli.NoColor {
-			// 	color.NoColor = true
-			// }
-			cli.NK, err = koble.NewKoble(namespace)
+			cli.NK, err = koble.Load(namespace)
 			if err != nil {
 				return err
 			}
-			if cli.NK.Config.NoColor {
-				color.NoColor = true
+			err = cli.NK.LoadLab()
+			if err != nil {
+				return err
 			}
 			return nil
+		},
+		PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
+			return cli.NK.ExitLab()
 		},
 		Version:       koble.VERSION,
 		SilenceUsage:  true,

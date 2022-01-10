@@ -38,10 +38,7 @@ func InitLab(options InitOpts) error {
 	if options.Name == "" {
 		log.Debug("Name not given, initialising lab in current directory.")
 		newDir = false
-		exists, err := fileExists("lab.yml")
-		if err != nil {
-			return err
-		}
+		exists := fileExists("lab.yml")
 		if exists {
 			return errors.New("lab.yml already exists in this directory.")
 		}
@@ -55,10 +52,7 @@ func InitLab(options InitOpts) error {
 	if err != nil {
 		return err
 	}
-	exists, err := fileExists(options.Name)
-	if err != nil {
-		return err
-	}
+	exists := fileExists(options.Name)
 	if exists {
 		info, err := os.Stat(options.Name)
 		if err != nil {
@@ -103,16 +97,17 @@ func InitLab(options InitOpts) error {
 	return err
 }
 
+// redo with new viper config
 func AddMachineToLab(name string, networks []string, image string) error {
 	lab := Lab{}
-	exists, err := GetLab(&lab)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return errors.New("lab.yml does not exist, are you in a lab directory?")
-	}
-	err = validator.New().Var(name, "alphanum,max=30")
+	// exists, err := GetLab(&lab)
+	// if err != nil {
+	// 	return err
+	// }
+	// if !exists {
+	// 	return errors.New("lab.yml does not exist, are you in a lab directory?")
+	// }
+	err := validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
 		return fmt.Errorf("Machine name %s must be alphanumeric and shorter than 30 characters: %w", name, err)
 	}
@@ -146,6 +141,7 @@ func AddMachineToLab(name string, networks []string, image string) error {
 	return nil
 }
 
+// redo with new viper config
 func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNet, ipv6 bool) error {
 	if gateway.String() != "<nil>" {
 		if subnet.IP == nil {
@@ -155,14 +151,14 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 		}
 	}
 	lab := Lab{}
-	exists, err := GetLab(&lab)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return errors.New("lab.yml does not exist, are you in a lab directory?")
-	}
-	err = validator.New().Var(name, "alphanum,max=30")
+	// exists, err := GetLab(&lab)
+	// if err != nil {
+	// 	return err
+	// }
+	// if !exists {
+	// 	return errors.New("lab.yml does not exist, are you in a lab directory?")
+	// }
+	err := validator.New().Var(name, "alphanum,max=30")
 	if err != nil {
 		return err
 	}
@@ -377,8 +373,8 @@ func (nk *Koble) LabStop(mlist []string,
 }
 
 func (nk *Koble) LabInfo() error {
-	if nk.Lab.Name == "" {
-		return errors.New("You are not in a lab right now...")
+	if nk.LabRoot == "" {
+		return errors.New("You are not currently in a lab directory.")
 	}
 	err := nk.ListMachines(false, false)
 	if err != nil {
@@ -391,9 +387,10 @@ func (nk *Koble) LabInfo() error {
 }
 
 func (nk *Koble) ForMachine(headerFunc func() string, filterList []string, toRun func(name string, mconf driver.MachineConfig, c output.Container) error) error {
-	if nk.Lab.Name == "" {
+	if nk.LabRoot == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
+	fmt.Println("gonna run for each with", nk.Lab.Machines)
 	oc := output.NewContainer(nk.Lab.Header, nk.Config.NonInteractive)
 	oc.Start()
 	defer oc.Stop()
