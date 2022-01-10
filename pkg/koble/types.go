@@ -36,7 +36,14 @@ func NewKoble(namespace string) (*Koble, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.config/koble")
-	viper.AddConfigPath("./examples/")
+	viper.SetDefault("driver", DriverConfig{Name: "podman"})
+	viper.SetDefault("terminal", "gnome")
+	viper.SetDefault("launch_terms", true)
+	viper.SetDefault("launch_shell", false)
+	viper.SetDefault("noninteractive", false)
+	viper.SetDefault("nocolor", false)
+	viper.SetDefault("default_namespace", "GLOBAL")
+	viper.SetDefault("machine_memory", 128)
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -46,9 +53,7 @@ func NewKoble(namespace string) (*Koble, error) {
 	if err != nil {
 		return nil, err
 	}
-	lab := Lab{
-		Name: "",
-	}
+	lab := Lab{Name: ""}
 	labExists, err := GetLab(&lab)
 	if err != nil {
 		return nil, err
@@ -74,9 +79,9 @@ func NewKoble(namespace string) (*Koble, error) {
 		nk.Namespace = fmt.Sprintf("%x",
 			md5.Sum([]byte(lab.Directory)))
 	} else {
-		nk.Namespace = "GLOBAL"
+		nk.Namespace = config.DefaultNamespace
 	}
-	err = validator.New().Var(nk.Namespace, "alphanum,max=64")
+	err = validator.New().Var(nk.Namespace, "alphanum,max=32")
 	if err != nil {
 		return nil, err
 	}

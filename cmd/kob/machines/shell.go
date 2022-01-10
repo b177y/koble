@@ -21,14 +21,14 @@ var shellCmd = &cobra.Command{
 		} else if (useTerm && detachMode) || (useCon && detachMode) {
 			return errors.New("CLI Flag --detach cannot be used with --terminal or --console.")
 		} else if useTerm {
-			cli.NK.Config.OpenTerms = true
+			cli.NK.Config.LaunchTerms = true
 		} else if useCon {
-			cli.NK.Config.OpenTerms = false
+			cli.NK.Config.LaunchTerms = false
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.OpenTerms {
+		if cli.NK.Config.LaunchTerms {
 			return cli.NK.LaunchInTerm()
 		}
 		return cli.NK.Shell(args[0], user, workDir)

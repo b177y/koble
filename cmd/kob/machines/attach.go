@@ -23,14 +23,14 @@ koble attach dh --console`,
 		if useTerm && useCon {
 			return errors.New("CLI Flags --terminal and --console cannot be used together.")
 		} else if useTerm {
-			cli.NK.Config.OpenTerms = true
+			cli.NK.Config.LaunchTerms = true
 		} else if useCon {
-			cli.NK.Config.OpenTerms = false
+			cli.NK.Config.LaunchTerms = false
 		}
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.OpenTerms {
+		if cli.NK.Config.LaunchTerms {
 			return cli.NK.LaunchInTerm()
 		}
 		machine := args[0]

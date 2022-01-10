@@ -6,10 +6,35 @@ type DriverConfig struct {
 }
 
 type Config struct {
-	Driver    DriverConfig `mapstructure:"driver"`
-	Terminal  string       `mapstructure:"terminal"`
-	OpenTerms bool         `mapstructure:"open_terms"`
-	Terms     []Terminal   `mapstructure:"terminals"`
+	Driver DriverConfig `mapstructure:"driver"`
+	// Name of which terminal to use
+	// this terminal must be one of the default terminals or in
+	// the user defined terms list
+	// default is gnome
+	Terminal string `mapstructure:"terminal"`
+	// Whether to launch a terminal for start, attach and shell commands
+	// default is true
+	LaunchTerms bool `mapstructure:"launch_terms"`
+	// Whether to launch a shell over tty attach on lab start
+	// this only takes effect is LaunchTerms is true
+	// default is false
+	LaunchShell bool `mapstructure:"launch_shell"`
+	// List of additional terminals to be chosen from by user
+	// these will override the default terminals if the same
+	// names are used
+	Terms []Terminal `mapstructure:"terminals"`
+	// Use plain output, e.g. no spinners, no prompts
+	// default is false
+	Plain bool `mapstructure:"noninteractive"`
+	// Do not use colour in output
+	// default is false
+	NoColor bool `mapstructure:"nocolor"`
+	// default namespace to use when not in a lab
+	// default is "GLOBAL"
+	DefaultNamespace string `mapstructure:"default_namespace"`
+	// Amount of memory in MB to use for each machine
+	// default is 128
+	MachineMemory int `mapstructure:"machine_memory"`
 }
 
 type Terminal struct {
