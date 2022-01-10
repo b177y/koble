@@ -15,12 +15,12 @@ type Koble struct {
 type Lab struct {
 	Name         string                          `mapstructure:"name,omitempty" validate:"alphanum,max=30"`
 	Directory    string                          `mapstructure:"-"`
-	CreatedAt    string                          `mapstructure:"created_at,omitempty" validate:"datetime"`
+	CreatedAt    string                          `mapstructure:"created_at,omitempty" validate:"datetime=02-01-2006"`
 	KobleVersion string                          `mapstructure:"koble_version,omitempty"`
 	Description  string                          `mapstructure:"description,omitempty"`
 	Authors      []string                        `mapstructure:"authors,omitempty"`
-	Emails       []string                        `mapstructure:"emails,omitempty" validate:"email"`
-	Web          []string                        `mapstructure:"web,omitempty" validate:"url"`
+	Emails       []string                        `mapstructure:"emails,omitempty" validate:"dive,email"`
+	Web          []string                        `mapstructure:"web,omitempty" validate:"dive,url"`
 	Machines     map[string]driver.MachineConfig `mapstructure:"machines,omitempty"`
 	Networks     map[string]driver.NetConfig     `mapstructure:"networks,omitempty"`
 }

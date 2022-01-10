@@ -32,7 +32,7 @@ type Config struct {
 	NoColor bool `mapstructure:"nocolor"`
 	// namespace to use when not in a lab
 	// default is "GLOBAL"
-	Namespace string `mapstructure:"namespace"`
+	Namespace string `mapstructure:"namespace" validate:"alphanum,max=32"`
 	// Amount of memory in MB to use for each machine
 	// default is 128
 	MachineMemory int `mapstructure:"machine_memory"`

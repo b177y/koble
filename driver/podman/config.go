@@ -26,6 +26,5 @@ func (pd *PodmanDriver) loadConfig(conf map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	validate := validator.New()
-	return validate.Struct(pd.Config)
+	return validator.New().Struct(pd.Config)
 }

@@ -46,6 +46,14 @@ func (nk *Koble) LoadLab() (err error) {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	nk.Lab.Name = filepath.Base(nk.LabRoot)
+	nk.Lab.Directory = nk.LabRoot
+
+	err = validator.New().Struct(nk.Lab)
+	if err != nil {
+		return err
+	}
+
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
 	if err != nil {
 		return fmt.Errorf("could not order lab machines by dependency: %w", err)
@@ -58,8 +66,6 @@ func (nk *Koble) LoadLab() (err error) {
 	if err != nil {
 		return fmt.Errorf("Could not merge lab driver config to default driver config")
 	}
-	nk.Lab.Name = filepath.Base(nk.LabRoot)
-	nk.Lab.Directory = nk.LabRoot
 	return nil
 }
 
@@ -104,7 +110,7 @@ func Load() (*Koble, error) {
 	} else {
 		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
 	}
-	err = validator.New().Var(nk.Config.Namespace, "alphanum,max=32")
+	err = validator.New().Struct(nk.Config)
 	if err != nil {
 		return nil, err
 	}
