@@ -2,7 +2,7 @@ package koble
 
 type DriverConfig struct {
 	// Name of driver to use
-	Default   string                 `mapstructure:"name"`
+	Name      string                 `mapstructure:"name"`
 	ExtraConf map[string]interface{} `mapstructure:"extra,remain"`
 }
 

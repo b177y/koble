@@ -17,7 +17,7 @@ func Load(namespace string) (*Koble, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("$HOME/.config/koble")
-	viper.SetDefault("driver", DriverConfig{Default: "podman"})
+	viper.SetDefault("driver.name", "podman")
 	viper.SetDefault("terminal", "gnome")
 	viper.SetDefault("launch_terms", true)
 	viper.SetDefault("launch_shell", false)
@@ -35,14 +35,14 @@ func Load(namespace string) (*Koble, error) {
 		return nil, err
 	}
 	var d driver.Driver
-	if initialiser, ok := AvailableDrivers[config.Driver.Default]; ok {
+	if initialiser, ok := AvailableDrivers[config.Driver.Name]; ok {
 		d = initialiser()
 		err = d.SetupDriver(config.Driver.ExtraConf)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		return nil, fmt.Errorf("Driver %s is not currently supported.", config.Driver.Default)
+		return nil, fmt.Errorf("Driver %s is not currently supported.", config.Driver.Name)
 	}
 	nk := &Koble{
 		Driver: d,
@@ -99,6 +99,13 @@ func (nk *Koble) LoadLab() (err error) {
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
 	if err != nil {
 		return fmt.Errorf("could not order lab machines by dependency: %w", err)
+	}
+
+	cm := make(map[string]interface{}, 0)
+	cm["driver"] = vpl.Get("driver")
+	err = viper.MergeConfigMap(cm)
+	if err != nil {
+		return fmt.Errorf("Could not merge lab driver config to default driver config")
 	}
 	nk.Lab.Name = filepath.Base(nk.LabRoot)
 	nk.Lab.Directory = nk.LabRoot

@@ -1,16 +1,25 @@
-terminal: alacritty
+#terminal: alacritty
+
 driver:
   # name: podman
-  # # Use custom podman URI (e.g. remote socket, run under different user)
-  # uri: "unix://run/user/1000/podman/podman.sock"
-  # # Use uml driver instead of default podman
-  name: uml
-  # storage: ~/.local/share/netkit/uml
-  # kernel: netkit-kernel-5.4
-  # fs: netkit-fs-focal
-  # global_domain: GLOBAL
+  ## Use uml driver instead of default podman
+  # name: uml
+
+  # override default podman driver config
+  podman:
+    ## Use custom podman URI (e.g. remote socket, run under different user)
+    # uri: "unix://run/user/1000/podman/podman.sock"
+  
+  uml:
+    # storage: ~/.local/share/netkit/uml
+    # kernel: netkit-kernel-5.4
+    # fs: netkit-fs-focal
 
 # # Add custom terminals which can then be chosen using the terminal option
 # terminals:
 #   - name: "xterm"
 #     command: ["xterm", "-e"]
+#
+terminals:
+  - name: "alacritty"
+    command: ["alacritty", "--hold", "-e"]
