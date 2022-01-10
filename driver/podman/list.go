@@ -1,6 +1,7 @@
 package podman
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/b177y/koble/driver"
@@ -9,9 +10,10 @@ import (
 
 func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
+	fmt.Println("Listing all in namespace", namespace, all)
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
-	filters := getFilters("", "", namespace, all) // TODO get namespace here
+	filters := getFilters("", namespace, all) // TODO get namespace here
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)
 	if err != nil {
@@ -51,7 +53,7 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
-	filters := getFilters("", "", "", true)
+	filters := getFilters("", "", true)
 	opts.WithFilters(filters)
 	ctrs, err := containers.List(pd.conn, opts)
 	if err != nil {

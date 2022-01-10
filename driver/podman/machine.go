@@ -90,18 +90,15 @@ func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
 	return name, namespace, lab
 }
 
-func getFilters(machine, lab, namespace string, all bool) map[string][]string {
+func getFilters(machine, namespace string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
 	labelFilters = append(labelFilters, "koble=true")
-	labelFilters = append(labelFilters, "koble:namespace="+namespace)
-	if lab != "" && !all {
-		labelFilters = append(labelFilters, "koble:lab="+lab)
-	} // else if !all {
-	//labelFilters = append(labelFilters, "koble:nolab=true")
-	//}
-	if machine != "" && !all {
-		labelFilters = append(labelFilters, "koble:name="+machine)
+	if !all {
+		labelFilters = append(labelFilters, "koble:namespace="+namespace)
+		if machine != "" {
+			labelFilters = append(labelFilters, "koble:name="+machine)
+		}
 	}
 	filters["label"] = labelFilters
 	return filters
