@@ -14,7 +14,7 @@ import (
 type Config struct {
 	DefaultImage string `mapstructure:"default_image"`
 	Kernel       string `mapstructure:"kernel"`
-	RunDir       string `mapstructure:"run_dir" validate:"dir"`
+	RunDir       string `mapstructure:"run_dir" validate:"dir,max=24"`
 	StorageDir   string `mapstructure:"storage_dir" validate:"dir"`
 	Testing      bool   `mapstructure:"testing"`
 }
