@@ -12,6 +12,10 @@ import (
 var ud = new(uml.UMLDriver)
 
 func TestUML(t *testing.T) {
+	// err := vecnet.CreateAndEnterUserNS("koble")
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 	err := driver_test.DeclareAllDriverTests(ud)
 	if err != nil {
 		t.Fatal(err)

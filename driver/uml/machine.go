@@ -66,11 +66,12 @@ func (m *Machine) Running() bool {
 }
 
 func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd []string, err error) {
-	cmd = []string{m.ud.Config.Kernel}
+	cmd = []string{filepath.Join(m.ud.Config.StorageDir, "kernel", m.ud.Config.Kernel)}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
-	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(), opts.Image))
+	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(),
+		filepath.Join(m.ud.Config.StorageDir, "images", opts.Image)))
 	cmd = append(cmd, "root=98:0")
 	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")

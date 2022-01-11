@@ -182,9 +182,10 @@ func AddSlirpIface(name, bridge, namespace, subnet, sockpath string) error {
 		// Stdout: os.Stdout,
 		// Stderr: os.Stderr,
 	}
+	// TODO find a better way to get errors from start
 	err = cmd.Start()
 	if err != nil {
-		return fmt.Errorf("could not start slirp4netns: %w", err)
+		return fmt.Errorf("could not start slirp4netns with args %v: %w", cmd.Args, err)
 	}
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		var tap netlink.Link

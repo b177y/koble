@@ -22,15 +22,30 @@ go_library(
     ],
 )
 
+http_archive(
+    name="koble-fs",
+    urls=["https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2"],
+    strip_prefix="koble-fs",
+)
+
+http_archive(
+    name="koble-kernel",
+    urls=["https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2"],
+    strip_prefix="koble-kernel",
+)
+
 go_test(
     name="uml_test",
     srcs = glob(
         ["*_test.go"],
     ),
+    data=[":koble-fs", ":koble-kernel"],
     external=True,
     deps = [
         ":uml",
+        #":koble-fs",
         "//driver/tests",
+        "//driver/uml/vecnet",
         "//third_party/go:github.com__onsi__ginkgo",
         "//third_party/go:github.com__onsi__gomega",
     ],

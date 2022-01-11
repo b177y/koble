@@ -192,6 +192,9 @@ func AddNetworkToLab(name string, external bool, gateway net.IP, subnet net.IPNe
 
 func barText(char byte, msg string, length int) string {
 	remaining := length - len(msg) - 4
+	if remaining <= 0 {
+		remaining = 0
+	}
 	space := " "
 	if msg == "" {
 		space = "="
@@ -209,6 +212,9 @@ func itemText(key, value string, width int) string {
 		value = "<unknown>"
 	}
 	remaining := width - len(key+value) - 3
+	if remaining <= 0 {
+		remaining = 0
+	}
 	padding := strings.Repeat(" ", remaining)
 	return fmt.Sprintf(" %s:%s%s \n", magBold(key), padding, mag(value))
 }
