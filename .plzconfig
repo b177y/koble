@@ -13,9 +13,9 @@ version = 16.18.0
 ;goroot - ... 
 importpath = github.com/b177y/koble
 
-[alias "godeps"]
+[alias "go-get"]
 desc = Generate third-party dependency rules for a Go project
-cmd = run //tools:godeps -- -dir third_party/go -clean -builtin
+cmd = run //tools:go-deps --
 
 [alias "tidy"]
 desc = Tidy generates build targets for dependencies and makes sure that BUILD files are up-to-date.
