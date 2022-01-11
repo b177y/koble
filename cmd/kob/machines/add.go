@@ -22,8 +22,8 @@ var addCmd = &cobra.Command{
 }
 
 func init() {
-	addCmd.Flags().StringVar(&machineConfig.Image, "image", "", "Image to use for new machine.")
-	addCmd.Flags().StringArrayVar(&machineConfig.Networks, "networks", []string{}, "Networks to add to new machine.")
+	addCmd.Flags().StringVar(&machineConfig.Image, "image", "", "Image to use for new machine")
+	addCmd.Flags().StringArrayVar(&machineConfig.Networks, "network", []string{}, "networks to add to new machine")
 	machineCmd.AddCommand(addCmd)
 	cli.Commands = append(cli.Commands, addCmd)
 }

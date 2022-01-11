@@ -16,11 +16,6 @@ func (nk *Koble) LoadLab() (err error) {
 	if nk.LabRoot == "" {
 		return nil
 	}
-	// change dir to labroot
-	nk.InitialWorkDir, err = os.Getwd()
-	if err != nil {
-		return err
-	}
 	vpl := viper.New()
 	vpl.SetConfigName("lab")
 	vpl.SetConfigType("yaml")
@@ -108,7 +103,11 @@ func Load() (*Koble, error) {
 	if err != nil {
 		return nil, err
 	}
-	if nk.LabRoot != nk.InitialWorkDir {
+	nk.InitialWorkDir, err = os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	if nk.LabRoot != "" && nk.LabRoot != nk.InitialWorkDir {
 		err = os.Chdir(nk.LabRoot)
 		if err != nil {
 			return nil, err

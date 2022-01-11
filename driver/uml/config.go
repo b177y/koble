@@ -46,15 +46,25 @@ func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "overlay"), 0744)
+	if err != nil && err != os.ErrExist {
+		return fmt.Errorf("Could not mkdir on overlay dir")
+	}
+	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "images"), 0744)
+	if err != nil && err != os.ErrExist {
+		return fmt.Errorf("Could not mkdir on imagesdir")
+	}
+	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "kernel"), 0744)
+	if err != nil && err != os.ErrExist {
+		return fmt.Errorf("Could not mkdir on imagesdir")
+	}
+	err = os.MkdirAll(filepath.Join(ud.Config.RunDir, "ns", "GLOBAL"), 0744)
+	if err != nil && err != os.ErrExist {
+		return fmt.Errorf("Could not mkdir on ud.RunDir")
+	}
 	if ud.Config.Testing {
 		imagesDir := filepath.Join(ud.Config.StorageDir, "images")
-		if err = os.MkdirAll(imagesDir, 0744); err != nil {
-			return err
-		}
 		kernelDir := filepath.Join(ud.Config.StorageDir, "kernel")
-		if err = os.MkdirAll(kernelDir, 0744); err != nil {
-			return err
-		}
 		wd, err := os.Getwd()
 		if err != nil {
 			return err

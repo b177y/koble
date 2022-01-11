@@ -18,9 +18,9 @@ var initCmd = &cobra.Command{
 
 func init() {
 	initCmd.Flags().StringVar(&initOpts.Name, "name", "", "Name to give the lab. This will create a new directory with the specified name. If no name is given, the lab will be initialised in the current directory.")
-	initCmd.Flags().StringVar(&initOpts.Description, "description", "", "Description of the new lab.")
-	initCmd.Flags().StringArrayVar(&initOpts.Authors, "authors", []string{}, "Comma separated list of lab author(s)")
-	initCmd.Flags().StringArrayVar(&initOpts.Emails, "emails", []string{}, "Comma separated list of lab author emails.")
-	initCmd.Flags().StringArrayVar(&initOpts.Webs, "web", []string{}, "Comma separated list of lab web resource URLs.")
+	initCmd.Flags().StringVar(&initOpts.Description, "description", "", "Description of the new lab")
+	initCmd.Flags().StringArrayVar(&initOpts.Authors, "author", []string{}, "lab author")
+	initCmd.Flags().StringArrayVar(&initOpts.Emails, "email", []string{}, "email associated with lab")
+	initCmd.Flags().StringArrayVar(&initOpts.Webs, "web", []string{}, "lab web resource URLs associated with lab")
 	labCmd.AddCommand(initCmd)
 }

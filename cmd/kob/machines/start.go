@@ -21,8 +21,8 @@ var startCmd = &cobra.Command{
 }
 
 func init() {
-	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "Image to run machine with.")
-	startCmd.Flags().StringArrayVar(&startOpts.Networks, "networks", []string{}, "Networks to attach to machine")
+	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "image to run machine with")
+	startCmd.Flags().StringArrayVar(&startOpts.Networks, "network", []string{}, "networks to attach to machine")
 	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for machine to boot")
 
 	machineCmd.AddCommand(startCmd)
