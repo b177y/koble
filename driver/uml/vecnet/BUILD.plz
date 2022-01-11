@@ -1,19 +1,22 @@
 package(default_visibility = ["PUBLIC"])
 
 cgo_library(
-    name="vecnet",
-    srcs=["ns.go"],
+    name = "vecnet",
+    srcs = ["ns.go"],
+    c_srcs = ["ns.c"],
     go_srcs = glob(
         ["*.go"],
-        exclude = ["*_test.go", "ns.go"],
+        exclude = [
+            "*_test.go",
+            "ns.go",
+        ],
     ),
-    c_srcs=["ns.c"],
-    deps=[
+    deps = [
         "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
+        "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__vishvananda__netlink",
         "//third_party/go:golang.org__x__crypto__ssh",
         "//third_party/go:golang.org__x__crypto__ssh__terminal",
         "//third_party/go:golang.org__x__sys__unix",
-        "//third_party/go:github.com__sirupsen__logrus",
     ],
 )

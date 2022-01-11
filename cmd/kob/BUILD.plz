@@ -1,20 +1,20 @@
 package(default_visibility = ["PUBLIC"])
 
 go_binary(
-    name="kob",
+    name = "kob",
     srcs = glob(
         ["*.go"],
         exclude = ["*_test.go"],
     ),
-    deps=[
+    deps = [
         "//cmd/kob/cli",
-        "//pkg/koble",
-        "//driver",
-        "//cmd/kob/machines",
         "//cmd/kob/labs",
+        "//cmd/kob/machines",
+        "//driver",
+        "//pkg/koble",
+        "//third_party/go:github.com__fatih__color",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",
         "//third_party/go:github.com__spf13__viper",
-        "//third_party/go:github.com__fatih__color",
-    ]
+    ],
 )

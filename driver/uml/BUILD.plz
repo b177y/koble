@@ -1,46 +1,49 @@
 package(default_visibility = ["PUBLIC"])
 
 go_library(
-    name="uml",
+    name = "uml",
     srcs = glob(
         ["*.go"],
         exclude = ["*_test.go"],
     ),
-    deps=[
+    deps = [
         "//driver",
-        "//driver/uml/vecnet",
         "//driver/uml/shim",
-        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
-        "//third_party/go:github.com__spf13__cobra",
-        "//third_party/go:github.com__spf13__viper",
-        "//third_party/go:github.com__sirupsen__logrus",
+        "//driver/uml/vecnet",
         "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
+        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
         "//third_party/go:github.com__creasty__defaults",
         "//third_party/go:github.com__docker__docker__pkg__reexec",
-        "//third_party/go:github.com__hpcloud__tail",
         "//third_party/go:github.com__go-playground__validator__v10",
+        "//third_party/go:github.com__hpcloud__tail",
+        "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__spf13__cobra",
+        "//third_party/go:github.com__spf13__viper",
     ],
 )
 
 http_archive(
-    name="koble-fs",
-    urls=["https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2"],
-    strip_prefix="koble-fs",
+    name = "koble-fs",
+    strip_prefix = "koble-fs",
+    urls = ["https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2"],
 )
 
 http_archive(
-    name="koble-kernel",
-    urls=["https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2"],
-    strip_prefix="koble-kernel",
+    name = "koble-kernel",
+    strip_prefix = "koble-kernel",
+    urls = ["https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2"],
 )
 
 go_test(
-    name="uml_test",
+    name = "uml_test",
     srcs = glob(
         ["*_test.go"],
     ),
-    data=[":koble-fs", ":koble-kernel"],
-    external=True,
+    data = [
+        ":koble-fs",
+        ":koble-kernel",
+    ],
+    external = True,
     deps = [
         ":uml",
         #":koble-fs",

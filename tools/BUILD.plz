@@ -11,7 +11,6 @@ remote_file(
     url = f"https://github.com/Tatskaari/go-deps/releases/download/{GO_DEPS_VERSION}/go_deps_{GO_DEPS_VERSION}_{CONFIG.OS}_{CONFIG.ARCH}",
 )
 
-
 WOLLEMI_VERSION = "v0.7.0"
 
 remote_file(
@@ -26,12 +25,12 @@ sh_cmd(
     name = "plz-tidy",
     cmd = [
         "export GOROOT=\\\\$($(out_exe :go_toolchain|go) env GOROOT)",
-        "$(out_exe :go-deps) --",
+        "$(out_exe :go-deps) -w --",
         "$(out_exe :wollemi) gofmt ./...",
     ],
     deps = [
-        ":go_toolchain",
         ":go-deps",
+        ":go_toolchain",
         ":wollemi",
     ],
 )

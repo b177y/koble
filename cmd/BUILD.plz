@@ -1,11 +1,10 @@
 package(default_visibility = ["PUBLIC"])
 
 genrule(
-    name="manpages",
+    name = "manpages",
     srcs = ["//cmd/man:gen-manpages"],
-    cmd=[
+    outs = ["out"],
+    cmd = [
         "./cmd/man/gen-manpages",
     ],
-    outs=["out"],
 )
-
