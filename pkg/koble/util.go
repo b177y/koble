@@ -1,10 +1,8 @@
 package koble
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -13,7 +11,6 @@ import (
 	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/util/topsort"
 	"github.com/olekukonko/tablewriter"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -105,52 +102,6 @@ func NetInfoToStringArr(networks []driver.NetInfo, showLab bool) (nlist [][]stri
 		nlist = append(nlist, ninfo)
 	}
 	return nlist, headers
-}
-
-func (nk *Koble) getTerm() (term Terminal, err error) {
-	// Check custom terms first
-	// This allows users to override default ones to add custom flags
-	for _, t := range nk.Config.Terms {
-		if t.Name == nk.Config.Terminal {
-			return t, nil
-		}
-	}
-	// Check default terminal list
-	for _, t := range defaultTerms {
-		if t.Name == nk.Config.Terminal {
-			return t, nil
-		}
-	}
-	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal)
-}
-
-func (nk *Koble) LaunchInTerm() error {
-	term, err := nk.getTerm()
-	if err != nil {
-		return err
-	}
-	var args []string
-	if tl := len(term.Command); tl == 0 {
-		return errors.New("Terminal command must not be empty")
-	} else if tl != 1 {
-		args = append(args, term.Command[1:]...)
-	}
-	args = append(args, os.Args...)
-	added := false
-	for i, a := range args {
-		if a == "--terminal" {
-			args[i] = "--console"
-			added = true
-		}
-	}
-	if !added {
-		args = append(args, "--console")
-	}
-	log.Info("Relaunching current command in terminal with:", term.Name, args)
-	cmd := exec.Command(term.Command[0], args...)
-	cmd.Env = os.Environ()
-	err = cmd.Start()
-	return err
 }
 
 func orderMachines(machines map[string]driver.MachineConfig) (ordered map[string]driver.MachineConfig,

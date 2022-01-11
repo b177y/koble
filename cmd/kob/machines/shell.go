@@ -29,7 +29,7 @@ var shellCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cli.NK.Config.LaunchTerms {
-			return cli.NK.LaunchInTerm()
+			return cli.NK.LaunchInTerm(args[0])
 		}
 		return cli.NK.Shell(args[0], user, workDir)
 	},

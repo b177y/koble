@@ -64,6 +64,8 @@ func init() {
 	rootCmd.PersistentFlags().String("driver", "", "disable interactive and coloured output")
 	viper.BindPFlag("driver.name", rootCmd.PersistentFlags().Lookup("driver"))
 	// TODO add autocomp for --driver (list available drivers)
+	rootCmd.PersistentFlags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
+	viper.BindPFlag("term_opts", rootCmd.PersistentFlags().Lookup("term-opt"))
 	rootCmd.PersistentFlags().Bool("plain", false, "disable interactive and coloured output")
 	viper.BindPFlag("noninteractive", rootCmd.PersistentFlags().Lookup("plain"))
 	rootCmd.PersistentFlags().Bool("no-color", false, "disable coloured output")

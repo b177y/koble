@@ -16,7 +16,7 @@ var execCmd = &cobra.Command{
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cli.NK.Config.LaunchTerms {
-			return cli.NK.LaunchInTerm()
+			return cli.NK.LaunchInTerm(args[0])
 		}
 		return cli.NK.Exec(args[0], strings.Join(args[1:], " "), user, detachMode, workDir)
 	},

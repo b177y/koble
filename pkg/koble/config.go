@@ -24,6 +24,8 @@ type Config struct {
 	// these will override the default terminals if the same
 	// names are used
 	Terms []Terminal `mapstructure:"terminals"`
+	// Term option overrides
+	TermOpts map[string]string `mapstructure:"term_opts"`
 	// Use plain output, e.g. no spinners, no prompts
 	// default is false
 	NonInteractive bool `mapstructure:"noninteractive"`
@@ -36,32 +38,4 @@ type Config struct {
 	// Amount of memory in MB to use for each machine
 	// default is 128
 	MachineMemory int `mapstructure:"machine_memory"`
-}
-
-type Terminal struct {
-	Name    string   `mapstructure:"name"`
-	Command []string `mapstructure:"command"`
-}
-
-var defaultTerms = []Terminal{
-	{
-		Name:    "alacritty",
-		Command: []string{"alacritty", "-e"},
-	},
-	{
-		Name:    "konsole",
-		Command: []string{"konsole", "-e"},
-	},
-	{
-		Name:    "gnome",
-		Command: []string{"gnome-terminal", "--"},
-	},
-	{
-		Name:    "kitty",
-		Command: []string{"kitty"},
-	},
-	{
-		Name:    "xterm",
-		Command: []string{"xterm", "-e"},
-	},
 }

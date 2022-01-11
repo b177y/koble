@@ -30,10 +30,10 @@ koble attach dh --console`,
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.LaunchTerms {
-			return cli.NK.LaunchInTerm()
-		}
 		machine := args[0]
+		if cli.NK.Config.LaunchTerms {
+			return cli.NK.LaunchInTerm(machine)
+		}
 		return cli.NK.AttachToMachine(machine)
 	},
 	DisableFlagsInUseLine: true,
