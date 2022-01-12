@@ -13,7 +13,12 @@ type MachineOptions struct {
 }
 
 type Config struct {
+	// Driver options
 	Driver DriverConfig `mapstructure:"driver"`
+	// Verbose (loglevel = Debug)
+	Verbosity int `mapstructure:"verbose"`
+	// Quiet (loglevel = error)
+	Quiet bool `mapstructure:"quiet"`
 	// Terminal to use, additional terminals and options
 	Terminal TermConfig `mapstructure:"terminal"`
 	// Term option overrides

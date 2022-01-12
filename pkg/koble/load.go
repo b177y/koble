@@ -121,8 +121,27 @@ func Load() (*Koble, error) {
 		}
 	}
 	color.NoColor = nk.Config.NoColor
-	if log.GetLevel() == log.DebugLevel {
+	if nk.Config.Verbosity != 0 && nk.Config.Quiet {
+		return nil, fmt.Errorf("verbose and quiet options cannot be used together")
+	}
+	switch nk.Config.Verbosity {
+	case 0:
+		log.SetLevel(log.WarnLevel)
+	case 1:
+		log.SetLevel(log.InfoLevel)
 		nk.Config.NonInteractive = true
+	case 2:
+		log.SetLevel(log.DebugLevel)
+		nk.Config.NonInteractive = true
+	case 3:
+		log.SetLevel(log.TraceLevel)
+		nk.Config.NonInteractive = true
+	default:
+		return nil, fmt.Errorf("verbosity level %d is not valid",
+			nk.Config.Verbosity)
+	}
+	if nk.Config.Quiet {
+		log.SetLevel(log.ErrorLevel)
 	}
 
 	return &nk, nil
