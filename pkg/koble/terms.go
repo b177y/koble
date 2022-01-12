@@ -19,8 +19,15 @@ type Terminal struct {
 }
 
 type TermConfig struct {
-	Name      string              `mapstructure:"name"`
-	Terminals map[string]Terminal `mapstructure:"terminals,remain"`
+	Name string `mapstructure:"name"`
+	// Whether to launch a terminal for start, attach and shell commands
+	// default is true
+	Launch bool `mapstructure:"launch"`
+	// Whether to launch a shell over tty attach on lab / machine start
+	// this only takes effect is LaunchTerms is true
+	// default is false
+	LaunchShell bool                `mapstructure:"launch_shell"`
+	Terminals   map[string]Terminal `mapstructure:"terminals,remain"`
 }
 
 func (t *Terminal) getArgs(opts LaunchOptions) (string, error) {
@@ -115,13 +122,13 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	origCmd := os.Args
 	added := false
 	for i, a := range origCmd {
-		if a == "--terminal" {
-			origCmd[i] = "--console"
+		if a == "--launch" || a == "--launch=true" {
+			origCmd[i] = "--launch=false"
 			added = true
 		}
 	}
 	if !added {
-		origCmd = append(origCmd, "--console")
+		origCmd = append(origCmd, "--launch=false")
 	}
 	opts.Lab = nk.LabRoot
 	opts.Namespace = nk.Config.Namespace

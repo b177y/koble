@@ -6,15 +6,14 @@ type DriverConfig struct {
 	ExtraConf map[string]interface{} `mapstructure:"extra,remain"`
 }
 
+type MachineOptions struct {
+	// Amount of memory in MB to use for each machine
+	// default is 128
+	MachineMemory int `mapstructure:"memory"`
+}
+
 type Config struct {
 	Driver DriverConfig `mapstructure:"driver"`
-	// Whether to launch a terminal for start, attach and shell commands
-	// default is true
-	LaunchTerms bool `mapstructure:"launch_terms"`
-	// Whether to launch a shell over tty attach on lab start
-	// this only takes effect is LaunchTerms is true
-	// default is false
-	LaunchShell bool `mapstructure:"launch_shell"`
 	// Terminal to use, additional terminals and options
 	Terminal TermConfig `mapstructure:"terminal"`
 	// Term option overrides
@@ -30,5 +29,5 @@ type Config struct {
 	Namespace string `mapstructure:"namespace" validate:"alphanum,max=32"`
 	// Amount of memory in MB to use for each machine
 	// default is 128
-	MachineMemory int `mapstructure:"machine_memory"`
+	Machine MachineOptions `mapstructure:"machine"`
 }

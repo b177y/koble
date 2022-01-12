@@ -1,15 +1,9 @@
 package machine
 
 import (
-	"errors"
-
 	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
-)
-
-var (
-	useTerm bool
-	useCon  bool
+	"github.com/spf13/viper"
 )
 
 var attachCmd = &cobra.Command{
@@ -19,19 +13,9 @@ var attachCmd = &cobra.Command{
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	Example: `koble attach a0 --terminal
 koble attach dh --console`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if useTerm && useCon {
-			return errors.New("CLI Flags --terminal and --console cannot be used together.")
-		} else if useTerm {
-			cli.NK.Config.LaunchTerms = true
-		} else if useCon {
-			cli.NK.Config.LaunchTerms = false
-		}
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]
-		if cli.NK.Config.LaunchTerms {
+		if cli.NK.Config.Terminal.Launch {
 			return cli.NK.LaunchInTerm(machine)
 		}
 		return cli.NK.AttachToMachine(machine)
@@ -40,8 +24,12 @@ koble attach dh --console`,
 }
 
 func init() {
-	attachCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
-	attachCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
+	attachCmd.Flags().StringP("terminal", "t", "", "terminal to launch")
+	viper.BindPFlag("terminal.name", attachCmd.Flags().Lookup("terminal"))
+	attachCmd.Flags().Bool("launch", false, "launch terminal for attach session")
+	viper.BindPFlag("terminal.launch", attachCmd.Flags().Lookup("launch"))
+	attachCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
+	viper.BindPFlag("term_opts", attachCmd.Flags().Lookup("term-opt"))
 	machineCmd.AddCommand(attachCmd)
 	cli.Commands = append(cli.Commands, attachCmd)
 }

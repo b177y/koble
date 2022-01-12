@@ -1,11 +1,10 @@
 package machine
 
 import (
-	"errors"
-
 	"github.com/b177y/koble/cmd/kob/cli"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var user string
@@ -15,20 +14,8 @@ var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
 	Short:             "get a shell on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if useTerm && useCon {
-			return errors.New("CLI Flags --terminal and --console cannot be used together.")
-		} else if (useTerm && detachMode) || (useCon && detachMode) {
-			return errors.New("CLI Flag --detach cannot be used with --terminal or --console.")
-		} else if useTerm {
-			cli.NK.Config.LaunchTerms = true
-		} else if useCon {
-			cli.NK.Config.LaunchTerms = false
-		}
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.LaunchTerms {
+		if cli.NK.Config.Terminal.Launch {
 			return cli.NK.LaunchInTerm(args[0])
 		}
 		return cli.NK.Shell(args[0], user, workDir)
@@ -39,8 +26,12 @@ var shellCmd = &cobra.Command{
 func init() {
 	shellCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
-	shellCmd.Flags().BoolVarP(&useTerm, "terminal", "t", false, "Launch shell in new terminal.")
-	shellCmd.Flags().BoolVar(&useCon, "console", false, "Launch shell within current console.")
+	shellCmd.Flags().StringP("terminal", "t", "", "terminal to launch")
+	viper.BindPFlag("terminal.name", shellCmd.Flags().Lookup("terminal"))
+	shellCmd.Flags().Bool("launch", false, "launch terminal for attach session")
+	viper.BindPFlag("terminal.launch", shellCmd.Flags().Lookup("launch"))
+	shellCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
+	viper.BindPFlag("term_opts", shellCmd.Flags().Lookup("term-opt"))
 	machineCmd.AddCommand(shellCmd)
 	cli.Commands = append(cli.Commands, shellCmd)
 }

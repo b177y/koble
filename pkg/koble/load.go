@@ -75,7 +75,7 @@ func Load() (*Koble, error) {
 	viper.SetDefault("noninteractive", false)
 	viper.SetDefault("nocolor", false)
 	viper.SetDefault("namespace", "GLOBAL")
-	viper.SetDefault("machine_memory", 128)
+	viper.SetDefault("machine.memory", 128)
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
