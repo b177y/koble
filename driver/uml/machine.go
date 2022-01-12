@@ -66,6 +66,7 @@ func (m *Machine) Running() bool {
 }
 
 func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd []string, err error) {
+	log.Debugf("generating kernel command for %s (namespace %s)", m.Name(), m.namespace)
 	cmd = []string{filepath.Join(m.ud.Config.StorageDir, "kernel", m.ud.Config.Kernel)}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
@@ -104,6 +105,9 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 }
 
 func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
+	log.WithFields(log.Fields{"options": opts}).Infof(
+		"Starting machine %s in namespace %s\n", m.Name(), m.namespace,
+	)
 	if opts == nil {
 		opts = new(driver.MachineConfig)
 	}
@@ -113,20 +117,16 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	if opts.Image == "" {
 		opts.Image = m.ud.Config.DefaultImage
 	}
-	exists, err := m.Exists()
-	if err != nil {
-		return err
-	}
-	if exists {
-		if err != nil {
-			return fmt.Errorf("could not get machine state: %w", err)
-		}
-		if m.Running() {
-			return nil
-		}
+	if m.Running() {
+		log.WithFields(log.Fields{"machine": m.Name(), "namespace": m.namespace}).
+			Debugf("machine already running, not starting")
+		return nil
 	}
 	defer func() {
 		if err != nil {
+			log.WithFields(log.Fields{"machine": m.Name(), "namespace": m.namespace}).
+				Debugf("error in machine start, removing machine: %v\n", err)
+			os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("failed"), 0644)
 			m.Remove()
 		}
 	}()
@@ -137,6 +137,10 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	}
 	err = os.MkdirAll(m.mDir(), 0744)
 	if err != nil && err != os.ErrExist {
+		return err
+	}
+	err = os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("starting"), 0644)
+	if err != nil {
 		return err
 	}
 	// Remove symlink if it already exists
@@ -179,23 +183,23 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	// }
 	kernelcmd, err := getKernelCMD(m, *opts, networks)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not generate kernel cmd: %w", err)
 	}
 	// fmt.Println("Got kernelcmd", kernelcmd)
 	err = runInShim(m.mDir(), m.namespace, kernelcmd)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start instance in shim: %w", err)
 	}
 	return err
 }
 
 func (m *Machine) Stop(force bool) (err error) {
-	defer func() {
-		if err == nil {
-			// TODO remove this once test kernel patch reverted
-			os.RemoveAll(filepath.Join(m.mDir(), m.Id()))
-		}
-	}()
+	// defer func() {
+	// 	if err == nil {
+	// 		// TODO remove this once test kernel patch reverted
+	// 		os.RemoveAll(filepath.Join(m.mDir(), m.Id()))
+	// 	}
+	// }()
 	exists, err := m.Exists()
 	if err != nil {
 		return err
@@ -261,7 +265,12 @@ func (m *Machine) Remove() error {
 	}
 	os.RemoveAll(m.mDir())
 	os.RemoveAll(filepath.Join(m.nsDir(), m.name))
-	err := vecnet.RemoveMachineNets(m.Name(), m.namespace, true)
+	err := vecnet.RemoveSlirp(filepath.Join(m.mDir(), "slirp.sock"))
+	if err != nil {
+		log.Warnf("Could not remove slirp for machine %s: %w\n",
+			m.Name(), err)
+	}
+	err = vecnet.RemoveMachineNets(m.Name(), m.namespace, true)
 	if err != nil {
 		log.Warnf("Could not remove networks for machine %s: %w\n",
 			m.Name(), err)
@@ -337,6 +346,9 @@ func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 
 func (m *Machine) WaitUntil(timeout time.Duration,
 	target, failOn *driver.MachineState) error {
+	log.WithFields(log.Fields{"target": target, "failon": failOn}).Infof(
+		"WaitUntil for machine %s in namespace %s\n", m.Name(), m.namespace,
+	)
 	return driver.WaitUntil(m, timeout, target, failOn)
 }
 

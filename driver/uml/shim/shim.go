@@ -70,7 +70,6 @@ func RunShim() {
 		shimLog("Failed to make dir: ", dir, err)
 		log.Fatal(err)
 	}
-	updateState(dir, "configured", 0)
 	kern := os.Args[2]
 	kernArgs := os.Args[3:]
 	cmd := exec.Command(kern, kernArgs...)

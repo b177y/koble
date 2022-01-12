@@ -2,9 +2,10 @@ package driver
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func BootedState() *MachineState {
@@ -68,6 +69,7 @@ func WaitUntil(m Machine, timeout time.Duration, target *MachineState,
 	ctx, cancel := context.WithTimeout(context.Background(), timeout*time.Second)
 	defer cancel()
 	for {
+		time.Sleep(200 * time.Millisecond)
 		// check timeout
 		if err := ctx.Err(); err != nil {
 			return fmt.Errorf("timed out waiting for %s to be in specified state: %w",
@@ -75,8 +77,14 @@ func WaitUntil(m Machine, timeout time.Duration, target *MachineState,
 		}
 		// get state
 		state, err := m.State()
-		if err != nil && !errors.Is(err, ErrNotExists) {
-			return err
+		if err != nil {
+			log.Tracef("error getting state for %s: %w\n", m.Name(), err)
+			continue
+		}
+		if state.State != nil {
+			if *state.State == "failed" {
+				return fmt.Errorf("machine %s has reached failed state", m.Name())
+			}
 		}
 		// compare state to target
 		if statesEqual(state, *target) {
@@ -90,6 +98,5 @@ func WaitUntil(m Machine, timeout time.Duration, target *MachineState,
 				return fmt.Errorf("machine state in wait reached failOn state")
 			}
 		}
-		time.Sleep(200 * time.Millisecond)
 	}
 }

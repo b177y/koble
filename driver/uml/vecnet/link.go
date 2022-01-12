@@ -3,13 +3,18 @@ package vecnet
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/containernetworking/plugins/pkg/ns"
+	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -170,17 +175,67 @@ func getSlirpArgs(nsPath, iface, subnet, sockpath string) (args []string) {
 	return args
 }
 
+type process struct {
+	pid     int
+	cmdline string
+}
+
+func getProcesses() (pList []process, err error) {
+	dirs, err := ioutil.ReadDir("/proc")
+	if err != nil {
+		return pList, err
+	}
+	for _, entry := range dirs {
+		if pid, err := strconv.Atoi(entry.Name()); err == nil {
+			cmdline, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+			if err != nil {
+				log.Tracef("Could not read /proc/%d/cmdline: %v\n", pid, err)
+				continue
+			} else if !strings.Contains(string(cmdline), "slirp4netns") {
+				continue
+			}
+			pgid, err := syscall.Getpgid(pid)
+			if err != nil {
+				log.Warnf("Could not get pgid for pid %d: %v\n", pid, err)
+				return pList, nil
+			} else if pgid != pid {
+				continue
+			}
+			pList = append(pList, process{
+				pid:     pid,
+				cmdline: strings.TrimSuffix(string(cmdline), "\n"),
+			})
+		}
+	}
+	return pList, nil
+}
+
+func RemoveSlirp(match string) error {
+	processes, err := getProcesses()
+	if err != nil {
+		return nil
+	}
+	for _, p := range processes {
+		if strings.Contains(p.cmdline, match) {
+			return syscall.Kill(p.pid, syscall.SIGKILL)
+		}
+	}
+	return fmt.Errorf("Could not find slirp socket to remove")
+}
+
 func AddSlirpIface(name, bridge, namespace, subnet, sockpath string) error {
 	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
 	ifaceName, err := newLinkID()
 	if err != nil {
 		return err
 	}
+	sp, err := exec.LookPath("slirp4netns")
+	if err != nil {
+		return err
+	}
 	cmd := exec.Cmd{
-		Path: "/usr/bin/slirp4netns",
+		Path: sp,
 		Args: getSlirpArgs(nsPath, ifaceName, subnet, sockpath),
-		// Stdout: os.Stdout,
-		// Stderr: os.Stderr,
 	}
 	// TODO find a better way to get errors from start
 	err = cmd.Start()

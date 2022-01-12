@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/b177y/koble/driver"
+	log "github.com/sirupsen/logrus"
 )
 
 func (m *Machine) State() (state driver.MachineState, err error) {
@@ -26,6 +27,7 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 	if err != nil {
 		return state, err
 	}
+	log.Debug("read state")
 	stateString := string(p)
 	state.State = &stateString
 	if stateString == "exited" {

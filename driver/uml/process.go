@@ -18,14 +18,13 @@ type process struct {
 func getProcesses() (pList []process, err error) {
 	dirs, err := ioutil.ReadDir("/proc")
 	if err != nil {
-		// TODO change func signature to forget error and just use warns?
 		return pList, err
 	}
 	for _, entry := range dirs {
 		if pid, err := strconv.Atoi(entry.Name()); err == nil {
 			cmdline, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 			if err != nil {
-				log.Debugf("Could not read /proc/%d/cmdline: %v\n", pid, err)
+				log.Tracef("Could not read /proc/%d/cmdline: %v\n", pid, err)
 				continue
 			} else if strings.Contains(string(cmdline), "umlShim") {
 				// we want to catch uml kernel processes not the shim

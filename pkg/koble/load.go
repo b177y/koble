@@ -3,9 +3,10 @@ package koble
 import (
 	"crypto/md5"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/fatih/color"
 	"github.com/go-playground/validator/v10"
@@ -120,6 +121,10 @@ func Load() (*Koble, error) {
 		}
 	}
 	color.NoColor = nk.Config.NoColor
+	if log.GetLevel() == log.DebugLevel {
+		nk.Config.NonInteractive = true
+	}
+
 	return &nk, nil
 }
 
