@@ -215,6 +215,8 @@ func RemoveSlirp(match string) error {
 }
 
 func AddSlirpIface(name, bridge, namespace, subnet, sockpath string) error {
+	// remove existing slirp for machine first
+	RemoveSlirp(sockpath)
 	nsPath := filepath.Join("/run/user", os.Getenv("UML_ORIG_UID"), "uml/ns", namespace, "netns.bind")
 	ifaceName, err := newLinkID()
 	if err != nil {

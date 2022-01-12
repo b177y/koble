@@ -1,7 +1,6 @@
 package podman
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/b177y/koble/driver"
@@ -10,7 +9,6 @@ import (
 
 func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
 	var machines []driver.MachineInfo
-	fmt.Println("Listing all in namespace", namespace, all)
 	opts := new(containers.ListOptions)
 	opts.WithAll(true)
 	filters := getFilters("", namespace, all) // TODO get namespace here

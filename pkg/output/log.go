@@ -14,7 +14,7 @@ type LogOutput struct {
 }
 
 func (lo *LogOutput) Write(p []byte) (int, error) {
-	lo.logger.Infof("[%s] %s\n", lo.name, string(p))
+	lo.logger.Infof("%s: %s\n", lo.name, string(p))
 	return len(p), nil
 }
 
@@ -23,15 +23,15 @@ func (lo *LogOutput) Start() {
 }
 
 func (lo *LogOutput) Finished(msg string) {
-	lo.logger.Infof("[%s] finished: %s\n", lo.name, msg)
+	lo.logger.Infof("%s: finished: %s\n", lo.name, msg)
 }
 
 func (lo *LogOutput) Success(msg string) {
-	lo.logger.Infof("[%s] success: %s\n", lo.name, msg)
+	lo.logger.Infof("%s: success: %s\n", lo.name, msg)
 }
 
 func (lo *LogOutput) Error(err error) {
-	lo.logger.Errorf("[%s] error: %v\n", lo.name, err)
+	lo.logger.Errorf("%s: error: %v\n", lo.name, err)
 }
 
 type LogContainer struct {
