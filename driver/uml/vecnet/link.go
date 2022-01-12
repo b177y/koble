@@ -191,15 +191,6 @@ func getProcesses() (pList []process, err error) {
 			if err != nil {
 				log.Tracef("Could not read /proc/%d/cmdline: %v\n", pid, err)
 				continue
-			} else if !strings.Contains(string(cmdline), "slirp4netns") {
-				continue
-			}
-			pgid, err := syscall.Getpgid(pid)
-			if err != nil {
-				log.Warnf("Could not get pgid for pid %d: %v\n", pid, err)
-				return pList, nil
-			} else if pgid != pid {
-				continue
 			}
 			pList = append(pList, process{
 				pid:     pid,
