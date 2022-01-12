@@ -126,8 +126,9 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		if err != nil {
 			log.WithFields(log.Fields{"machine": m.Name(), "namespace": m.namespace}).
 				Debugf("error in machine start, removing machine: %v\n", err)
-			os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("failed"), 0644)
 			m.Remove()
+			os.MkdirAll(m.mDir(), 0744)
+			os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("failed"), 0644)
 		}
 	}()
 	nsMdir := filepath.Join(m.ud.Config.RunDir, "ns", m.namespace)
