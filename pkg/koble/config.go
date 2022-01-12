@@ -8,11 +8,6 @@ type DriverConfig struct {
 
 type Config struct {
 	Driver DriverConfig `mapstructure:"driver"`
-	// Name of which terminal to use
-	// this terminal must be one of the default terminals or in
-	// the user defined terms list
-	// default is gnome
-	Terminal string `mapstructure:"terminal"`
 	// Whether to launch a terminal for start, attach and shell commands
 	// default is true
 	LaunchTerms bool `mapstructure:"launch_terms"`
@@ -20,10 +15,8 @@ type Config struct {
 	// this only takes effect is LaunchTerms is true
 	// default is false
 	LaunchShell bool `mapstructure:"launch_shell"`
-	// List of additional terminals to be chosen from by user
-	// these will override the default terminals if the same
-	// names are used
-	Terms []Terminal `mapstructure:"terminals"`
+	// Terminal to use, additional terminals and options
+	Terminal TermConfig `mapstructure:"terminal"`
 	// Term option overrides
 	TermOpts map[string]string `mapstructure:"term_opts"`
 	// Use plain output, e.g. no spinners, no prompts

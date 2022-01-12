@@ -14,15 +14,19 @@ import (
 )
 
 type Terminal struct {
-	Name    string            `mapstructure:"name"`
 	Command []string          `mapstructure:"command"`
 	Options map[string]string `mapstructure:"options"`
+}
+
+type TermConfig struct {
+	Name      string              `mapstructure:"name"`
+	Terminals map[string]Terminal `mapstructure:"terminals,remain"`
 }
 
 func (t *Terminal) getArgs(opts LaunchOptions) (string, error) {
 	var args []string
 	for _, val := range t.Command {
-		templ, err := template.New("term." + t.Name + "." + val).
+		templ, err := template.New("term").
 			Option("missingkey=error").
 			Funcs(template.FuncMap{"ShellEscape": shellescape.Quote}).
 			Parse(val)
@@ -48,50 +52,52 @@ type LaunchOptions struct {
 	Options   map[string]string
 }
 
-var defaultTerms = []Terminal{
-	{
-		Name:    "alacritty",
+var defaultTerms = map[string]Terminal{
+	"alacritty": {
 		Command: []string{"alacritty", "-e", "{{ .Command }}"},
 	},
-	{
+	"tmux": {
 		// create session if not exists, then attach in new window
-		Name: "tmux",
 		Command: []string{"tmux", "has-session", `-t={{ index .Options "session" | ShellEscape }}`,
 			"||", "tmux", "new", "-d", "-s", `{{ index .Options "session" | ShellEscape }}`,
 			";", "tmux", "new-window", `-t={{ index .Options "session" | ShellEscape }}`, `{{ .Command }}`},
-		Options: map[string]string{"session": "koble"},
+		Options: map[string]string{"session": "koble", "var2": "example"},
 	},
-	{
-		Name:    "konsole",
+	"konsole": {
 		Command: []string{"konsole", "--title", "{{ ShellEscape .Machine }}", "-e", "{{ .Command }}"},
 	},
-	{
-		Name:    "gnome",
+	"gnome": {
 		Command: []string{"gnome-terminal", "--", "{{ .Command }}"},
 	},
-	{
-		Name:    "kitty",
+	"kitty": {
 		Command: []string{"kitty", "{{ .Command }}"},
 	},
-	{
-		Name:    "xterm",
+	"xterm": {
 		Command: []string{"xterm", "-e", "{{ .Command }}"},
 	},
 }
 
 func (nk *Koble) getTerm() (term Terminal, err error) {
+	// Check default terminal list
+	dTerm, dTermExists := defaultTerms[nk.Config.Terminal.Name]
 	// Check custom terms first
 	// This allows users to override default ones to add custom flags
-	for _, t := range nk.Config.Terms {
-		if t.Name == nk.Config.Terminal {
-			return t, nil
+	if t, ok := nk.Config.Terminal.Terminals[nk.Config.Terminal.Name]; ok {
+		// if dterm merge
+		if dTermExists {
+			if len(t.Command) == 0 {
+				t.Command = dTerm.Command
+			}
+			// merge options, priority to config over defaults
+			optionsMap := dTerm.Options
+			for key, val := range t.Options {
+				optionsMap[key] = val
+			}
+			t.Options = optionsMap
 		}
-	}
-	// Check default terminal list
-	for _, t := range defaultTerms {
-		if t.Name == nk.Config.Terminal {
-			return t, nil
-		}
+		return t, nil
+	} else if dTermExists {
+		return dTerm, nil
 	}
 	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal)
 }
@@ -123,6 +129,9 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	opts.Command = strings.Join(origCmd, " ")
 	// use config default options with override from terminal
 	opts.Options = term.Options
+	if opts.Options == nil {
+		opts.Options = make(map[string]string, 0)
+	}
 	for key, val := range nk.Config.TermOpts {
 		opts.Options[key] = val
 	}
