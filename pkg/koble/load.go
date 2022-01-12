@@ -40,7 +40,7 @@ func (nk *Koble) LoadLab() (err error) {
 
 	err = validator.New().Struct(nk.Lab)
 	if err != nil {
-		return err
+		return fmt.Errorf("error validating lab.yml: %w", err)
 	}
 
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
@@ -74,6 +74,7 @@ func Load() (*Koble, error) {
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
+		return nil, fmt.Errorf("error reading config.yml: %w", err)
 	}
 	nk.LabRoot, err = getLabRoot()
 	if err != nil {
@@ -88,7 +89,7 @@ func Load() (*Koble, error) {
 	}
 	err = viper.Unmarshal(&nk.Config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error loading config.yml: %w", err)
 	}
 	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
 		nk.Driver = initialiser()
@@ -101,7 +102,7 @@ func Load() (*Koble, error) {
 	}
 	err = validator.New().Struct(nk.Config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error validating config.yml: %w", err)
 	}
 	nk.InitialWorkDir, err = os.Getwd()
 	if err != nil {

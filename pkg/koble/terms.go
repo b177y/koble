@@ -9,33 +9,35 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/alessio/shellescape"
 	log "github.com/sirupsen/logrus"
 )
 
 type Terminal struct {
 	Name    string            `mapstructure:"name"`
 	Command []string          `mapstructure:"command"`
-	Options map[string]string `mapstructure:"options,remain"`
+	Options map[string]string `mapstructure:"options"`
 }
 
-func (t *Terminal) getArgs(opts LaunchOptions) ([]string, error) {
+func (t *Terminal) getArgs(opts LaunchOptions) (string, error) {
 	var args []string
 	for _, val := range t.Command {
-		templ, err := template.New("term." + t.Name + "." + val).Option("missingkey=error").Parse(val)
+		templ, err := template.New("term." + t.Name + "." + val).
+			Option("missingkey=error").
+			Funcs(template.FuncMap{"ShellEscape": shellescape.Quote}).
+			Parse(val)
 		if err != nil {
-			fmt.Println("error making template")
-			return args, err
+			return "", err
 		}
 		var tpl bytes.Buffer
 		err = templ.Execute(&tpl, opts)
 		if err != nil {
-			fmt.Println("error executing template")
-			return args, err
+			return "", err
 		} else {
 			args = append(args, tpl.String())
 		}
 	}
-	return args, nil
+	return strings.Join(args, " "), nil
 }
 
 type LaunchOptions struct {
@@ -49,28 +51,31 @@ type LaunchOptions struct {
 var defaultTerms = []Terminal{
 	{
 		Name:    "alacritty",
-		Command: []string{"alacritty", "-e", "kob", "{{ .Command }}", "{{ .Machine }}", "--console"},
+		Command: []string{"alacritty", "-e", "{{ .Command }}"},
 	},
 	{
-		Name:    "tmux",
-		Command: []string{"tmux", "new-window", "-t", `{{ index .Options "session" }}`, `{{ .Command }}`},
+		// create session if not exists, then attach in new window
+		Name: "tmux",
+		Command: []string{"tmux", "has-session", `-t={{ index .Options "session" | ShellEscape }}`,
+			"||", "tmux", "new", "-d", "-s", `{{ index .Options "session" | ShellEscape }}`,
+			";", "tmux", "new-window", `-t={{ index .Options "session" | ShellEscape }}`, `{{ .Command }}`},
 		Options: map[string]string{"session": "koble"},
 	},
 	{
 		Name:    "konsole",
-		Command: []string{"konsole", "-e"},
+		Command: []string{"konsole", "--title", "{{ ShellEscape .Machine }}", "-e", "{{ .Command }}"},
 	},
 	{
 		Name:    "gnome",
-		Command: []string{"gnome-terminal", "--"},
+		Command: []string{"gnome-terminal", "--", "{{ .Command }}"},
 	},
 	{
 		Name:    "kitty",
-		Command: []string{"kitty"},
+		Command: []string{"kitty", "{{ .Command }}"},
 	},
 	{
 		Name:    "xterm",
-		Command: []string{"xterm", "-e"},
+		Command: []string{"xterm", "-e", "{{ .Command }}"},
 	},
 }
 
@@ -101,8 +106,7 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	}
 
 	opts := LaunchOptions{}
-
-	origCmd := append([]string{os.Args[0]}, os.Args[1:]...)
+	origCmd := os.Args
 	added := false
 	for i, a := range origCmd {
 		if a == "--terminal" {
@@ -122,14 +126,12 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	for key, val := range nk.Config.TermOpts {
 		opts.Options[key] = val
 	}
-	fmt.Println("options are", opts.Options)
 	termArgs, err := term.getArgs(opts)
 	if err != nil {
 		return err
 	}
-	fmt.Println("got term args", termArgs)
-	log.Info("Relaunching current command in terminal with:", term.Name, termArgs)
-	cmd := exec.Command(termArgs[0], termArgs[1:]...)
+	log.Info("Relaunching current command in terminal with:", termArgs)
+	cmd := exec.Command("/bin/bash", "-c", termArgs)
 	cmd.Env = os.Environ()
 	err = cmd.Start()
 	return err

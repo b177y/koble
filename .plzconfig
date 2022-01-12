@@ -15,7 +15,7 @@ importpath = github.com/b177y/koble
 
 [alias "go-get"]
 desc = Generate third-party dependency rules for a Go project
-cmd = run //tools:go-deps --
+cmd = run //tools:go-deps -- -w
 
 [alias "tidy"]
 desc = Tidy generates build targets for dependencies and makes sure that BUILD files are up-to-date.
