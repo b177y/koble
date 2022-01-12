@@ -62,9 +62,14 @@ func Load() (*Koble, error) {
 	var nk Koble
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("$HOME/.config/koble")
+	// cursed uml support
+	if os.Getenv("UML_ORIG_HOME") != "" {
+		viper.AddConfigPath("$UML_ORIG_HOME/.config/koble")
+	} else {
+		viper.AddConfigPath("$HOME/.config/koble")
+	}
 	viper.SetDefault("driver.name", "podman")
-	viper.SetDefault("terminal", "gnome")
+	viper.SetDefault("terminal.name", "gnome")
 	viper.SetDefault("launch_terms", true)
 	viper.SetDefault("launch_shell", false)
 	viper.SetDefault("noninteractive", false)

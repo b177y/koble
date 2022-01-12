@@ -139,7 +139,8 @@ func ExecUserNS(name string) error {
 
 func CreateAndEnterUserNS(name string) error {
 	pidEnv := os.Getenv("UML_NS_PID")
-	if pidEnv == "" {
+	if pidEnv == "" && os.Getuid() != 0 {
+		fmt.Println("gonna enter ns")
 		exists, err := UserNSExists(name)
 		if err != nil {
 			return err
@@ -153,18 +154,20 @@ func CreateAndEnterUserNS(name string) error {
 		return ExecUserNS(name)
 	} else {
 		if os.Getenv("UML_ORIG_UID") == "" {
-			return errors.New("environment vairable UML_ORIG_UID has not been set")
+			return errors.New("environment variable UML_ORIG_UID has not been set")
 		} else if os.Getenv("UML_ORIG_EUID") == "" {
-			return errors.New("environment vairable UML_ORIG_EUID has not been set")
+			return errors.New("environment variable UML_ORIG_EUID has not been set")
 		} else if os.Getenv("UML_ORIG_GID") == "" {
-			return errors.New("environment vairable UML_ORIG_GID has not been set")
+			return errors.New("environment variable UML_ORIG_GID has not been set")
 		} else if os.Getenv("UML_ORIG_WD") == "" {
-			return errors.New("environment vairable UML_ORIG_WD has not been set")
+			return errors.New("environment variable UML_ORIG_WD has not been set")
 		} else if os.Getenv("UML_ORIG_HOME") == "" {
-			return errors.New("environment vairable UML_ORIG_HOME has not been set")
+			return errors.New("environment variable UML_ORIG_HOME has not been set")
 		}
-		// for compatibility with viper / other libraries that are not aware of UML_ORIG_HOME
-		os.Setenv("HOME", os.Getenv("UML_ORIG_HOME"))
-		return NSStatus()
+		if os.Getuid() != 0 {
+			return NSStatus()
+		} else {
+			return nil
+		}
 	}
 }

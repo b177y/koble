@@ -13,11 +13,9 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	if os.Getuid() != 0 {
-		err = vecnet.CreateAndEnterUserNS("koble")
-		if err != nil {
-			return fmt.Errorf("Cannot create / enter user ns (%v): %w", os.Environ(), err)
-		}
+	err = vecnet.CreateAndEnterUserNS("koble")
+	if err != nil {
+		return fmt.Errorf("Cannot create / enter user ns: %w", err)
 	}
 	ud.Name = "UserMode Linux"
 	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "overlay"), 0744)
