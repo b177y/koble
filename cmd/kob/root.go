@@ -6,7 +6,6 @@ import (
 	_ "github.com/b177y/koble/cmd/kob/machines"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var namespace string
@@ -38,19 +37,19 @@ var labName string
 
 func init() {
 	rootCmd.PersistentFlags().String("namespace", "", "namespace to use")
-	viper.BindPFlag("namespace", rootCmd.PersistentFlags().Lookup("namespace"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("namespace"))
 	rootCmd.RegisterFlagCompletionFunc("namespace", cli.AutocompNamespace)
 	rootCmd.PersistentFlags().CountP("verbose", "v", "verbose output")
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("verbose"))
 	rootCmd.PersistentFlags().Bool("quiet", false, "only show errors in log errors")
-	viper.BindPFlag("quiet", rootCmd.PersistentFlags().Lookup("quiet"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("quiet"))
 	rootCmd.PersistentFlags().String("driver", "", "disable interactive and coloured output")
-	viper.BindPFlag("driver.name", rootCmd.PersistentFlags().Lookup("driver"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("driver"))
 	// TODO add autocomp for --driver (list available drivers)
 	rootCmd.PersistentFlags().Bool("plain", false, "disable interactive and coloured output")
-	viper.BindPFlag("noninteractive", rootCmd.PersistentFlags().Lookup("plain"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("plain"))
 	rootCmd.PersistentFlags().Bool("no-color", false, "disable coloured output")
-	viper.BindPFlag("nocolor", rootCmd.PersistentFlags().Lookup("no-color"))
+	koble.BindFlag(rootCmd.PersistentFlags().Lookup("no-color"))
 	for _, c := range cli.Commands {
 		rootCmd.AddCommand(c)
 	}

@@ -15,14 +15,14 @@ type Koble struct {
 }
 
 type Lab struct {
-	Name         string                          `mapstructure:"-" validate:"alphanum,max=30"`
-	Directory    string                          `mapstructure:"-"`
-	CreatedAt    string                          `mapstructure:"created_at,omitempty" validate:"datetime=02-01-2006"`
-	KobleVersion string                          `mapstructure:"koble_version,omitempty"`
-	Description  string                          `mapstructure:"description,omitempty"`
-	Authors      []string                        `mapstructure:"authors,omitempty"`
-	Emails       []string                        `mapstructure:"emails,omitempty" validate:"dive,email"`
-	Web          []string                        `mapstructure:"web,omitempty" validate:"dive,url"`
-	Machines     map[string]driver.MachineConfig `mapstructure:"machines,omitempty"`
-	Networks     map[string]driver.NetConfig     `mapstructure:"networks,omitempty"`
+	Name         string                          `koanf:"-" validate:"alphanum,max=30"`
+	Directory    string                          `koanf:"-"`
+	CreatedAt    string                          `koanf:"created_at,omitempty" validate:"datetime=02-01-2006"`
+	KobleVersion string                          `koanf:"koble_version,omitempty"`
+	Description  string                          `koanf:"description,omitempty"`
+	Authors      []string                        `koanf:"authors,omitempty"`
+	Emails       []string                        `koanf:"emails,omitempty" validate:"dive,email"`
+	Web          []string                        `koanf:"web,omitempty" validate:"dive,url"`
+	Machines     map[string]driver.MachineConfig `koanf:"machines,omitempty"`
+	Networks     map[string]driver.NetConfig     `koanf:"networks,omitempty"`
 }

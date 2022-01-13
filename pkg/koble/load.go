@@ -1,41 +1,50 @@
 package koble
 
 import (
-	"crypto/md5"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/posflag"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/fatih/color"
 	"github.com/go-playground/validator/v10"
-	"github.com/spf13/viper"
 )
+
+var (
+	Koanf  = koanf.New(".")
+	kFlags = []koanf.Provider{}
+)
+
+func BindFlag(f *flag.Flag) {
+	flagSet := flag.NewFlagSet(f.Name, flag.ContinueOnError)
+	flagSet.AddFlag(f)
+	kFlags = append(kFlags, posflag.Provider(flagSet, ".", Koanf))
+}
 
 func (nk *Koble) LoadLab() (err error) {
 	if nk.LabRoot == "" {
+		log.Debug("not in lab directory so not loading lab config")
 		return nil
 	}
-	vpl := viper.New()
-	vpl.SetConfigName("lab")
-	vpl.SetConfigType("yaml")
-	vpl.AddConfigPath(nk.LabRoot)
-
-	err = vpl.ReadInConfig()
-	if err != nil {
-		return fmt.Errorf("could not read lab.yml: %w", err)
+	vpl := koanf.New(".")
+	labConfPath := filepath.Join(nk.LabRoot, "lab.yml")
+	if err := vpl.Load(file.Provider(labConfPath), yaml.Parser()); err != nil {
+		return fmt.Errorf("error reading lab.yml: %w", err)
 	}
 
 	// if lab does not set namespace, set it to lab path hash
-	if vpl.Get("namespace") == nil {
-		vpl.Set("namespace", fmt.Sprintf("%x", md5.Sum([]byte(nk.LabRoot))))
-	}
-	err = vpl.Unmarshal(&nk.Lab)
+	// if vpl.String("namespace") == "" {
+	// 	vpl.Set("namespace", fmt.Sprintf("%x", md5.Sum([]byte(nk.LabRoot))))
+	// }
+	err = vpl.Unmarshal("", &nk.Lab)
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
@@ -47,16 +56,11 @@ func (nk *Koble) LoadLab() (err error) {
 	if err != nil {
 		return fmt.Errorf("error validating lab.yml: %w", err)
 	}
-
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
 	if err != nil {
 		return fmt.Errorf("could not order lab machines by dependency: %w", err)
 	}
-
-	// cm := make(map[string]interface{}, 0)
-	// cm["driver"] = vpl.Get("driver")
-	// viper.AllSettings()
-	err = viper.MergeConfigMap(vpl.AllSettings())
+	err = Koanf.Merge(vpl)
 	if err != nil {
 		return fmt.Errorf("Could not merge lab driver config to default driver config")
 	}
@@ -65,8 +69,7 @@ func (nk *Koble) LoadLab() (err error) {
 
 func Load() (*Koble, error) {
 	var nk Koble
-	nk.Koanf = *koanf.New(".")
-	nk.Koanf.Load(confmap.Provider(defaultConfig, "."), nil)
+	Koanf.Load(confmap.Provider(defaultConfig, "."), nil)
 	// cursed uml support
 	var confPath string
 	if home := os.Getenv("UML_ORIG_HOME"); home != "" {
@@ -75,7 +78,7 @@ func Load() (*Koble, error) {
 		home = os.Getenv("HOME")
 		confPath = filepath.Join(home, "/.config/koble/config.yml")
 	}
-	if err := nk.Koanf.Load(file.Provider(confPath), yaml.Parser()); err != nil {
+	if err := Koanf.Load(file.Provider(confPath), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error reading config.yml: %w", err)
 	}
 	var err error
@@ -90,11 +93,17 @@ func Load() (*Koble, error) {
 			return nil, err
 		}
 	}
-	err = nk.Koanf.Unmarshal("", &nk.Config)
+	// process flags
+	for _, pf := range kFlags {
+		if err := Koanf.Load(pf, nil); err != nil {
+			return nil, fmt.Errorf("loading config from flag: %w", err)
+		}
+	}
+	err = Koanf.Unmarshal("", &nk.Config)
 	if err != nil {
 		return nil, fmt.Errorf("error loading config.yml: %w", err)
 	}
-	fmt.Println("got konfig", nk.Config.Terminal.Launch, nk.Koanf.Bool("terminal.launch"))
+	fmt.Println("got konfig", nk.Config.Terminal.Launch, Koanf.Bool("terminal.launch"))
 	err = validator.New().Struct(nk.Config)
 	if err != nil {
 		return nil, fmt.Errorf("error validating config.yml: %w", err)

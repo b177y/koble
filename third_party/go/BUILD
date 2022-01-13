@@ -7428,6 +7428,7 @@ go_module(
         "maps",
         "providers/file",
         "providers/confmap",
+        "providers/posflag",
         "parsers/yaml",
     ],
     module = "github.com/knadh/koanf",
@@ -7438,5 +7439,6 @@ go_module(
         ":github.com__mitchellh__mapstructure",
         ":github.com__fsnotify__fsnotify",
         ":gopkg.in__yaml.v2",
+        ":github.com__spf13__pflag",
     ],
 )
