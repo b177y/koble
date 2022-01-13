@@ -11,8 +11,8 @@ import (
 )
 
 type Config struct {
-	DefaultImage string `koanf:"default_image"`
-	URI          string `koanf:"uri" validate:"uri"`
+	DefaultImage string `koanf:"default_image" validate:"required"`
+	URI          string `koanf:"uri" validate:"uri,required"`
 }
 
 func (pd *PodmanDriver) loadConfig(conf map[string]interface{}) error {
@@ -20,11 +20,11 @@ func (pd *PodmanDriver) loadConfig(conf map[string]interface{}) error {
 	err := vpl.Load(confmap.Provider(map[string]interface{}{
 		"podman.uri":           fmt.Sprintf("unix://run/user/%d/podman/podman.sock", os.Getuid()),
 		"podman.default_image": "localhost/koble-deb-test",
-	}, ""), nil)
+	}, "."), nil)
 	if err != nil {
 		return err
 	}
-	err = vpl.Load(confmap.Provider(conf, ""), nil)
+	err = vpl.Load(confmap.Provider(conf, "."), nil)
 	if err != nil {
 		return err
 	}

@@ -14,10 +14,10 @@ import (
 )
 
 type Config struct {
-	DefaultImage string `koanf:"default_image"`
-	Kernel       string `koanf:"kernel"`
-	RunDir       string `koanf:"run_dir" validate:"max=24"`
-	StorageDir   string `koanf:"storage_dir"`
+	DefaultImage string `koanf:"default_image" validate:"required"`
+	Kernel       string `koanf:"kernel" validate:"required"`
+	RunDir       string `koanf:"run_dir" validate:"max=24" validate:"required"`
+	StorageDir   string `koanf:"storage_dir" validate:"required"`
 	Testing      bool   `koanf:"testing"`
 }
 
@@ -41,11 +41,11 @@ func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 		"uml.storage_dir":   fmt.Sprintf("%s/.local/share/uml", home),
 		"uml.run_dir":       fmt.Sprintf("/run/user/%d/uml", uid),
 		"uml.testing":       false,
-	}, ""), nil)
+	}, "."), nil)
 	if err != nil {
 		return err
 	}
-	err = vpl.Load(confmap.Provider(conf, ""), nil)
+	err = vpl.Load(confmap.Provider(conf, "."), nil)
 	if err != nil {
 		return err
 	}
