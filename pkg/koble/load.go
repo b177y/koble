@@ -1,6 +1,7 @@
 package koble
 
 import (
+	"crypto/md5"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,13 +44,15 @@ func (nk *Koble) LoadLab() (err error) {
 		return fmt.Errorf("error reading lab.yml: %w", err)
 	}
 
-	// if lab does not set namespace, set it to lab path hash
-	// if vpl.String("namespace") == "" {
-	// 	vpl.Set("namespace", fmt.Sprintf("%x", md5.Sum([]byte(nk.LabRoot))))
-	// }
 	err = vpl.Unmarshal("", &nk.Lab)
 	if err != nil {
 		return fmt.Errorf("invalid config: %w", err)
+	}
+	// if lab does not set namespace, set it to lab path hash
+	if vpl.String("namespace") == "" {
+		vpl.Load(confmap.Provider(map[string]interface{}{
+			"namespace": fmt.Sprintf("%x", md5.Sum([]byte(nk.LabRoot))),
+		}, ""), nil)
 	}
 
 	nk.Lab.Name = filepath.Base(nk.LabRoot)
@@ -110,25 +113,6 @@ func Load() (*Koble, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error validating config.yml: %w", err)
 	}
-	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
-		nk.Driver = initialiser()
-		err = nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
-	}
-	nk.InitialWorkDir, err = os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	if nk.LabRoot != "" && nk.LabRoot != nk.InitialWorkDir {
-		err = os.Chdir(nk.LabRoot)
-		if err != nil {
-			return nil, err
-		}
-	}
 	color.NoColor = nk.Config.NoColor
 	if nk.Config.Verbosity != 0 && nk.Config.Quiet {
 		return nil, fmt.Errorf("verbose and quiet options cannot be used together")
@@ -153,6 +137,25 @@ func Load() (*Koble, error) {
 		log.SetLevel(log.ErrorLevel)
 	}
 
+	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
+		nk.Driver = initialiser()
+		err = nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
+	}
+	nk.InitialWorkDir, err = os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	if nk.LabRoot != "" && nk.LabRoot != nk.InitialWorkDir {
+		err = os.Chdir(nk.LabRoot)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return &nk, nil
 }
 

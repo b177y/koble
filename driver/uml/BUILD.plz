@@ -18,7 +18,7 @@ go_library(
         "//third_party/go:github.com__hpcloud__tail",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",
-        "//third_party/go:github.com__spf13__viper",
+        "//third_party/go:koanf",
     ],
 )
 

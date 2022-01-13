@@ -8,20 +8,22 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/providers/confmap"
+	log "github.com/sirupsen/logrus"
 )
 
 type Config struct {
-	DefaultImage string `mapstructure:"default_image"`
-	Kernel       string `mapstructure:"kernel"`
-	RunDir       string `mapstructure:"run_dir" validate:"dir,max=24"`
-	StorageDir   string `mapstructure:"storage_dir" validate:"dir"`
-	Testing      bool   `mapstructure:"testing"`
+	DefaultImage string `koanf:"default_image"`
+	Kernel       string `koanf:"kernel"`
+	RunDir       string `koanf:"run_dir" validate:"max=24"`
+	StorageDir   string `koanf:"storage_dir"`
+	Testing      bool   `koanf:"testing"`
 }
 
 func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 	var err error
-	vpl := viper.New()
+	vpl := koanf.New(".")
 	home := os.Getenv("UML_ORIG_HOME")
 	if home == "" {
 		home, err = os.UserHomeDir()
@@ -33,19 +35,26 @@ func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 	if err != nil {
 		uid = os.Getuid()
 	}
-	vpl.SetDefault("default_image", "koble-fs")
-	vpl.SetDefault("kernel", "koble-kernel")
-	vpl.SetDefault("storage_dir", fmt.Sprintf("%s/.local/share/uml", home))
-	vpl.SetDefault("run_dir", fmt.Sprintf("/run/user/%d/uml", uid))
-	vpl.SetDefault("testing", false)
-	err = vpl.MergeConfigMap(conf)
+	err = vpl.Load(confmap.Provider(map[string]interface{}{
+		"uml.default_image": "koble-fs",
+		"uml.kernel":        "koble-kernel",
+		"uml.storage_dir":   fmt.Sprintf("%s/.local/share/uml", home),
+		"uml.run_dir":       fmt.Sprintf("/run/user/%d/uml", uid),
+		"uml.testing":       false,
+	}, ""), nil)
 	if err != nil {
 		return err
 	}
-	err = vpl.Unmarshal(&ud.Config)
+	err = vpl.Load(confmap.Provider(conf, ""), nil)
 	if err != nil {
 		return err
 	}
+	err = vpl.Unmarshal("uml", &ud.Config)
+	if err != nil {
+		return err
+	}
+	log.WithFields(log.Fields{"driver": "uml",
+		"config": fmt.Sprintf("%+v", ud.Config)}).Debug("loaded driver config")
 	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "overlay"), 0744)
 	if err != nil && err != os.ErrExist {
 		return fmt.Errorf("Could not mkdir on overlay dir")
