@@ -31,7 +31,7 @@ func init() {
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	execCmd.Flags().StringP("terminal", "t", "", "terminal to launch")
 	viper.BindPFlag("terminal.name", execCmd.Flags().Lookup("terminal"))
-	execCmd.Flags().Bool("launch", false, "launch terminal for attach session")
+	execCmd.Flags().BoolVar(&launch, "launch", false, "launch terminal for attach session")
 	viper.BindPFlag("terminal.launch", execCmd.Flags().Lookup("launch"))
 	execCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
 	viper.BindPFlag("term_opts", execCmd.Flags().Lookup("term-opt"))

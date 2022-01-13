@@ -7405,3 +7405,38 @@ go_module(
     version = "v1.4.1",
     visibility = ["PUBLIC"],
 )
+
+go_module(
+    name = "reflectwalk",
+    module = "github.com/mitchellh/reflectwalk",
+    version = "v1.0.2",
+    visibility = ["PUBLIC"],
+)
+
+go_module(
+    name = "copystructure",
+    module = "github.com/mitchellh/copystructure",
+    version = "v1.2.0",
+    visibility = ["PUBLIC"],
+    deps = [":reflectwalk"],
+)
+
+go_module(
+    name = "koanf",
+    install = [
+        ".",
+        "maps",
+        "providers/file",
+        "providers/confmap",
+        "parsers/yaml",
+    ],
+    module = "github.com/knadh/koanf",
+    version = "v1.4.0",
+    visibility = ["PUBLIC"],
+    deps = [
+        ":copystructure",
+        ":github.com__mitchellh__mapstructure",
+        ":github.com__fsnotify__fsnotify",
+        ":gopkg.in__yaml.v2",
+    ],
+)

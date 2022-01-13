@@ -7,6 +7,7 @@ import (
 	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/pkg/output"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var startOpts driver.MachineConfig
@@ -23,7 +24,8 @@ var startCmd = &cobra.Command{
 func init() {
 	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "image to run machine with")
 	startCmd.Flags().StringArrayVar(&startOpts.Networks, "network", []string{}, "networks to attach to machine")
-	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for machine to boot")
+	startCmd.Flags().Int("wait", 300, "seconds to wait for machine to boot before timeout (default 300, -1 is don't wait)")
+	viper.BindPFlag("wait", startCmd.Flags().Lookup("wait"))
 
 	machineCmd.AddCommand(startCmd)
 	cli.Commands = append(cli.Commands, startCmd)
@@ -44,13 +46,13 @@ var start = func(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return err
 			}
-			if wait {
+			if cli.NK.Config.Wait > 0 {
 				m, err := cli.NK.Driver.Machine(args[0], cli.NK.Config.Namespace)
 				if err != nil {
 					return err
 				}
 				fmt.Fprintf(out, "booting")
-				return m.WaitUntil(60*5, driver.BootedState(), driver.ExitedState())
+				return m.WaitUntil(cli.NK.Config.Wait, driver.BootedState(), driver.ExitedState())
 			}
 			return nil
 

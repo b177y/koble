@@ -14,20 +14,20 @@ import (
 )
 
 type Terminal struct {
-	Command []string          `mapstructure:"command"`
-	Options map[string]string `mapstructure:"options"`
+	Command []string          `koanf:"command"`
+	Options map[string]string `koanf:"options"`
 }
 
 type TermConfig struct {
-	Name string `mapstructure:"name"`
+	Name string `koanf:"name"`
 	// Whether to launch a terminal for start, attach and shell commands
 	// default is true
-	Launch bool `mapstructure:"launch"`
-	// Whether to launch a shell over tty attach on lab / machine start
+	Launch bool `koanf:"launch"`
+	// Whether to launch a shell instead of tty attach on lab / machine start
 	// this only takes effect is LaunchTerms is true
 	// default is false
-	LaunchShell bool                `mapstructure:"launch_shell"`
-	Terminals   map[string]Terminal `mapstructure:"terminals,remain"`
+	LaunchShell bool                `koanf:"launch_shell"`
+	Terminals   map[string]Terminal `koanf:"terminals,remain"`
 }
 
 func (t *Terminal) getArgs(opts LaunchOptions) (string, error) {
@@ -61,7 +61,7 @@ type LaunchOptions struct {
 
 var defaultTerms = map[string]Terminal{
 	"alacritty": {
-		Command: []string{"alacritty", "-e", "{{ .Command }}"},
+		Command: []string{"alacritty", "--hold", "-e", "{{ .Command }}"},
 	},
 	"tmux": {
 		// create session if not exists, then attach in new window
@@ -106,7 +106,7 @@ func (nk *Koble) getTerm() (term Terminal, err error) {
 	} else if dTermExists {
 		return dTerm, nil
 	}
-	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal)
+	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal.Name)
 }
 
 func (nk *Koble) LaunchInTerm(machine string) error {

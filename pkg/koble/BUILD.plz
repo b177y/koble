@@ -21,6 +21,7 @@ go_library(
         "//third_party/go:github.com__spf13__viper",
         "//third_party/go:golang.org__x__crypto__ssh__terminal",
         "//third_party/go:gopkg.in__yaml.v2",
+        "//third_party/go:koanf",
         "//util/topsort",
     ],
 )

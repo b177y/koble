@@ -6,6 +6,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/confmap"
+	"github.com/knadh/koanf/providers/file"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/fatih/color"
@@ -61,27 +65,20 @@ func (nk *Koble) LoadLab() (err error) {
 
 func Load() (*Koble, error) {
 	var nk Koble
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
+	nk.Koanf = *koanf.New(".")
+	nk.Koanf.Load(confmap.Provider(defaultConfig, "."), nil)
 	// cursed uml support
-	if os.Getenv("UML_ORIG_HOME") != "" {
-		viper.AddConfigPath("$UML_ORIG_HOME/.config/koble")
+	var confPath string
+	if home := os.Getenv("UML_ORIG_HOME"); home != "" {
+		confPath = filepath.Join(home, "/.config/koble/config.yml")
 	} else {
-		viper.AddConfigPath("$HOME/.config/koble")
+		home = os.Getenv("HOME")
+		confPath = filepath.Join(home, "/.config/koble/config.yml")
 	}
-	viper.SetDefault("driver.name", "podman")
-	viper.SetDefault("terminal.name", "gnome")
-	viper.SetDefault("launch_terms", true)
-	viper.SetDefault("launch_shell", false)
-	viper.SetDefault("noninteractive", false)
-	viper.SetDefault("nocolor", false)
-	viper.SetDefault("namespace", "GLOBAL")
-	viper.SetDefault("machine.memory", 128)
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
+	if err := nk.Koanf.Load(file.Provider(confPath), yaml.Parser()); err != nil {
 		return nil, fmt.Errorf("error reading config.yml: %w", err)
 	}
+	var err error
 	nk.LabRoot, err = getLabRoot()
 	if err != nil {
 		return nil, err
@@ -93,9 +90,14 @@ func Load() (*Koble, error) {
 			return nil, err
 		}
 	}
-	err = viper.Unmarshal(&nk.Config)
+	err = nk.Koanf.Unmarshal("", &nk.Config)
 	if err != nil {
 		return nil, fmt.Errorf("error loading config.yml: %w", err)
+	}
+	fmt.Println("got konfig", nk.Config.Terminal.Launch, nk.Koanf.Bool("terminal.launch"))
+	err = validator.New().Struct(nk.Config)
+	if err != nil {
+		return nil, fmt.Errorf("error validating config.yml: %w", err)
 	}
 	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
 		nk.Driver = initialiser()
@@ -105,10 +107,6 @@ func Load() (*Koble, error) {
 		}
 	} else {
 		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
-	}
-	err = validator.New().Struct(nk.Config)
-	if err != nil {
-		return nil, fmt.Errorf("error validating config.yml: %w", err)
 	}
 	nk.InitialWorkDir, err = os.Getwd()
 	if err != nil {
