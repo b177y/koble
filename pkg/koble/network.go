@@ -11,7 +11,7 @@ func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
 	if err != nil {
 		return err
 	}
-	err = n.Create(nil) // TODO add options
+	err = n.Create(&conf)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func (nk *Koble) ListNetworks(all bool) error {
 	return nil
 }
 
-func (nk *Koble) NetworkInfo(name string) error {
+func (nk *Koble) NetworkInfo(name string, json bool) error {
 	n, err := nk.Driver.Network(name, nk.Config.Namespace)
 	if err != nil {
 		return err

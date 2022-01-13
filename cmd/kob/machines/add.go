@@ -6,13 +6,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// var addNetworks []string
-// var addImage string
-
 var machineConfig driver.MachineConfig
 
 var addCmd = &cobra.Command{
-	Use:                   "add [options] MACHINENAME",
+	Use:                   "add [options] NAME",
 	Short:                 "add a new machine to a lab",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,

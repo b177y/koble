@@ -45,7 +45,6 @@ func (nk *Koble) AddMachineToLab(name string, conf driver.MachineConfig) error {
 	if err := vpl.Load(file.Provider(labConfPath), yaml.Parser()); err != nil {
 		return fmt.Errorf("error reading lab.yml: %w", err)
 	}
-	// write networks even if empty, so that machine gets added to lab.yml
 	machineMap := make(map[string]interface{}, 0)
 	if len(conf.Networks) != 0 {
 		machineMap["networks"] = conf.Networks

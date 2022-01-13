@@ -4,6 +4,7 @@ import (
 	"github.com/b177y/koble/cmd/kob/cli"
 	_ "github.com/b177y/koble/cmd/kob/labs"
 	_ "github.com/b177y/koble/cmd/kob/machines"
+	_ "github.com/b177y/koble/cmd/kob/networks"
 	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
 )
