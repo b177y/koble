@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/b177y/koble/cmd/kob/cli"
-	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
 )
 
@@ -31,12 +30,7 @@ koble attach dh --console`,
 }
 
 func init() {
-	attachCmd.Flags().StringVarP(&terminal, "terminal", "t", "gnome", "terminal to launch")
-	koble.BindFlag("terminal.name", attachCmd.Flags().Lookup("terminal"))
-	attachCmd.Flags().BoolVar(&launch, "launch", false, "launch terminal for attach session")
-	koble.BindFlag("terminal.launch", attachCmd.Flags().Lookup("launch"))
-	attachCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
-	koble.BindFlag("term_opts", attachCmd.Flags().Lookup("term-opt"))
 	machineCmd.AddCommand(attachCmd)
+	cli.AddTermFlags(attachCmd)
 	cli.Commands = append(cli.Commands, attachCmd)
 }

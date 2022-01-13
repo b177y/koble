@@ -8,7 +8,6 @@ import (
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
-//func (nk *Koble) StartMachine(name, image string, networks []string, out io.Writer) error {
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
 	// Start with defaults
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
@@ -40,7 +39,15 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 	// 	Destination: "/hostlab",
 	// })
 
-	return m.Start(&conf)
+	err = m.Start(&conf)
+	if err != nil {
+		return err
+	}
+	if waitTimeout := nk.Config.Wait; waitTimeout > 0 {
+		fmt.Fprint(out, "booting")
+		return m.WaitUntil(waitTimeout, driver.BootedState(), driver.ExitedState())
+	}
+	return nil
 }
 
 func (nk *Koble) MachineInfo(name string, json bool) error {
@@ -110,7 +117,14 @@ func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
 	} else {
 		fmt.Fprintf(out, "Halting machine %s", name)
 	}
-	return m.Stop(force)
+	err = m.Stop(force)
+	if err != nil {
+		return err
+	}
+	if waitTimeout := nk.Config.Wait; waitTimeout > 0 {
+		return m.WaitUntil(waitTimeout, driver.ExitedState(), nil)
+	}
+	return nil
 }
 
 func (nk *Koble) RemoveMachine(name string, out io.Writer) error {

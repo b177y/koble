@@ -9,7 +9,7 @@ import (
 	"github.com/b177y/koble/pkg/output"
 )
 
-func (nk *Koble) LabStart(mlist []string, wait bool) error {
+func (nk *Koble) LabStart(mlist []string) error {
 	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
 		mconf driver.MachineConfig,
 		c output.Container) (err error) {
@@ -22,19 +22,7 @@ func (nk *Koble) LabStart(mlist []string, wait bool) error {
 			}
 		}()
 		out.Start()
-		err = nk.StartMachine(name, mconf, out)
-		if err != nil {
-			return err
-		}
-		if wait {
-			m, err := nk.Driver.Machine(name, nk.Config.Namespace)
-			if err != nil {
-				return err
-			}
-			out.Write([]byte("booting"))
-			return m.WaitUntil(60*5, driver.BootedState(), driver.ExitedState())
-		}
-		return nil
+		return nk.StartMachine(name, mconf, out)
 	})
 }
 
@@ -105,8 +93,7 @@ func (nk *Koble) LabRemove(mlist []string) error {
 	})
 }
 
-func (nk *Koble) LabStop(mlist []string,
-	force, wait bool) error {
+func (nk *Koble) LabStop(mlist []string, force bool) error {
 	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
 		mconf driver.MachineConfig,
 		c output.Container) (err error) {
@@ -119,19 +106,7 @@ func (nk *Koble) LabStop(mlist []string,
 			}
 		}()
 		out.Start()
-		err = nk.StopMachine(name, force, out)
-		if err != nil {
-			return err
-		}
-		if wait {
-			m, err := nk.Driver.Machine(name, nk.Config.Namespace)
-			if err != nil {
-				return err
-			}
-			out.Write([]byte("halting"))
-			return m.WaitUntil(60*5, driver.ExitedState(), nil)
-		}
-		return nil
+		return nk.StopMachine(name, force, out)
 	})
 }
 

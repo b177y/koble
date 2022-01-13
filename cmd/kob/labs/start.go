@@ -10,12 +10,12 @@ var startCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
 	Short: "start a lab",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return cli.NK.LabStart(args, wait)
+		return cli.NK.LabStart(args)
 	},
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
-	startCmd.Flags().BoolVarP(&wait, "wait", "w", false, "wait for all machines to boot")
+	cli.AddWaitFlag(startCmd)
 	labCmd.AddCommand(startCmd)
 }

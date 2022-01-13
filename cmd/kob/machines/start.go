@@ -5,7 +5,6 @@ import (
 
 	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/b177y/koble/driver"
-	"github.com/b177y/koble/pkg/koble"
 	"github.com/b177y/koble/pkg/output"
 	"github.com/spf13/cobra"
 )
@@ -24,9 +23,7 @@ var startCmd = &cobra.Command{
 func init() {
 	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "image to run machine with")
 	startCmd.Flags().StringArrayVar(&startOpts.Networks, "network", []string{}, "networks to attach to machine")
-	startCmd.Flags().Int("wait", 300, "seconds to wait for machine to boot before timeout (default 300, -1 is don't wait)")
-	koble.BindFlag("wait", startCmd.Flags().Lookup("wait"))
-
+	cli.AddWaitFlag(startCmd)
 	machineCmd.AddCommand(startCmd)
 	cli.Commands = append(cli.Commands, startCmd)
 }
@@ -37,24 +34,10 @@ var start = func(cmd *cobra.Command, args []string) error {
 		nil,
 		cli.NK.Config.NonInteractive,
 		func(c output.Container, out output.Output) (err error) {
-			defer func() {
-				if err == nil {
-					out.Success("Started machine " + args[0])
-				}
-			}()
 			err = cli.NK.StartMachine(args[0], startOpts, out)
-			if err != nil {
-				return err
+			if err == nil {
+				out.Success("Started machine " + args[0])
 			}
-			if cli.NK.Config.Wait > 0 {
-				m, err := cli.NK.Driver.Machine(args[0], cli.NK.Config.Namespace)
-				if err != nil {
-					return err
-				}
-				fmt.Fprintf(out, "booting")
-				return m.WaitUntil(cli.NK.Config.Wait, driver.BootedState(), driver.ExitedState())
-			}
-			return nil
-
+			return err
 		})
 }
