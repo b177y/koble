@@ -23,10 +23,13 @@ var (
 	kFlags = []koanf.Provider{}
 )
 
-func BindFlag(f *flag.Flag) {
+func BindFlag(confKey string, f *flag.Flag) {
 	flagSet := flag.NewFlagSet(f.Name, flag.ContinueOnError)
 	flagSet.AddFlag(f)
-	kFlags = append(kFlags, posflag.Provider(flagSet, ".", Koanf))
+	kFlags = append(kFlags, posflag.ProviderWithFlag(flagSet, ".", Koanf,
+		func(f *flag.Flag) (string, interface{}) {
+			return confKey, posflag.FlagVal(flagSet, f)
+		}))
 }
 
 func (nk *Koble) LoadLab() (err error) {
@@ -103,7 +106,6 @@ func Load() (*Koble, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error loading config.yml: %w", err)
 	}
-	fmt.Println("got konfig", nk.Config.Terminal.Launch, Koanf.Bool("terminal.launch"))
 	err = validator.New().Struct(nk.Config)
 	if err != nil {
 		return nil, fmt.Errorf("error validating config.yml: %w", err)

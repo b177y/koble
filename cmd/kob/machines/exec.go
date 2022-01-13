@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	"github.com/b177y/koble/cmd/kob/cli"
+	"github.com/b177y/koble/pkg/koble"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var detachMode bool
@@ -30,11 +30,11 @@ func init() {
 	execCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the command in detached mode (backgrounded)")
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	execCmd.Flags().StringP("terminal", "t", "", "terminal to launch")
-	viper.BindPFlag("terminal.name", execCmd.Flags().Lookup("terminal"))
+	koble.BindFlag("terminal.name", execCmd.Flags().Lookup("terminal"))
 	execCmd.Flags().BoolVar(&launch, "launch", false, "launch terminal for attach session")
-	viper.BindPFlag("terminal.launch", execCmd.Flags().Lookup("launch"))
+	koble.BindFlag("terminal.launch", execCmd.Flags().Lookup("launch"))
 	execCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
-	viper.BindPFlag("term_opts", execCmd.Flags().Lookup("term-opt"))
+	koble.BindFlag("term_opts", execCmd.Flags().Lookup("term-opt"))
 	machineCmd.AddCommand(execCmd)
 	cli.Commands = append(cli.Commands, execCmd)
 }

@@ -5,9 +5,9 @@ import (
 
 	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/koble"
 	"github.com/b177y/koble/pkg/output"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var startOpts driver.MachineConfig
@@ -25,7 +25,7 @@ func init() {
 	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "image to run machine with")
 	startCmd.Flags().StringArrayVar(&startOpts.Networks, "network", []string{}, "networks to attach to machine")
 	startCmd.Flags().Int("wait", 300, "seconds to wait for machine to boot before timeout (default 300, -1 is don't wait)")
-	viper.BindPFlag("wait", startCmd.Flags().Lookup("wait"))
+	koble.BindFlag("wait", startCmd.Flags().Lookup("wait"))
 
 	machineCmd.AddCommand(startCmd)
 	cli.Commands = append(cli.Commands, startCmd)

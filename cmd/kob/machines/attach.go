@@ -2,11 +2,10 @@ package machine
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/b177y/koble/cmd/kob/cli"
+	"github.com/b177y/koble/pkg/koble"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var launch bool
@@ -33,21 +32,11 @@ koble attach dh --console`,
 
 func init() {
 	attachCmd.Flags().StringVarP(&terminal, "terminal", "t", "gnome", "terminal to launch")
-	err := viper.BindPFlag("terminal.name", attachCmd.Flags().Lookup("terminal"))
-	if err != nil {
-		log.Fatal("bruh", err)
-	} else {
-		fmt.Println("bound flag")
-	}
+	koble.BindFlag("terminal.name", attachCmd.Flags().Lookup("terminal"))
 	attachCmd.Flags().BoolVar(&launch, "launch", false, "launch terminal for attach session")
-	err = viper.BindPFlag("terminal.launch", attachCmd.Flags().Lookup("launch"))
-	if err != nil {
-		log.Fatal("bruh", err)
-	} else {
-		fmt.Println("bound flag")
-	}
+	koble.BindFlag("terminal.launch", attachCmd.Flags().Lookup("launch"))
 	attachCmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
-	viper.BindPFlag("term_opts", attachCmd.Flags().Lookup("term-opt"))
+	koble.BindFlag("term_opts", attachCmd.Flags().Lookup("term-opt"))
 	machineCmd.AddCommand(attachCmd)
 	cli.Commands = append(cli.Commands, attachCmd)
 }
