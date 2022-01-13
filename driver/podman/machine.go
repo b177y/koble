@@ -255,10 +255,12 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 		return fmt.Errorf("Machine %s does not exist.", m.Name())
 	}
 	aOpts := new(containers.AttachOptions)
-	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name())
-	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	err = containers.Attach(m.pd.conn, m.Id(), os.Stdin, os.Stdout, os.Stderr, nil, aOpts)
-	return err
+	if os.Getenv("_KOBLE_IN_TERM") == "" && (log.GetLevel() > log.ErrorLevel) {
+		fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name())
+		fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
+	}
+	return containers.Attach(m.pd.conn, m.Id(),
+		os.Stdin, os.Stdout, os.Stderr, nil, aOpts)
 }
 
 func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {

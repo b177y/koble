@@ -26,6 +26,7 @@ func init() {
 	shellCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	cli.AddTermFlags(shellCmd)
+	cli.AddWaitFlag(shellCmd)
 	machineCmd.AddCommand(shellCmd)
 	cli.Commands = append(cli.Commands, shellCmd)
 }

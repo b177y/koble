@@ -287,8 +287,10 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 	if !m.Running() {
 		return fmt.Errorf("cannot attach to machine %s: not running", m.name)
 	}
-	fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.name)
-	fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
+	if os.Getenv("_KOBLE_IN_TERM") == "" && (log.GetLevel() > log.ErrorLevel) {
+		fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.name)
+		fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
+	}
 	return shim.Attach(filepath.Join(m.mDir(), "attach.sock"))
 }
 

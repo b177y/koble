@@ -1,8 +1,6 @@
 package machine
 
 import (
-	"fmt"
-
 	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/spf13/cobra"
 )
@@ -15,12 +13,10 @@ var attachCmd = &cobra.Command{
 	Short:             "attach to the main tty of a machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: cli.AutocompRunningMachine,
-	Example: `koble attach a0 --terminal
-koble attach dh --console`,
+	Example: `koble attach a0 --terminal xterm
+koble attach dh --launch=false`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]
-		fmt.Println("opts", cli.NK.Config.Terminal.Launch)
-		fmt.Println("cob", cmd.Flags().Lookup("launch").Value)
 		if cli.NK.Config.Terminal.Launch {
 			return cli.NK.LaunchInTerm(machine)
 		}
@@ -30,7 +26,8 @@ koble attach dh --console`,
 }
 
 func init() {
-	machineCmd.AddCommand(attachCmd)
 	cli.AddTermFlags(attachCmd)
+	cli.AddWaitFlag(attachCmd)
+	machineCmd.AddCommand(attachCmd)
 	cli.Commands = append(cli.Commands, attachCmd)
 }

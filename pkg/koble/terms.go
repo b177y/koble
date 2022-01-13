@@ -148,7 +148,7 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	}
 	log.Info("Relaunching current command in terminal with:", termArgs)
 	cmd := exec.Command("/bin/bash", "-c", termArgs)
-	cmd.Env = os.Environ()
+	cmd.Env = append(os.Environ(), "_KOBLE_IN_TERM=true")
 	err = cmd.Start()
 	return err
 }
