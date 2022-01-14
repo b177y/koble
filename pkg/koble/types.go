@@ -2,7 +2,6 @@ package koble
 
 import (
 	"github.com/b177y/koble/driver"
-	"github.com/knadh/koanf"
 )
 
 type Koble struct {
@@ -11,7 +10,6 @@ type Koble struct {
 	InitialWorkDir string
 	Config         Config
 	Driver         driver.Driver
-	Koanf          koanf.Koanf
 }
 
 type Lab struct {

@@ -143,24 +143,13 @@ func (nk *Koble) LaunchInTerm(machine, terminal string) error {
 	}
 
 	opts := LaunchOptions{}
-	origCmd := os.Args
-	added := false
-	for i, a := range origCmd {
-		if strings.Contains(a, "--terminal=") {
-			origCmd[i] = "--terminal=this"
-			break
-		} else if a == "--terminal" {
-			origCmd[i+1] = "this"
-			break
-		}
-	}
-	if !added {
-		origCmd = append(origCmd, "--terminal=this")
-	}
 	opts.Lab = nk.LabRoot
 	opts.Namespace = nk.Config.Namespace
 	opts.Machine = machine
-	opts.Command = strings.Join(origCmd, " ")
+	opts.Command, err = nk.reexecAttach(machine)
+	if err != nil {
+		return err
+	}
 	// use config default options with override from terminal
 	opts.Options = term.Options
 	if opts.Options == nil {
@@ -181,6 +170,8 @@ func (nk *Koble) LaunchInTerm(machine, terminal string) error {
 	}
 	log.Info("Relaunching current command in terminal with:", termArgs)
 	cmd := exec.Command("/bin/bash", "-c", termArgs)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), "_KOBLE_IN_TERM=true")
 	err = cmd.Start()
 	return err

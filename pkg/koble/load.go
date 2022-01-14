@@ -107,6 +107,15 @@ func (nk *Koble) processConfig() error {
 	if nk.Config.Quiet {
 		log.SetLevel(log.ErrorLevel)
 	}
+	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
+		nk.Driver = initialiser()
+		err := nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
+		if err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
+	}
 	return nil
 }
 
@@ -158,15 +167,6 @@ func Load() (*Koble, error) {
 		return nil, err
 	}
 
-	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
-		nk.Driver = initialiser()
-		err = nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
-	}
 	nk.InitialWorkDir, err = os.Getwd()
 	if err != nil {
 		return nil, err
