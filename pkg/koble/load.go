@@ -46,7 +46,7 @@ func (nk *Koble) LoadLab() (err error) {
 
 	err = vpl.Unmarshal("", &nk.Lab)
 	if err != nil {
-		return fmt.Errorf("invalid config: %w", err)
+		return fmt.Errorf("invalid lab config: %w", err)
 	}
 	// if lab does not set namespace, set it to lab path hash
 	if vpl.String("namespace") == "" {
@@ -58,17 +58,54 @@ func (nk *Koble) LoadLab() (err error) {
 	nk.Lab.Name = filepath.Base(nk.LabRoot)
 	nk.Lab.Directory = nk.LabRoot
 
-	err = validator.New().Struct(nk.Lab)
-	if err != nil {
+	if err := validator.New().Struct(nk.Lab); err != nil {
 		return fmt.Errorf("error validating lab.yml: %w", err)
 	}
 	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
 	if err != nil {
 		return fmt.Errorf("could not order lab machines by dependency: %w", err)
 	}
-	err = Koanf.Merge(vpl)
-	if err != nil {
+	if err := Koanf.Merge(vpl); err != nil {
 		return fmt.Errorf("Could not merge lab driver config to default driver config")
+	}
+	return nil
+}
+
+func validateConfig(conf Config) error {
+	var err error
+	err = validator.New().Struct(conf)
+	if err != nil {
+		return fmt.Errorf("error validating config.yml: %w", err)
+	}
+	if conf.Verbosity != 0 && conf.Quiet {
+		return fmt.Errorf("verbose and quiet options cannot be used together")
+	}
+	if conf.Launch.LabStart && conf.Terminal.LabStart == "this" {
+		return fmt.Errorf("terminal 'this' when launch on lab start is enabled")
+	}
+	return nil
+}
+
+func (nk *Koble) processConfig() error {
+	color.NoColor = nk.Config.NoColor
+	switch nk.Config.Verbosity {
+	case 0:
+		log.SetLevel(log.WarnLevel)
+	case 1:
+		log.SetLevel(log.InfoLevel)
+		nk.Config.NonInteractive = true
+	case 2:
+		log.SetLevel(log.DebugLevel)
+		nk.Config.NonInteractive = true
+	case 3:
+		log.SetLevel(log.TraceLevel)
+		nk.Config.NonInteractive = true
+	default:
+		return fmt.Errorf("verbosity level %d is not valid",
+			nk.Config.Verbosity)
+	}
+	if nk.Config.Quiet {
+		log.SetLevel(log.ErrorLevel)
 	}
 	return nil
 }
@@ -94,8 +131,7 @@ func Load() (*Koble, error) {
 	}
 	// set up lab if in one
 	if nk.LabRoot != "" {
-		err = nk.LoadLab()
-		if err != nil {
+		if err := nk.LoadLab(); err != nil {
 			return nil, err
 		}
 	}
@@ -105,36 +141,21 @@ func Load() (*Koble, error) {
 			return nil, fmt.Errorf("loading config from flag: %w", err)
 		}
 	}
-	err = Koanf.Unmarshal("", &nk.Config)
-	if err != nil {
+	if err := setTermDefaults(); err != nil {
+		return nil, err
+	}
+	if err := Koanf.Unmarshal("", &nk.Config); err != nil {
 		return nil, fmt.Errorf("error loading config.yml: %w", err)
 	}
-	err = validator.New().Struct(nk.Config)
-	if err != nil {
-		return nil, fmt.Errorf("error validating config.yml: %w", err)
+
+	// validate config
+	if err := validateConfig(nk.Config); err != nil {
+		return nil, err
 	}
-	color.NoColor = nk.Config.NoColor
-	if nk.Config.Verbosity != 0 && nk.Config.Quiet {
-		return nil, fmt.Errorf("verbose and quiet options cannot be used together")
-	}
-	switch nk.Config.Verbosity {
-	case 0:
-		log.SetLevel(log.WarnLevel)
-	case 1:
-		log.SetLevel(log.InfoLevel)
-		nk.Config.NonInteractive = true
-	case 2:
-		log.SetLevel(log.DebugLevel)
-		nk.Config.NonInteractive = true
-	case 3:
-		log.SetLevel(log.TraceLevel)
-		nk.Config.NonInteractive = true
-	default:
-		return nil, fmt.Errorf("verbosity level %d is not valid",
-			nk.Config.Verbosity)
-	}
-	if nk.Config.Quiet {
-		log.SetLevel(log.ErrorLevel)
+
+	// process config
+	if err := nk.processConfig(); err != nil {
+		return nil, err
 	}
 
 	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {

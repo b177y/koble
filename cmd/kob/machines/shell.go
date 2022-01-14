@@ -14,9 +14,6 @@ var shellCmd = &cobra.Command{
 	Short:             "get a shell on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.Terminal.Launch {
-			return cli.NK.LaunchInTerm(args[0])
-		}
 		return cli.NK.Shell(args[0], user, workDir)
 	},
 	DisableFlagsInUseLine: true,
@@ -25,7 +22,7 @@ var shellCmd = &cobra.Command{
 func init() {
 	shellCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	shellCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
-	cli.AddTermFlags(shellCmd)
+	cli.AddTermFlags(shellCmd, "shell")
 	cli.AddWaitFlag(shellCmd)
 	machineCmd.AddCommand(shellCmd)
 	cli.Commands = append(cli.Commands, shellCmd)

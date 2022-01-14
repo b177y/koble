@@ -4,14 +4,20 @@ import "time"
 
 type DriverConfig struct {
 	// Name of driver to use
-	Name      string                 `koanf:"name"`
+	Name string `koanf:"name"`
+	// extra config, top level key should be driver name
 	ExtraConf map[string]interface{} `koanf:"extra,remain"`
 }
 
-type MachineOptions struct {
+type MachineConfig struct {
 	// Amount of memory in MB to use for each machine
 	// default is 128
 	MachineMemory int `koanf:"memory"`
+}
+
+type LaunchConfig struct {
+	MachineStart bool `koanf:"machine_start"`
+	LabStart     bool `koanf:"lab_start"`
 }
 
 type Config struct {
@@ -25,6 +31,8 @@ type Config struct {
 	Terminal TermConfig `koanf:"terminal"`
 	// Term option overrides
 	TermOpts map[string]string `koanf:"term_opts"`
+	// whether to launch machines for machine / lab start
+	Launch LaunchConfig `koanf:"launch"`
 	// Use plain output, e.g. no spinners, no prompts
 	// default is false
 	NonInteractive bool `koanf:"noninteractive"`
@@ -40,17 +48,18 @@ type Config struct {
 	Wait time.Duration `koanf:"wait"`
 	// Amount of memory in MB to use for each machine
 	// default is 128
-	Machine MachineOptions `koanf:"machine"`
+	Machine MachineConfig `koanf:"machine"`
 }
 
 var defaultConfig = map[string]interface{}{
-	"driver.name":           "podman",
-	"terminal.name":         "gnome",
-	"terminal.launch":       true,
-	"terminal.launch_shell": false,
-	"noninteractive":        false,
-	"nocolor":               false,
-	"namespace":             "GLOBAL",
-	"wait":                  300,
-	"machine.memory":        128,
+	"driver.name":          "podman",
+	"terminal.default":     "gnome",
+	"terminal.exec":        "this",
+	"launch.lab_start":     true,
+	"launch.machine_start": true,
+	"noninteractive":       false,
+	"nocolor":              false,
+	"namespace":            "GLOBAL",
+	"wait":                 300,
+	"machine.memory":       128,
 }

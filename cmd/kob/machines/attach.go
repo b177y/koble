@@ -17,16 +17,13 @@ var attachCmd = &cobra.Command{
 koble attach dh --launch=false`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]
-		if cli.NK.Config.Terminal.Launch {
-			return cli.NK.LaunchInTerm(machine)
-		}
-		return cli.NK.AttachToMachine(machine)
+		return cli.NK.AttachToMachine(machine, cli.NK.Config.Terminal.Attach)
 	},
 	DisableFlagsInUseLine: true,
 }
 
 func init() {
-	cli.AddTermFlags(attachCmd)
+	cli.AddTermFlags(attachCmd, "attach")
 	cli.AddWaitFlag(attachCmd)
 	machineCmd.AddCommand(attachCmd)
 	cli.Commands = append(cli.Commands, attachCmd)

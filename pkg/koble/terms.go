@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/alessio/shellescape"
+	"github.com/knadh/koanf/providers/confmap"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,15 +20,38 @@ type Terminal struct {
 }
 
 type TermConfig struct {
-	Name string `koanf:"name"`
-	// Whether to launch a terminal for start, attach and shell commands
-	// default is true
-	Launch bool `koanf:"launch"`
-	// Whether to launch a shell instead of tty attach on lab / machine start
-	// this only takes effect is LaunchTerms is true
-	// default is false
-	LaunchShell bool                `koanf:"launch_shell"`
-	Terminals   map[string]Terminal `koanf:"terminals,remain"`
+	// name of default terminal to open
+	// by default this is gnome
+	Default string `koanf:"default"`
+	// name of terminal to use for attach commands
+	// by default this uses the terminal set for 'default'
+	Attach string `koanf:"attach"`
+	// name of terminal to use for shell commands
+	// by default this uses the terminal set for 'default'
+	Shell string `koanf:"shell"`
+	// name of terminal to use for shell commands
+	// by default this is set to 'this' (no terminal)
+	Exec string `koanf:"exec"`
+	// name of terminal to use for attaching on machine start
+	// by default this uses the terminal set for 'default'
+	MachineStart string `koanf:"machine_start"`
+	// name of terminal to use for attaching on lab start
+	// by default this uses the terminal set for 'default'
+	LabStart string `koanf:"lab_start"`
+	// extra terminal command and option definitions
+	Terminals map[string]Terminal `koanf:"terminals,remain"`
+}
+
+func setTermDefaults() error {
+	overrideCmds := []string{"attach", "shell", "machine_start", "lab_start"}
+	overrideMap := make(map[string]interface{}, 0)
+	for _, c := range overrideCmds {
+		keyTerm := fmt.Sprintf("terminal.%s", c)
+		if !Koanf.Exists(keyTerm) {
+			overrideMap[keyTerm] = Koanf.String("terminal.default")
+		}
+	}
+	return Koanf.Load(confmap.Provider(overrideMap, "."), nil)
 }
 
 func (t *Terminal) getArgs(opts LaunchOptions) (string, error) {
@@ -84,12 +108,12 @@ var defaultTerms = map[string]Terminal{
 	},
 }
 
-func (nk *Koble) getTerm() (term Terminal, err error) {
+func (nk *Koble) getTerm(terminal string) (term Terminal, err error) {
 	// Check default terminal list
-	dTerm, dTermExists := defaultTerms[nk.Config.Terminal.Name]
+	dTerm, dTermExists := defaultTerms[terminal]
 	// Check custom terms first
 	// This allows users to override default ones to add custom flags
-	if t, ok := nk.Config.Terminal.Terminals[nk.Config.Terminal.Name]; ok {
+	if t, ok := nk.Config.Terminal.Terminals[terminal]; ok {
 		// if dterm merge
 		if dTermExists {
 			if len(t.Command) == 0 {
@@ -106,11 +130,11 @@ func (nk *Koble) getTerm() (term Terminal, err error) {
 	} else if dTermExists {
 		return dTerm, nil
 	}
-	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", nk.Config.Terminal.Name)
+	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", terminal)
 }
 
-func (nk *Koble) LaunchInTerm(machine string) error {
-	term, err := nk.getTerm()
+func (nk *Koble) LaunchInTerm(machine, terminal string) error {
+	term, err := nk.getTerm(terminal)
 	if err != nil {
 		return err
 	}
@@ -122,13 +146,16 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	origCmd := os.Args
 	added := false
 	for i, a := range origCmd {
-		if a == "--launch" || a == "--launch=true" {
-			origCmd[i] = "--launch=false"
-			added = true
+		if strings.Contains(a, "--terminal=") {
+			origCmd[i] = "--terminal=this"
+			break
+		} else if a == "--terminal" {
+			origCmd[i+1] = "this"
+			break
 		}
 	}
 	if !added {
-		origCmd = append(origCmd, "--launch=false")
+		origCmd = append(origCmd, "--terminal=this")
 	}
 	opts.Lab = nk.LabRoot
 	opts.Namespace = nk.Config.Namespace
@@ -145,6 +172,12 @@ func (nk *Koble) LaunchInTerm(machine string) error {
 	termArgs, err := term.getArgs(opts)
 	if err != nil {
 		return err
+	}
+	// check terminal exists
+	_, err = exec.LookPath(term.Command[0])
+	if err != nil {
+		return fmt.Errorf("cannot find terminal %s in PATH: %w",
+			term.Command[0], err)
 	}
 	log.Info("Relaunching current command in terminal with:", termArgs)
 	cmd := exec.Command("/bin/bash", "-c", termArgs)

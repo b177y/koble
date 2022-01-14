@@ -15,9 +15,6 @@ var execCmd = &cobra.Command{
 	Short:             "run a command on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if cli.NK.Config.Terminal.Launch {
-			return cli.NK.LaunchInTerm(args[0])
-		}
 		return cli.NK.Exec(args[0], strings.Join(args[1:], " "), user, detachMode, workDir)
 	},
 	DisableFlagsInUseLine: true,
@@ -28,7 +25,7 @@ func init() {
 	execCmd.Flags().StringVarP(&user, "user", "u", "", "User to execute shell as.")
 	execCmd.Flags().BoolVarP(&detachMode, "detach", "d", false, "Run the command in detached mode (backgrounded)")
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
-	cli.AddTermFlags(execCmd)
+	cli.AddTermFlags(execCmd, "exec")
 	machineCmd.AddCommand(execCmd)
 	cli.Commands = append(cli.Commands, execCmd)
 }

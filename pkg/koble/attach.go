@@ -3,12 +3,19 @@ package koble
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/b177y/koble/driver"
+	log "github.com/sirupsen/logrus"
 )
 
-func (nk *Koble) AttachToMachine(machine string) error {
+func (nk *Koble) AttachToMachine(machine, term string) error {
+	if os.Getenv("_KOBLE_IN_TERM") != "true" && term != "this" {
+		log.WithFields(log.Fields{"machine": machine}).
+			Debug("attach not in terminal, relaunching now")
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -39,6 +46,11 @@ func (nk *Koble) AttachToMachine(machine string) error {
 
 func (nk *Koble) Exec(machine, command, user string,
 	detach bool, workdir string) error {
+	if os.Getenv("_KOBLE_IN_TERM") != "true" && nk.Config.Terminal.Exec != "this" {
+		log.WithFields(log.Fields{"machine": machine}).
+			Debug("exec not in terminal, relaunching now")
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -51,6 +63,11 @@ func (nk *Koble) Exec(machine, command, user string,
 }
 
 func (nk *Koble) Shell(machine, user, workdir string) error {
+	if os.Getenv("_KOBLE_IN_TERM") != "true" && nk.Config.Terminal.Shell != "this" {
+		log.WithFields(log.Fields{"machine": machine}).
+			Debug("shell not in terminal, relaunching now")
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err

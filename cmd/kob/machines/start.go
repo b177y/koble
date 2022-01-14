@@ -5,6 +5,7 @@ import (
 
 	"github.com/b177y/koble/cmd/kob/cli"
 	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/koble"
 	"github.com/b177y/koble/pkg/output"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +24,10 @@ var startCmd = &cobra.Command{
 func init() {
 	startCmd.Flags().StringVar(&startOpts.Image, "image", "", "image to run machine with")
 	startCmd.Flags().StringArrayVar(&startOpts.Networks, "network", []string{}, "networks to attach to machine")
+	cli.AddTermFlags(startCmd, "machine_start")
 	cli.AddWaitFlag(startCmd)
+	startCmd.Flags().Bool("launch", false, "launch attach session to machine in terminal")
+	koble.BindFlag("launch.machine_start", startCmd.Flags().Lookup("launch"))
 	machineCmd.AddCommand(startCmd)
 	cli.Commands = append(cli.Commands, startCmd)
 }
@@ -34,10 +38,17 @@ var start = func(cmd *cobra.Command, args []string) error {
 		nil,
 		cli.NK.Config.NonInteractive,
 		func(c output.Container, out output.Output) (err error) {
+			// if cli.NK.Config.Launch.MachineStart {
+			// 	err = cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
 			err = cli.NK.StartMachine(args[0], startOpts, out)
-			if err == nil {
-				out.Success("Started machine " + args[0])
+			if err != nil {
+				return err
 			}
-			return err
+			out.Success("Started machine " + args[0])
+			return nil
 		})
 }

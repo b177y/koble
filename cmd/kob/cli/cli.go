@@ -9,11 +9,9 @@ var Commands []*cobra.Command
 
 var NK *koble.Koble
 
-func AddTermFlags(cmd *cobra.Command) {
+func AddTermFlags(cmd *cobra.Command, launchOpt string) {
 	cmd.Flags().StringP("terminal", "t", "gnome", "terminal to launch")
-	koble.BindFlag("terminal.name", cmd.Flags().Lookup("terminal"))
-	cmd.Flags().Bool("launch", false, "launch terminal for attach session")
-	koble.BindFlag("terminal.launch", cmd.Flags().Lookup("launch"))
+	koble.BindFlag("terminal."+launchOpt, cmd.Flags().Lookup("terminal"))
 	cmd.Flags().StringToString("term-opt", map[string]string{}, "option to pass to terminal")
 	koble.BindFlag("term_opts", cmd.Flags().Lookup("term-opt"))
 }
