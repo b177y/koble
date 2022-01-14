@@ -8,11 +8,18 @@ import (
 	"os"
 	"strings"
 
+	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/driver/podman"
 	"github.com/b177y/koble/driver/uml"
 )
 
 func init() {
+	registerDriver("podman", func() driver.Driver {
+		return new(podman.PodmanDriver)
+	})
+	registerDriver("uml", func() driver.Driver {
+		return new(uml.UMLDriver)
+	})
 	gob.Register(map[string]interface{}{})
 	gob.Register(&podman.PodmanDriver{})
 	gob.Register(&uml.UMLDriver{})
