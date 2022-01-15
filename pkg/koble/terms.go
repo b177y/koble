@@ -85,14 +85,14 @@ type LaunchOptions struct {
 
 var defaultTerms = map[string]Terminal{
 	"alacritty": {
-		Command: []string{"alacritty", "--hold", "-e", "{{ .Command }}"},
+		Command: []string{"alacritty", "-e", "{{ .Command }}"},
 	},
 	"tmux": {
 		// create session if not exists, then attach in new window
 		Command: []string{"tmux", "has-session", `-t={{ index .Options "session" | ShellEscape }}`,
 			"||", "tmux", "new", "-d", "-s", `{{ index .Options "session" | ShellEscape }}`,
 			";", "tmux", "new-window", `-t={{ index .Options "session" | ShellEscape }}`, `{{ .Command }}`},
-		Options: map[string]string{"session": "koble", "var2": "example"},
+		Options: map[string]string{"session": "koble"},
 	},
 	"konsole": {
 		Command: []string{"konsole", "--title", "{{ ShellEscape .Machine }}", "-e", "{{ .Command }}"},
@@ -170,8 +170,6 @@ func (nk *Koble) LaunchInTerm(machine, terminal string) error {
 	}
 	log.Info("Relaunching current command in terminal with:", termArgs)
 	cmd := exec.Command("/bin/bash", "-c", termArgs)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
 	cmd.Env = append(os.Environ(), "_KOBLE_IN_TERM=true")
 	err = cmd.Start()
 	return err
