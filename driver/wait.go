@@ -88,13 +88,11 @@ func WaitUntil(m Machine, timeout time.Duration, target *MachineState,
 		}
 		// compare state to target
 		if statesEqual(state, *target) {
-			// fmt.Println("REACHED TARGET CONDITION", state, target)
 			return nil
 		}
 		// compare state to failOn (if not nil)
 		if failOn != nil {
 			if statesEqual(state, *failOn) {
-				// fmt.Println("REACHED FAIL ON CONDITION")
 				return fmt.Errorf("machine state in wait reached failOn state")
 			}
 		}

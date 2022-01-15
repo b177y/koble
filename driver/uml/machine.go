@@ -349,7 +349,10 @@ func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 
 func (m *Machine) WaitUntil(timeout time.Duration,
 	target, failOn *driver.MachineState) error {
-	log.WithFields(log.Fields{"target": target, "failon": failOn}).Infof(
+	log.WithFields(log.Fields{
+		"target": fmt.Sprintf("%+v", target),
+		"failon": fmt.Sprintf("%+v", failOn),
+	}).Infof(
 		"WaitUntil for machine %s in namespace %s\n", m.Name(), m.namespace,
 	)
 	return driver.WaitUntil(m, timeout, target, failOn)

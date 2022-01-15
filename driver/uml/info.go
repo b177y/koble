@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/b177y/koble/driver"
+	"github.com/cri-o/ocicni/pkg/ocicni"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -47,6 +48,14 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 
 func (m *Machine) StartedAt() time.Time {
 	stat, err := os.Stat(fmt.Sprintf("/proc/%d", m.Pid()))
+	if err != nil {
+		return time.Time{}
+	}
+	return stat.ModTime()
+}
+
+func (m *Machine) CreatedAt() time.Time {
+	stat, err := os.Stat(m.mDir())
 	if err != nil {
 		return time.Time{}
 	}
@@ -99,6 +108,7 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	info.Pid = m.Pid()
 	info.Name = m.Name()
 	info.Namespace = m.namespace
+	info.CreatedAt = m.CreatedAt()
 	info.StartedAt = m.StartedAt()
 	if info.State == "exited" {
 		info.Status = fmt.Sprintf("exited (%d)", info.ExitCode)
@@ -112,6 +122,8 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 		return info, err
 	}
 	info.Networks = saveInfo.Networks
+	info.Ports = []ocicni.PortMapping{}
+	info.Mounts = []string{}
 	info.Image = saveInfo.Image
 	info.Lab = saveInfo.Lab
 

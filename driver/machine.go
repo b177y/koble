@@ -18,6 +18,7 @@ type MachineInfo struct {
 	Status    string               `json:"status,omitempty"`
 	Running   bool                 `json:"running"`
 	StartedAt time.Time            `json:"started_at,omitempty"`
+	CreatedAt time.Time            `json:"created_at,omitempty"`
 	Mounts    []string             `json:"mounts"`
 	Networks  []string             `json:"networks"`
 	Ports     []ocicni.PortMapping `json:"ports"`

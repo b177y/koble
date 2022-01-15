@@ -23,6 +23,7 @@ go_library(
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",
         "//third_party/go:koanf",
+        "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni"
     ],
 )
 

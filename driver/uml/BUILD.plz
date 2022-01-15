@@ -11,6 +11,7 @@ go_library(
         "//driver/uml/shim",
         "//driver/uml/vecnet",
         "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
+        "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni",
         "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
         "//third_party/go:github.com__creasty__defaults",
         "//third_party/go:github.com__docker__docker__pkg__reexec",

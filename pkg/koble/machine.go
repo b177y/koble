@@ -3,8 +3,10 @@ package koble
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/b177y/koble/driver"
+	"github.com/dustin/go-humanize"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
@@ -67,41 +69,23 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 		fmt.Println(string(s))
 	} else {
 		var infoTable [][]string
-		infoTable = append(infoTable, []string{"Name", m.Name()})
-		// if nk.Lab.Name != "" {
-		// 	for _, lm := range nk.Lab.Machines {
-		// 		if lm.Name == m.Name() {
-		// 			// lm.Lab = m.Lab
-		// 			// m = lm
-		// 			if lm.Image != "" {
-		// 				infoTable = append(infoTable,
-		// 					[]string{"Image", lm.Image})
-		// 			}
-		// 			// if len(lm.Dependencies) != 0 {
-		// 			// 	infoTable = append(infoTable,
-		// 			// 		[]string{"Dependencies", strings.Join(lm.Dependencies, ",")})
-		// 			// }
-		// 			if len(lm.Networks) != 0 {
-		// 				infoTable = append(infoTable,
-		// 					[]string{"Networks", strings.Join(lm.Networks, ",")})
-		// 			}
-		// 			if len(lm.Volumes) != 0 {
-		// 				var vols []string
-		// 				for _, v := range lm.Volumes {
-		// 					vols = append(vols, v.Source+":"+v.Destination)
-		// 				}
-		// 				infoTable = append(infoTable,
-		// 					[]string{"Volumes", strings.Join(vols, ",")})
-		// 			}
-		// 		}
-		// 	}
-		// }
-		if info.Image != "" {
-			infoTable = append(infoTable, []string{"Image", info.Image})
+		infoTable = append(infoTable, []string{"NAME", m.Name()})
+		infoTable = append(infoTable, []string{"PID", fmt.Sprint(info.Pid)})
+		infoTable = append(infoTable, []string{"IMAGE", info.Image})
+		infoTable = append(infoTable, []string{"STATE", info.State})
+		if !info.StartedAt.IsZero() {
+			infoTable = append(infoTable, []string{"CREATED AT", humanize.Time(info.CreatedAt)})
+		} else {
+			infoTable = append(infoTable, []string{"CREATED AT", ""})
 		}
-		if info.State != "" {
-			infoTable = append(infoTable, []string{"State", info.State})
+		if !info.StartedAt.IsZero() {
+			infoTable = append(infoTable, []string{"STARTED AT", humanize.Time(info.StartedAt)})
+		} else {
+			infoTable = append(infoTable, []string{"STARTED AT", ""})
 		}
+		// infoTable = append(infoTable, []string{"VOLUMES", strings.Join(info.Volumes, ", ")})
+		// infoTable = append(infoTable, []string{"PORTS", ""})
+		infoTable = append(infoTable, []string{"NETWORKS", strings.Join(info.Networks, ", ")})
 		RenderTable([]string{}, infoTable)
 	}
 	return nil

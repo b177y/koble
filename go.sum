@@ -130,6 +130,10 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.7.2/go.mod h1:8EzeIqfWt2wWT4rJVu3f21
 github.com/aws/smithy-go v1.8.0/go.mod h1:SObp3lf9smib00L/v3U2eAKG8FyQ7iLrJnQiAmR5n+E=
 github.com/b177y/go-uml-utilities v0.0.0-20220102233300-35a8780d7d55 h1:i/GeVlN3WUEATYB0gnYnwc2+ZCAZ9SG1X55xu0wKxoc=
 github.com/b177y/go-uml-utilities v0.0.0-20220102233300-35a8780d7d55/go.mod h1:64refealbnfK0KT7En6lDYWTqm/ZhyoCVQyJbZn+Ro8=
+github.com/b177y/go-uml-utilities v0.0.0-20220108110529-9882ca8ecb0d h1:oP2KGz1rxE1MKWqPEHMmH6zixzI4IIoCeqc9HOHQrJg=
+github.com/b177y/go-uml-utilities v0.0.0-20220108110529-9882ca8ecb0d/go.mod h1:64refealbnfK0KT7En6lDYWTqm/ZhyoCVQyJbZn+Ro8=
+github.com/b177y/go-uml-utilities v0.0.0-20220115172648-2ba9e2f2b258 h1:xIO7F7zIBnYNvqc2vTI/tK++yLXTiZw1RDVHp9y5dDA=
+github.com/b177y/go-uml-utilities v0.0.0-20220115172648-2ba9e2f2b258/go.mod h1:64refealbnfK0KT7En6lDYWTqm/ZhyoCVQyJbZn+Ro8=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
@@ -376,6 +380,7 @@ github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96/go.mod h1:Qh8CwZ
 github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815/go.mod h1:WwZ+bS3ebgob9U8Nd0kOddGdZWjyMGR8Wziv+TBNwSE=
 github.com/dtylman/scp v0.0.0-20181017070807-f3000a34aef4/go.mod h1:jN1ZaUPSNA8jm10nmaRLky84qV/iCeiHmcEf3EbP+dc=
 github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
+github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153/go.mod h1:/Zj4wYkgs4iZTTu3o/KG3Itv/qCCa8VVMlb3i9OVuzc=
 github.com/emicklei/go-restful v0.0.0-20170410110728-ff4f55a20633/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=

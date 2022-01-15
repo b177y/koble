@@ -10,6 +10,7 @@ import (
 
 	"github.com/b177y/koble/driver"
 	"github.com/b177y/koble/util/topsort"
+	"github.com/dustin/go-humanize"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 )
@@ -53,10 +54,13 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 	if showNS {
 		headers = append(headers, "namespace")
 	}
-	// headers = append(headers, "lab")
 	headers = append(headers, "image")
-	// headers = append(headers, "networks")
 	headers = append(headers, "state")
+	headers = append(headers, "created at")
+	headers = append(headers, "started at")
+	// headers = append(headers, "volumes")
+	// headers = append(headers, "ports")
+	headers = append(headers, "networks")
 
 	for _, m := range machines {
 		var minfo []string
@@ -68,10 +72,21 @@ func MachineInfoToStringArr(machines []driver.MachineInfo, showNS bool) (mlist [
 				minfo = append(minfo, m.Namespace)
 			}
 		}
-		// minfo = append(minfo, m.Lab)
 		minfo = append(minfo, filepath.Base(m.Image))
-		// minfo = append(minfo, strings.Join(m.Networks, ","))
 		minfo = append(minfo, m.State)
+		if !m.CreatedAt.IsZero() {
+			minfo = append(minfo, humanize.Time(m.CreatedAt))
+		} else {
+			minfo = append(minfo, "")
+		}
+		if !m.StartedAt.IsZero() {
+			minfo = append(minfo, humanize.Time(m.StartedAt))
+		} else {
+			minfo = append(minfo, "")
+		}
+		// minfo = append(minfo, "") // TODO volumes
+		// minfo = append(minfo, "") // TODO ports
+		minfo = append(minfo, strings.Join(m.Networks, ", "))
 		// Add machine info to list of machines
 		mlist = append(mlist, minfo)
 	}

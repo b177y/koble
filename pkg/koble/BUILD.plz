@@ -11,6 +11,8 @@ go_library(
         "//driver/podman",
         "//driver/uml",
         "//pkg/output",
+        "//util/topsort",
+        "//third_party/go:go-humanize",
         "//third_party/go:shellescape",
         "//third_party/go:github.com__fatih__color",
         "//third_party/go:github.com__go-playground__validator__v10",
@@ -22,7 +24,6 @@ go_library(
         "//third_party/go:golang.org__x__crypto__ssh__terminal",
         "//third_party/go:gopkg.in__yaml.v2",
         "//third_party/go:koanf",
-        "//util/topsort",
     ],
 )
 

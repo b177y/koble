@@ -5,7 +5,7 @@ go 1.17
 replace github.com/containernetworking/plugins => github.com/containernetworking/plugins v0.9.1
 
 require (
-	github.com/b177y/go-uml-utilities v0.0.0-20220102233300-35a8780d7d55
+	github.com/b177y/go-uml-utilities v0.0.0-20220115172648-2ba9e2f2b258
 	github.com/containernetworking/plugins v0.9.1
 	github.com/containers/buildah v1.23.1
 	github.com/containers/image/v5 v5.16.0
@@ -65,6 +65,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

@@ -12,6 +12,7 @@ import (
 	copier "github.com/containers/buildah/copier"
 	"github.com/containers/image/v5/manifest"
 	"github.com/creasty/defaults"
+	"github.com/cri-o/ocicni/pkg/ocicni"
 
 	"github.com/b177y/koble/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
@@ -230,15 +231,24 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	if err != nil {
 		return info, err
 	}
+	var networks []string
+	for key := range s.NetworkSettings.Networks {
+		networks = append(networks, key)
+	}
 	info = driver.MachineInfo{
 		Name:      m.name,
+		Namespace: m.namespace,
 		Pid:       s.State.Pid,
 		Status:    s.State.Status, // TODO make the same as UML
 		Running:   s.State.Running,
+		CreatedAt: s.Created,
 		StartedAt: s.State.StartedAt,
 		ExitCode:  s.State.ExitCode,
 		Image:     s.ImageName,
 		State:     s.State.Status,
+		Networks:  networks,
+		Ports:     []ocicni.PortMapping{},
+		Mounts:    []string{},
 	}
 	return info, nil
 }
@@ -400,6 +410,12 @@ func (m *Machine) CopyInFiles(hostlab string) error {
 
 func (m *Machine) WaitUntil(timeout time.Duration,
 	target, failOn *driver.MachineState) error {
+	log.WithFields(log.Fields{
+		"target": fmt.Sprintf("%+v", target),
+		"failon": fmt.Sprintf("%+v", failOn),
+	}).Infof(
+		"WaitUntil for machine %s in namespace %s\n", m.Name(), m.namespace,
+	)
 	return driver.WaitUntil(m, timeout, target, failOn)
 }
 

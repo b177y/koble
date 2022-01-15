@@ -1,8 +1,6 @@
 package podman
 
 import (
-	"strings"
-
 	"github.com/b177y/koble/driver"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 )
@@ -19,32 +17,15 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 	}
 	for _, c := range ctrs {
 		name, _, _ := getInfoFromLabels(c.Labels)
-		var mNetworks []string
-		for _, n := range c.Networks {
-			s := strings.Index(n, "koble_")
-			if s == -1 {
-				mNetworks = append(mNetworks, n)
-			} else {
-				s = s + 7 // s should be 0, + 7 accounts for koble_
-				e := strings.Index(n[s:], "_")
-				if e == -1 {
-					mNetworks = append(mNetworks, n)
-				} else {
-					mNetworks = append(mNetworks, n[s:s+e])
-				}
-			}
+		m, err := pd.Machine(name, namespace)
+		if err != nil {
+			return machines, err
 		}
-		machines = append(machines, driver.MachineInfo{
-			Name:     name,
-			Image:    c.Image[:strings.IndexByte(c.Image, ':')],
-			State:    c.State,
-			Uptime:   c.Status,
-			ExitCode: c.ExitCode,
-			ExitedAt: c.ExitedAt,
-			Mounts:   c.Mounts,
-			Pid:      c.Pid,
-			Ports:    c.Ports,
-		})
+		info, err := m.Info()
+		if err != nil {
+			return machines, err
+		}
+		machines = append(machines, info)
 	}
 	return machines, nil
 }
