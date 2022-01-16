@@ -18,6 +18,7 @@ import (
 	"github.com/creasty/defaults"
 	"github.com/docker/docker/pkg/reexec"
 	ht "github.com/hpcloud/tail"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -73,15 +74,17 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
 	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(),
 		filepath.Join(m.ud.Config.StorageDir, "images", opts.Image)))
-	cmd = append(cmd, "root=98:0", "fsck.mode=skip")
+	cmd = append(cmd, "root=98:0")
 	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	cmd = append(cmd, networks...)
-	if opts.HostHome {
-		cmd = append(cmd, "hosthome="+os.Getenv("UML_ORIG_HOME"))
-	}
-	if opts.Hostlab != "" {
-		cmd = append(cmd, "hostlab="+opts.Hostlab)
+	// TODO support any volume (need to modify koble-fs phase1 startup)
+	for _, v := range opts.Volumes {
+		if v.Destination == "/hosthome" {
+			cmd = append(cmd, "hosthome="+v.Source)
+		} else if v.Destination == "/hostlab" {
+			cmd = append(cmd, "hostlab="+v.Source)
+		}
 	}
 	cmd = append(cmd, "SELINUX_INIT=0")
 	cmd = append(cmd, "UMLNAMESPACE="+m.namespace)
@@ -169,7 +172,9 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		if err != nil {
 			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name(), n, err)
 		}
-		cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
+		// TODO find a way to rename vec devices on boot
+		// cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
+		cmd := fmt.Sprintf("eth%d=tuntap,%s", i, ifaceName)
 		// add to networks for cmdline
 		networks = append(networks, cmd)
 	}
@@ -180,11 +185,12 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	// TODO autoconf with custom ip
 	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_koble0=%s",
 		len(networks), ifaceName, mgmtIp))
-	// for _, mnt := range m.Volumes {
-	// 	if mnt.Type == "" {
-	// 		mnt.Type = "bind"
-	// 	}
-	// }
+	if opts.HostHome {
+		opts.Volumes = append(opts.Volumes, spec.Mount{
+			Source:      os.Getenv("UML_ORIG_HOME"),
+			Destination: "/hosthome",
+		})
+	}
 	kernelcmd, err := getKernelCMD(m, *opts, networks)
 	if err != nil {
 		return fmt.Errorf("could not generate kernel cmd: %w", err)

@@ -37,7 +37,7 @@ type MachineState struct {
 type MachineConfig struct {
 	Image        string                 `default:"" mapstructure:"image,omitempty"`
 	HostHome     bool                   `default:"false" mapstructure:"hosthome,omitempty"`
-	Hostlab      string                 `default:"" mapstructure:"hostlab,omitempty" validate:"dir"`
+	Hostlab      bool                   `default:"" mapstructure:"hostlab,omitempty" validate:"dir"`
 	Networks     []string               `default:"[]" mapstructure:"networks,omitempty"`
 	Volumes      []spec.Mount           `default:"[]" mapstructure:"volumes,omitempty"`
 	Ports        []ocicni.PortMapping   `default:"[]" mapstructure:"ports"`

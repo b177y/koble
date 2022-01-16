@@ -34,7 +34,8 @@ func (n *Network) Create(opts *driver.NetConfig) error {
 	}
 	exists, err := n.Exists()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not check if net %s exists: %w",
+			n.name, err)
 	}
 	if exists {
 		return driver.ErrExists

@@ -28,7 +28,7 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 	if err != nil {
 		return state, err
 	}
-	log.Debug("read state")
+	log.Trace("reading state")
 	stateString := string(p)
 	state.State = &stateString
 	if stateString == "exited" {

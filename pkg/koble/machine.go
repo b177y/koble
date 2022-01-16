@@ -7,6 +7,7 @@ import (
 	"github.com/b177y/koble/driver"
 	"github.com/dustin/go-humanize"
 	prettyjson "github.com/hokaccha/go-prettyjson"
+	spec "github.com/opencontainers/runtime-spec/specs-go"
 )
 
 func mergeMachineConf(base driver.MachineConfig,
@@ -53,10 +54,13 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
 			return fmt.Errorf("Error waiting for dependency %s to boot: %w", dependency, err)
 		}
 	}
-	// conf.Volumes = append(conf.Volumes, spec.Mount{
-	// 	Source:      nk.Lab.Directory,
-	// 	Destination: "/hostlab",
-	// })
+
+	if conf.Hostlab {
+		conf.Volumes = append(conf.Volumes, spec.Mount{
+			Source:      nk.LabRoot,
+			Destination: "/hostlab",
+		})
+	}
 
 	err = m.Start(&conf)
 	if err != nil {
