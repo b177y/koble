@@ -27,7 +27,7 @@ func (pd *PodmanDriver) Network(name, namespace string) (n driver.Network,
 	err error) {
 	n = &Network{
 		name:      name,
-		namespace: namespace,
+		Namespace: namespace,
 		pd:        pd,
 	}
 	return n, nil

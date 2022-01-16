@@ -21,13 +21,13 @@ func (n *Network) getNetLabels() map[string]string {
 	// } else {
 	// 	labels["koble:nolab"] = "true"
 	// }
-	labels["koble:namespace"] = n.namespace
+	labels["koble:namespace"] = n.Namespace
 	return labels
 }
 
 type Network struct {
 	name      string
-	namespace string
+	Namespace string
 	pd        *PodmanDriver
 }
 
@@ -36,7 +36,7 @@ func (n *Network) Name() string {
 }
 
 func (n *Network) Id() string {
-	return "koble_" + n.namespace + "_" + n.name
+	return "koble_" + n.Namespace + "_" + n.name
 }
 
 func (n *Network) Create(opts *driver.NetConfig) (err error) {
@@ -81,7 +81,7 @@ func (n *Network) Create(opts *driver.NetConfig) (err error) {
 		if err != nil {
 			return err
 		}
-		err = tmpl.Execute(f, &n)
+		err = tmpl.Execute(f, n)
 		return err
 	}
 }
@@ -188,7 +188,7 @@ func netInfoFromInspect(nw Network, insp []entities.NetworkInspectReport) (netIn
 	// update this code to make it cleaner when this is released :)
 	netInfo = driver.NetInfo{
 		Name:      nw.Name(),
-		Namespace: nw.namespace,
+		Namespace: nw.Namespace,
 	}
 	if v, ok := insp[0]["plugins"]; ok {
 		parsed := v.([]interface{})

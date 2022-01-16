@@ -153,6 +153,8 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		NSMode: specgen.Bridge,
 	}
 	s.UseImageHosts = true
+	s.Sysctl = make(map[string]string, 0)
+	s.Sysctl["net.ipv4.conf.all.forwarding"] = "1"
 	s.UseImageResolvConf = true
 	for _, n := range opts.Networks {
 		net, err := m.pd.Network(n, m.namespace)

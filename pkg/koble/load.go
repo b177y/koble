@@ -33,7 +33,23 @@ func BindFlag(confKey string, f *flag.Flag) {
 		}))
 }
 
-func (nk *Koble) LoadLab() (err error) {
+func loadMachines(vpl *koanf.Koanf) (err error) {
+	overrideMap := make(map[string]interface{}, 0)
+	mNames := vpl.MapKeys("machines")
+	for _, name := range mNames {
+		keyHosthome := fmt.Sprintf("machines.%s.hosthome", name)
+		if !vpl.Exists(keyHosthome) {
+			overrideMap[keyHosthome] = false
+		}
+		keyHostlab := fmt.Sprintf("machines.%s.hostlab", name)
+		if !vpl.Exists(keyHostlab) {
+			overrideMap[keyHostlab] = true
+		}
+	}
+	return vpl.Load(confmap.Provider(overrideMap, "."), nil)
+}
+
+func (nk *Koble) loadLab() (err error) {
 	if nk.LabRoot == "" {
 		log.Debug("not in lab directory so not loading lab config")
 		return nil
@@ -42,6 +58,10 @@ func (nk *Koble) LoadLab() (err error) {
 	labConfPath := filepath.Join(nk.LabRoot, "lab.yml")
 	if err := vpl.Load(file.Provider(labConfPath), yaml.Parser()); err != nil {
 		return fmt.Errorf("error reading lab.yml: %w", err)
+	}
+
+	if err = loadMachines(vpl); err != nil {
+		return err
 	}
 
 	err = vpl.Unmarshal("", &nk.Lab)
@@ -55,15 +75,16 @@ func (nk *Koble) LoadLab() (err error) {
 		}, ""), nil)
 	}
 
+	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
+	if err != nil {
+		return fmt.Errorf("could not order lab machines by dependency: %w", err)
+	}
+
 	nk.Lab.Name = filepath.Base(nk.LabRoot)
 	nk.Lab.Directory = nk.LabRoot
 
 	if err := validator.New().Struct(nk.Lab); err != nil {
 		return fmt.Errorf("error validating lab.yml: %w", err)
-	}
-	nk.Lab.Machines, err = orderMachines(nk.Lab.Machines)
-	if err != nil {
-		return fmt.Errorf("could not order lab machines by dependency: %w", err)
 	}
 	if err := Koanf.Merge(vpl); err != nil {
 		return fmt.Errorf("Could not merge lab driver config to default driver config")
@@ -140,7 +161,7 @@ func Load() (*Koble, error) {
 	}
 	// set up lab if in one
 	if nk.LabRoot != "" {
-		if err := nk.LoadLab(); err != nil {
+		if err := nk.loadLab(); err != nil {
 			return nil, err
 		}
 	}

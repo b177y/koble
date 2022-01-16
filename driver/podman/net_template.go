@@ -5,13 +5,12 @@ var NET = `
    "args": {
       "podman_labels": {
          "koble": "true",
-         "koble:lab": "{{ .Lab }}",
          "koble:name": "{{ .Name }}",
          "koble:namespace": "{{ .Namespace }}"
       }
    },
    "cniVersion": "0.4.0",
-   "name": "{{ .Fullname }}",
+   "name": "{{ .Id }}",
    "plugins": [
       {
          "type": "bridge",
