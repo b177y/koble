@@ -9,16 +9,34 @@ import (
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
+func mergeMachineConf(base driver.MachineConfig,
+	overrides driver.MachineConfig) (merged driver.MachineConfig) {
+	if base.Image == "" && overrides.Image != "" {
+		base.Image = overrides.Image
+	}
+	if len(base.Networks) == 0 && len(overrides.Networks) != 0 {
+		base.Networks = overrides.Networks
+	}
+	return base
+}
+
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
-	// Start with defaults
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
 
+	// merge lab machine config with cli options
+	if labM, ok := nk.Lab.Machines[name]; ok {
+		conf = mergeMachineConf(labM, conf)
+	}
+
 	for _, n := range conf.Networks {
-		fmt.Printf("creating network %s", n)
-		err := nk.StartNetwork(n, driver.NetConfig{}) // TODO get netconfig from Lab
+		net := driver.NetConfig{}
+		if labN, ok := nk.Lab.Networks[n]; ok {
+			net = labN
+		}
+		err := nk.StartNetwork(n, net)
 		if err != nil && err != driver.ErrExists {
 			return err
 		}

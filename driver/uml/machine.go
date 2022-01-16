@@ -88,7 +88,7 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	if opts.Lab != "" {
 		cmd = append(cmd, "UMLLAB="+opts.Lab)
 	}
-	if log.GetLevel() <= log.ErrorLevel {
+	if log.GetLevel() <= log.WarnLevel {
 		cmd = append(cmd, "quiet")
 	}
 	return cmd, nil

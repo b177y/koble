@@ -17,6 +17,6 @@ func AddTermFlags(cmd *cobra.Command, launchOpt string) {
 }
 
 func AddWaitFlag(cmd *cobra.Command) {
-	cmd.Flags().Int("wait", 300, "seconds to wait for machine to boot before timeout (default 300, -1 is don't wait)")
+	cmd.Flags().Int("wait", 300, "seconds to wait for machine to boot before timeout, negative value will disable wait")
 	koble.BindFlag("wait", cmd.Flags().Lookup("wait"))
 }

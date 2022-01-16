@@ -40,9 +40,17 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 				break
 			}
 		}
-		err = m.WaitUntil(5, driver.BootingState(), driver.ExitedState())
+		state, err := m.State()
 		if err != nil {
 			return err
+		}
+		if state.State != nil {
+			if *state.State != "running" {
+				err = m.WaitUntil(5*time.Second, driver.BootingState(), driver.ExitedState())
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return m.Attach(nil)
