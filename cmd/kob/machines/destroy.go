@@ -27,7 +27,7 @@ var destroy = func(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("Destroying machine %s", args[0]),
 		nil,
 		cli.NK.Config.NonInteractive,
-		func(c output.Container, out output.Output) (err error) {
+		func(out output.Output) (err error) {
 			defer func() {
 				if err == nil {
 					out.Success("Destroyed machine " + args[0])

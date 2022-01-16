@@ -31,7 +31,7 @@ var stop = func(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("Stopping machine %s", args[0]),
 		nil,
 		cli.NK.Config.NonInteractive,
-		func(c output.Container, out output.Output) (err error) {
+		func(out output.Output) (err error) {
 			err = cli.NK.StopMachine(args[0], forceStop)
 			if err == nil {
 				out.Success("Stopped machine " + args[0])

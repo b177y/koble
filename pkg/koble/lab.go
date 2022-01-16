@@ -10,10 +10,9 @@ import (
 )
 
 func (nk *Koble) LabStart(mlist []string) error {
-	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+	return nk.ForMachine(nk.Lab.Header, "Starting", mlist, func(name string,
 		mconf driver.MachineConfig,
-		c output.Container) (err error) {
-		out := c.AddOutput(fmt.Sprintf("Starting machine %s", name))
+		out output.Output) (err error) {
 		defer func() {
 			if err != nil {
 				out.Error(err)
@@ -68,10 +67,9 @@ func (nk *Koble) GetMachineList(mlist []string,
 }
 
 func (nk *Koble) LabDestroy(mlist []string) error {
-	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+	return nk.ForMachine(nk.Lab.Header, "Destroying", mlist, func(name string,
 		mconf driver.MachineConfig,
-		c output.Container) (err error) {
-		out := c.AddOutput(fmt.Sprintf("Destroying machine %s", name))
+		out output.Output) (err error) {
 		defer func() {
 			if err != nil {
 				out.Error(err)
@@ -85,10 +83,9 @@ func (nk *Koble) LabDestroy(mlist []string) error {
 }
 
 func (nk *Koble) LabRemove(mlist []string) error {
-	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+	return nk.ForMachine(nk.Lab.Header, "Removing", mlist, func(name string,
 		mconf driver.MachineConfig,
-		c output.Container) (err error) {
-		out := c.AddOutput(fmt.Sprintf("Removing machine %s", name))
+		out output.Output) (err error) {
 		defer func() {
 			if err != nil {
 				out.Error(err)
@@ -102,10 +99,9 @@ func (nk *Koble) LabRemove(mlist []string) error {
 }
 
 func (nk *Koble) LabStop(mlist []string, force bool) error {
-	return nk.ForMachine(nk.Lab.Header, mlist, func(name string,
+	return nk.ForMachine(nk.Lab.Header, "stopping", mlist, func(name string,
 		mconf driver.MachineConfig,
-		c output.Container) (err error) {
-		out := c.AddOutput(fmt.Sprintf("Stopping machine %s", name))
+		out output.Output) (err error) {
 		defer func() {
 			if err != nil {
 				out.Error(err)
@@ -132,10 +128,11 @@ func (nk *Koble) LabInfo() error {
 	return err
 }
 
-func (nk *Koble) ForMachine(headerFunc func() string, filterList []string, toRun func(name string, mconf driver.MachineConfig, c output.Container) error) error {
+func (nk *Koble) ForMachine(headerFunc func() string, titlePref string, filterList []string, toRun func(name string, mconf driver.MachineConfig, out output.Output) error) error {
 	if nk.LabRoot == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
+
 	oc := output.NewContainer(nk.Lab.Header, nk.Config.NonInteractive)
 	oc.Start()
 	defer oc.Stop()
@@ -145,7 +142,10 @@ func (nk *Koble) ForMachine(headerFunc func() string, filterList []string, toRun
 		wg.Add(1)
 		go func(name string, mconf driver.MachineConfig, c output.Container) error {
 			defer wg.Done()
-			return toRun(name, mconf, oc)
+			title := fmt.Sprintf("%s machine %s", titlePref, name)
+			return output.WithStdout(title, oc, func(out output.Output) error {
+				return toRun(name, mconf, out)
+			})
 		}(name, mconf, oc)
 	}
 	wg.Wait()

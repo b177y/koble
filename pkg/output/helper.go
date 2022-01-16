@@ -6,10 +6,15 @@ import (
 )
 
 func WithSimpleContainer(title string, header func() string, plain bool,
-	toRun func(c Container, o Output) error) (err error) {
+	toRun func(o Output) error) (err error) {
 	oc := NewContainer(header, plain)
 	oc.Start()
-	out := oc.AddOutput(title)
+	defer oc.Stop()
+	return WithStdout(title, oc, toRun)
+}
+
+func WithStdout(title string, c Container, toRun func(o Output) error) (err error) {
+	out := c.AddOutput(title)
 	out.Start()
 	origStdout := os.Stdout
 	origStderr := os.Stderr
@@ -25,7 +30,6 @@ func WithSimpleContainer(title string, header func() string, plain bool,
 		wE.Close()
 		os.Stdout = origStdout
 		os.Stderr = origStderr
-		oc.Stop()
 	}()
 	os.Stdout = w
 	os.Stderr = wE
@@ -35,9 +39,5 @@ func WithSimpleContainer(title string, header func() string, plain bool,
 	go func() {
 		io.Copy(out, rE)
 	}()
-	err = toRun(oc, out)
-	if err != nil {
-		return err
-	}
-	return nil
+	return toRun(out)
 }

@@ -28,7 +28,7 @@ var remove = func(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("Removing machine %s", args[0]),
 		nil,
 		cli.NK.Config.NonInteractive,
-		func(c output.Container, out output.Output) (err error) {
+		func(out output.Output) (err error) {
 			defer func() {
 				if err == nil {
 					out.Success("Removed machine " + args[0])

@@ -37,7 +37,7 @@ var start = func(cmd *cobra.Command, args []string) error {
 		fmt.Sprintf("Starting machine %s", args[0]),
 		nil,
 		cli.NK.Config.NonInteractive,
-		func(c output.Container, out output.Output) (err error) {
+		func(out output.Output) (err error) {
 			if cli.NK.Config.Launch.MachineStart {
 				err := cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
 				if err != nil {
