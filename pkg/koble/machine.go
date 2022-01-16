@@ -2,7 +2,6 @@ package koble
 
 import (
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/b177y/koble/driver"
@@ -10,7 +9,7 @@ import (
 	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
-func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Writer) error {
+func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
 	// Start with defaults
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
@@ -18,7 +17,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 	}
 
 	for _, n := range conf.Networks {
-		fmt.Fprintf(out, "creating network %s", n)
+		fmt.Printf("creating network %s", n)
 		err := nk.StartNetwork(n, driver.NetConfig{}) // TODO get netconfig from Lab
 		if err != nil && err != driver.ErrExists {
 			return err
@@ -30,7 +29,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(out, "waiting for dependency %s to boot", dependency)
+		fmt.Printf("waiting for dependency %s to boot", dependency)
 		err = dep.WaitUntil(60*5, driver.BootedState(), nil)
 		if err != nil {
 			return fmt.Errorf("Error waiting for dependency %s to boot: %w", dependency, err)
@@ -46,7 +45,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig, out io.Wri
 		return err
 	}
 	if waitTimeout := nk.Config.Wait; waitTimeout > 0 {
-		fmt.Fprint(out, "booting")
+		fmt.Println("booting")
 		return m.WaitUntil(waitTimeout, driver.BootedState(), driver.ExitedState())
 	}
 	return nil
@@ -91,15 +90,15 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
+func (nk *Koble) StopMachine(name string, force bool) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
 	if force {
-		fmt.Fprintf(out, "Crashing machine %s", name)
+		fmt.Printf("Crashing machine %s\n", name)
 	} else {
-		fmt.Fprintf(out, "Halting machine %s", name)
+		fmt.Printf("Halting machine %s\n", name)
 	}
 	err = m.Stop(force)
 	if err != nil {
@@ -111,16 +110,16 @@ func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
 	return nil
 }
 
-func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
+func (nk *Koble) RemoveMachine(name string) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "removing machine %s", name)
+	fmt.Printf("removing machine %s\n", name)
 	return m.Remove()
 }
 
-func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
+func (nk *Koble) DestroyMachine(machine string) error {
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -130,10 +129,10 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 		return err
 	}
 	if !exists {
-		fmt.Fprintf(out, "no machine to remove")
+		fmt.Printf("no machine to remove\n")
 		return nil
 	}
-	fmt.Fprintf(out, "Crashing machine %s", m.Name())
+	fmt.Printf("Crashing machine %s\n", m.Name())
 	err = m.Stop(true)
 	if err != nil {
 		return err
@@ -142,7 +141,7 @@ func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out, "Removing machine %s", m.Name())
+	fmt.Printf("Removing machine %s\n", m.Name())
 	return m.Remove()
 }
 

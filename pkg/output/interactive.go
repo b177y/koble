@@ -3,10 +3,12 @@ package output
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gosuri/uilive"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type InteractiveContainer struct {
@@ -52,8 +54,18 @@ func (c *InteractiveContainer) print() {
 	if c.headerFunc != nil {
 		fmt.Fprint(c.lw, c.headerFunc())
 	}
+	width, _, err := terminal.GetSize(0)
+	if err != nil {
+		fmt.Fprintf(c.lw, "error getting term size: %v\n", err)
+		return
+	}
 	for _, spinner := range c.Spinners {
-		fmt.Fprintln(c.lw, spinner.String())
+		spinLine := strings.ReplaceAll(spinner.String(), "\n", "")
+		if len(spinLine) > width {
+			spinLine = spinLine[:width-4] + "..."
+		}
+		fmt.Fprintln(c.lw, spinLine)
+		// fmt.Fprintln(c.lw, spinLine, []byte(spinLine))
 	}
 	c.lw.Flush()
 }

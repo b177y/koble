@@ -34,6 +34,6 @@ var remove = func(cmd *cobra.Command, args []string) error {
 					out.Success("Removed machine " + args[0])
 				}
 			}()
-			return cli.NK.RemoveMachine(args[0], out)
+			return cli.NK.RemoveMachine(args[0])
 		})
 }

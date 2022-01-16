@@ -30,7 +30,7 @@ func (nk *Koble) LabStart(mlist []string) error {
 		} else {
 			fmt.Fprintln(out, "not launching for lstart")
 		}
-		return nk.StartMachine(name, mconf, out)
+		return nk.StartMachine(name, mconf)
 	})
 }
 
@@ -80,7 +80,7 @@ func (nk *Koble) LabDestroy(mlist []string) error {
 			}
 		}()
 		out.Start()
-		return nk.DestroyMachine(name, out)
+		return nk.DestroyMachine(name)
 	})
 }
 
@@ -97,7 +97,7 @@ func (nk *Koble) LabRemove(mlist []string) error {
 			}
 		}()
 		out.Start()
-		return nk.RemoveMachine(name, out)
+		return nk.RemoveMachine(name)
 	})
 }
 
@@ -114,7 +114,7 @@ func (nk *Koble) LabStop(mlist []string, force bool) error {
 			}
 		}()
 		out.Start()
-		return nk.StopMachine(name, force, out)
+		return nk.StopMachine(name, force)
 	})
 }
 
