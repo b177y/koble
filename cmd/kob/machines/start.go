@@ -38,12 +38,12 @@ var start = func(cmd *cobra.Command, args []string) error {
 		nil,
 		cli.NK.Config.NonInteractive,
 		func(c output.Container, out output.Output) (err error) {
-			// if cli.NK.Config.Launch.MachineStart {
-			// 	err = cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
+			if cli.NK.Config.Launch.MachineStart {
+				err = cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
+				if err != nil {
+					return err
+				}
+			}
 			err = cli.NK.StartMachine(args[0], startOpts, out)
 			if err != nil {
 				return err

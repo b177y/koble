@@ -22,6 +22,14 @@ func (nk *Koble) LabStart(mlist []string) error {
 			}
 		}()
 		out.Start()
+		if nk.Config.Launch.LabStart {
+			err = nk.AttachToMachine(name, nk.Config.Terminal.LabStart)
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Fprintln(out, "not launching for lstart")
+		}
 		return nk.StartMachine(name, mconf, out)
 	})
 }

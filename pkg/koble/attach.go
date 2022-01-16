@@ -14,7 +14,7 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 	if os.Getenv("_KOBLE_IN_TERM") != "true" && term != "this" {
 		log.WithFields(log.Fields{"machine": machine}).
 			Debug("attach not in terminal, relaunching now")
-		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+		return nk.LaunchInTerm(machine, term)
 	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
@@ -39,6 +39,10 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 			if exists {
 				break
 			}
+		}
+		err = m.WaitUntil(5, driver.BootingState(), driver.ExitedState())
+		if err != nil {
+			return err
 		}
 	}
 	return m.Attach(nil)

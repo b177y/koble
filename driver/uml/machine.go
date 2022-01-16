@@ -73,7 +73,7 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
 	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(),
 		filepath.Join(m.ud.Config.StorageDir, "images", opts.Image)))
-	cmd = append(cmd, "root=98:0")
+	cmd = append(cmd, "root=98:0", "fsck.mode=skip")
 	cmd = append(cmd, "uml_dir="+m.mDir())
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	cmd = append(cmd, networks...)
@@ -87,6 +87,9 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	cmd = append(cmd, "UMLNAMESPACE="+m.namespace)
 	if opts.Lab != "" {
 		cmd = append(cmd, "UMLLAB="+opts.Lab)
+	}
+	if log.GetLevel() <= log.ErrorLevel {
+		cmd = append(cmd, "quiet")
 	}
 	return cmd, nil
 }
@@ -105,7 +108,7 @@ func runInShim(mDir, namespace string, kernelCmd []string) error {
 }
 
 func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
-	log.WithFields(log.Fields{"options": opts}).Infof(
+	log.WithFields(log.Fields{"options": fmt.Sprintf("%+v", opts)}).Infof(
 		"Starting machine %s in namespace %s\n", m.Name(), m.namespace,
 	)
 	if opts == nil {

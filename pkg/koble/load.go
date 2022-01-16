@@ -144,14 +144,14 @@ func Load() (*Koble, error) {
 			return nil, err
 		}
 	}
+	if err := setTermDefaults(); err != nil {
+		return nil, err
+	}
 	// process flags
 	for _, pf := range kFlags {
 		if err := Koanf.Load(pf, nil); err != nil {
 			return nil, fmt.Errorf("loading config from flag: %w", err)
 		}
-	}
-	if err := setTermDefaults(); err != nil {
-		return nil, err
 	}
 	if err := Koanf.Unmarshal("", &nk.Config); err != nil {
 		return nil, fmt.Errorf("error loading config.yml: %w", err)
