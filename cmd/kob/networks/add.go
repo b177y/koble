@@ -2,7 +2,7 @@ package networks
 
 import (
 	"github.com/b177y/koble/cmd/kob/cli"
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/spf13/cobra"
 )
 

@@ -7,7 +7,7 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//driver",
+        "//pkg/driver",
         "//third_party/go:github.com__containers__buildah__copier",
         "//third_party/go:github.com__containers__image__v5__manifest",
         "//third_party/go:github.com__containers__podman__v3__pkg__api__handlers",

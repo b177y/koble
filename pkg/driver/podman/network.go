@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/containers/podman/v3/pkg/bindings/network"
 	"github.com/containers/podman/v3/pkg/domain/entities"
 )

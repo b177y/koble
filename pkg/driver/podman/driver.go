@@ -3,7 +3,7 @@ package podman
 import (
 	"context"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cobra"
 )

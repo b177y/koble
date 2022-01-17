@@ -4,8 +4,8 @@
 package koble
 
 import (
-	"github.com/b177y/koble/driver"
-	"github.com/b177y/koble/driver/podman"
+	"github.com/b177y/koble/pkg/driver"
+	"github.com/b177y/koble/pkg/driver/podman"
 )
 
 func init() {

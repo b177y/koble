@@ -3,8 +3,8 @@ package uml_test
 import (
 	"testing"
 
-	driver_test "github.com/b177y/koble/driver/tests"
-	"github.com/b177y/koble/driver/uml"
+	driver_test "github.com/b177y/koble/pkg/driver/tests"
+	"github.com/b177y/koble/pkg/driver/uml"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

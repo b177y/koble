@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/b177y/go-uml-utilities/pkg/mconsole"
-	"github.com/b177y/koble/driver"
-	"github.com/b177y/koble/driver/uml/shim"
-	"github.com/b177y/koble/driver/uml/vecnet"
+	"github.com/b177y/koble/pkg/driver"
+	"github.com/b177y/koble/pkg/driver/uml/shim"
+	"github.com/b177y/koble/pkg/driver/uml/vecnet"
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/creasty/defaults"
 	"github.com/docker/docker/pkg/reexec"

@@ -7,9 +7,9 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//driver",
-        "//driver/podman",
-        "//driver/uml",
+        "//pkg/driver",
+        "//pkg/driver/podman",
+        "//pkg/driver/uml",
         "//pkg/output",
         "//util/topsort",
         "//third_party/go:go-humanize",

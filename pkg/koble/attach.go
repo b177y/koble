@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	log "github.com/sirupsen/logrus"
 )
 

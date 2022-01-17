@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/b177y/koble/driver"
-	"github.com/b177y/koble/driver/podman"
-	"github.com/b177y/koble/driver/uml"
+	"github.com/b177y/koble/pkg/driver"
+	"github.com/b177y/koble/pkg/driver/podman"
+	"github.com/b177y/koble/pkg/driver/uml"
 )
 
 func init() {

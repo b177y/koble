@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/go-playground/validator/v10"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"

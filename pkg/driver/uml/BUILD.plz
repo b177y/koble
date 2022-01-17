@@ -7,9 +7,9 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//driver",
-        "//driver/uml/shim",
-        "//driver/uml/vecnet",
+        "//pkg/driver",
+        "//pkg/driver/uml/shim",
+        "//pkg/driver/uml/vecnet",
         "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
         "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni",
         "//third_party/go:github.com__containernetworking__plugins__pkg__ns",

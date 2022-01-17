@@ -14,7 +14,7 @@ import (
 	"github.com/creasty/defaults"
 	"github.com/cri-o/ocicni/pkg/ocicni"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"

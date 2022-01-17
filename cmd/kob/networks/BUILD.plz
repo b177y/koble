@@ -9,7 +9,7 @@ go_library(
     deps = [
         #"//pkg/koble",
         "//cmd/kob/cli",
-        "//driver",
+        "//pkg/driver",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra",
     ],

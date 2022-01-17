@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/b177y/koble/util/topsort"
 	"github.com/dustin/go-humanize"
 	"github.com/olekukonko/tablewriter"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/b177y/koble/pkg/output"
 )
 

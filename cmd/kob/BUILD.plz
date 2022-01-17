@@ -11,7 +11,7 @@ go_binary(
         "//cmd/kob/labs",
         "//cmd/kob/machines",
         "//cmd/kob/networks",
-        "//driver",
+        "//pkg/driver",
         "//pkg/koble",
         "//third_party/go:github.com__fatih__color",
         "//third_party/go:github.com__sirupsen__logrus",

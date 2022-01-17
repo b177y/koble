@@ -3,9 +3,8 @@ package podman_test
 import (
 	"testing"
 
-	"github.com/b177y/koble/driver/podman"
-
-	driver_test "github.com/b177y/koble/driver/tests"
+	"github.com/b177y/koble/pkg/driver/podman"
+	driver_test "github.com/b177y/koble/pkg/driver/tests"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/dustin/go-humanize"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"

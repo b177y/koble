@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 	"github.com/cri-o/ocicni/pkg/ocicni"
 	log "github.com/sirupsen/logrus"
 )

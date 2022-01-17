@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/b177y/koble/driver/uml/vecnet"
+	"github.com/b177y/koble/pkg/driver/uml/vecnet"
 )
 
 func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {

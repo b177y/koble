@@ -3,7 +3,7 @@ package koble
 import (
 	"strconv"
 
-	"github.com/b177y/koble/driver"
+	"github.com/b177y/koble/pkg/driver"
 )
 
 func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
