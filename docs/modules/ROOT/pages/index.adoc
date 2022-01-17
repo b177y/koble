@@ -38,7 +38,7 @@ to ~/.local/share/uml/kernel/koble-kernel
 
 == Usage
 
-[source,sh]
+[source]
 ----
 Koble is a network emulation tool
 
