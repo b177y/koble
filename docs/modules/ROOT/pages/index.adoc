@@ -1,8 +1,8 @@
 = Koble
 
-image::https://img.shields.io/github/v/release/b177y/koble?include_prereleases&style=flat-square[link="https://github.com/b177y/koble/releases"]
-image::https://img.shields.io/github/license/b177y/koble?style=flat-square[link="./LICENSE.txt"]
-image::https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square[]
+image:https://img.shields.io/github/v/release/b177y/koble?include_prereleases&style=flat-square[link="https://github.com/b177y/koble/releases"]
+image:https://img.shields.io/github/license/b177y/koble?style=flat-square[link="./LICENSE.txt"]
+image:https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square[]
 
 == Overview
 
