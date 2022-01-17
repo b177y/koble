@@ -16,7 +16,9 @@ var stopCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompRunningMachine,
 	DisableFlagsInUseLine: true,
-	RunE:                  stop,
+	Example: `koble machine stop a0
+koble machine stop --force b1`,
+	RunE: stop,
 }
 
 func init() {

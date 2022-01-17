@@ -9,6 +9,7 @@ var removeCmd = &cobra.Command{
 	Use:     "remove [options] MACHINE [MACHINE...]",
 	Aliases: []string{"rm"},
 	Short:   "remove machines in a lab",
+	Example: `koble lab remove`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.LabRemove(args)
 	},

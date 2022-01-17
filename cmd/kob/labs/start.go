@@ -10,6 +10,9 @@ import (
 var startCmd = &cobra.Command{
 	Use:   "start [options] MACHINE [MACHINE...]",
 	Short: "start a lab",
+	Example: `koble lab start --launch=false
+koble lab start --terminal tmux
+koble lab start a b`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.LabStart(args)
 	},

@@ -15,6 +15,7 @@ var destroyCmd = &cobra.Command{
 	ValidArgsFunction:     cli.AutocompMachine,
 	DisableFlagsInUseLine: true,
 	RunE:                  destroy,
+	Example:               `koble machine destroy a0`,
 }
 
 func init() {

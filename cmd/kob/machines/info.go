@@ -13,6 +13,8 @@ var infoCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompMachine,
 	DisableFlagsInUseLine: true,
+	Example: `koble machine info a0 --json
+koble machine info b1`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.MachineInfo(args[0], infoJson)
 	},

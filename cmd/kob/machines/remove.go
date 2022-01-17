@@ -15,6 +15,7 @@ var removeCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	ValidArgsFunction:     cli.AutocompNonRunningMachine,
 	DisableFlagsInUseLine: true,
+	Example:               `koble machine remove a0`,
 	RunE:                  remove,
 }
 

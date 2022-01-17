@@ -14,6 +14,8 @@ var execCmd = &cobra.Command{
 	Use:               "exec [options] MACHINE [COMMAND [ARG...]]",
 	Short:             "run a command on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
+	Example: `koble machine exec --workdir / a0 ls -a
+koble machine exec --user root b1 ping -c 127.0.0.1`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.Exec(args[0], strings.Join(args[1:], " "), user, detachMode, workDir)
 	},

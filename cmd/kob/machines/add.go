@@ -13,6 +13,8 @@ var addCmd = &cobra.Command{
 	Short:                 "add a new machine to a lab",
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
+	Example: `koble machine add a0 --image custom-image --network a1
+koble machine add web --network extNet --network lan`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.AddMachineToLab(args[0], machineConfig)
 	},

@@ -10,6 +10,8 @@ var stopForce bool
 var stopCmd = &cobra.Command{
 	Use:   "stop [options] MACHINE [MACHINE...]",
 	Short: "stop a lab",
+	Example: `koble lab stop --force
+koble lab stop a b`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.LabStop(args, stopForce)
 	},

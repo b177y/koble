@@ -18,7 +18,10 @@ var startCmd = &cobra.Command{
 	Args:                  cobra.ExactArgs(1),
 	DisableFlagsInUseLine: true,
 	ValidArgsFunction:     cli.AutocompNonRunningMachine,
-	RunE:                  start,
+	Example: `koble machine start a0 --launch=false
+koble machine machine start b1 --terminal=this
+koble machine start m2 --image custom-image --network n1 --network n2`,
+	RunE: start,
 }
 
 func init() {

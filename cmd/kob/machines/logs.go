@@ -12,8 +12,8 @@ var logsCmd = &cobra.Command{
 	Use:   "logs MACHINE [options]",
 	Short: "get logs from a machine",
 	Args:  cobra.ExactArgs(1),
-	Example: `koble logs a0 -f
-koble logs dh --tail 10`,
+	Example: `koble machine logs a0 --follow
+koble machine logs dh --tail 10`,
 	ValidArgsFunction: cli.AutocompMachine,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]

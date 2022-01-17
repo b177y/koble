@@ -13,8 +13,8 @@ var attachCmd = &cobra.Command{
 	Short:             "attach to the main tty of a machine",
 	Args:              cobra.ExactArgs(1),
 	ValidArgsFunction: cli.AutocompRunningMachine,
-	Example: `koble attach a0 --terminal xterm
-koble attach dh --launch=false`,
+	Example: `koble machine attach a0 --terminal xterm
+koble machine attach dh --launch=false`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		machine := args[0]
 		return cli.NK.AttachToMachine(machine, cli.NK.Config.Terminal.Attach)

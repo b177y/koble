@@ -13,6 +13,8 @@ var shellCmd = &cobra.Command{
 	Use:               "shell [options] MACHINE [COMMAND [ARG...]]",
 	Short:             "get a shell on a machine",
 	ValidArgsFunction: cli.AutocompRunningMachine,
+	Example: `koble machine shell a0 --user root
+koble machine shell b1 --workdir /`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.Shell(args[0], user, workDir)
 	},

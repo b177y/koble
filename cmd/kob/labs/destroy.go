@@ -8,6 +8,8 @@ import (
 var destroyCmd = &cobra.Command{
 	Use:   "destroy [options] MACHINE [MACHINE...]",
 	Short: "crash and remove machines in a lab",
+	Example: `koble lab destroy
+koble lab destroy a b`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.LabDestroy(args)
 	},

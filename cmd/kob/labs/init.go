@@ -11,6 +11,8 @@ var initOpts koble.InitOpts
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "initialise a new lab",
+	Example: `koble lab init --author name --author anothername
+koble lab init --name newlab --email test@example.com`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cli.NK.InitLab(initOpts)
 	},
