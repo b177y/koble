@@ -1,5 +1,9 @@
 = Koble
 
+image::https://img.shields.io/github/v/release/b177y/koble?include_prereleases&style=flat-square[link="https://github.com/b177y/koble/releases"]
+image::https://img.shields.io/github/license/b177y/koble?style=flat-square[link="./LICENSE.txt"]
+image::https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square[]
+
 == Overview
 
 Koble is a project for creating virtual network devices (routers, switches, servers etc)
@@ -55,7 +59,7 @@ Available Commands:
   help        Help about any command
   info        get info about a machine
   lab         manage labs
-  list        List machines
+  list        list machines
   logs        get logs from a machine
   machine     manage machines
   net         manage networks
