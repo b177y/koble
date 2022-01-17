@@ -3,6 +3,7 @@ package uml
 import (
 	"crypto/md5"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/b177y/koble/driver"
@@ -18,7 +19,7 @@ type Network struct {
 
 func (n *Network) Id() string {
 	return fmt.Sprintf("%x",
-		md5.Sum([]byte(n.name+"-"+n.namespace)))
+		md5.Sum([]byte(n.name+"."+n.namespace)))
 }
 
 func (n *Network) Name() string {
@@ -40,18 +41,17 @@ func (n *Network) Create(opts *driver.NetConfig) error {
 	if exists {
 		return driver.ErrExists
 	}
-	err = vecnet.NewNet(n.name, n.namespace)
-	if err != nil {
+	if err := vecnet.NewNet(n.name, n.namespace); err != nil {
 		return err
 	}
 	if opts.External {
 		return vecnet.MakeNetExternal(n.name, n.namespace, "")
 	}
-	err = saveInfo(filepath.Join(n.ud.Config.RunDir, "net", n.Id()), opts)
-	if err != nil {
+	netDir := filepath.Join(n.ud.Config.RunDir, "net", n.Id())
+	if err := os.MkdirAll(netDir, 0744); err != nil {
 		return err
 	}
-	return nil
+	return saveInfo(netDir, opts)
 }
 
 func (n *Network) Start() (err error) {
@@ -80,11 +80,9 @@ func (n *Network) Exists() (bool, error) {
 }
 
 func (n *Network) Info() (nInfo driver.NetInfo, err error) {
-	exists, err := n.Exists()
-	if err != nil {
+	if exists, err := n.Exists(); err != nil {
 		return nInfo, err
-	}
-	if !exists {
+	} else if !exists {
 		return nInfo, driver.ErrNotExists
 	}
 	var info driver.NetConfig

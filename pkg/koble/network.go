@@ -11,12 +11,10 @@ func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
 	if err != nil {
 		return err
 	}
-	err = n.Create(&conf)
-	if err != nil {
+	if err := n.Create(&conf); err != nil {
 		return err
 	}
-	err = n.Start()
-	return err
+	return n.Start()
 }
 
 func (nk *Koble) ListNetworks(all bool) error {

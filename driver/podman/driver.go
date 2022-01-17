@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/b177y/koble/driver"
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,9 @@ type PodmanDriver struct {
 
 func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 	err error) {
+	if err := validator.New().Var(name, "alphanum,max=30"); err != nil {
+		return m, err
+	}
 	m = &Machine{
 		name:      name,
 		namespace: namespace,
@@ -25,6 +29,9 @@ func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 
 func (pd *PodmanDriver) Network(name, namespace string) (n driver.Network,
 	err error) {
+	if err := validator.New().Var(name, "alphanum,max=30"); err != nil {
+		return n, err
+	}
 	n = &Network{
 		name:      name,
 		Namespace: namespace,

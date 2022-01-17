@@ -41,7 +41,7 @@ func (m *Machine) Name() string {
 
 func (m *Machine) Id() string {
 	return fmt.Sprintf("%x",
-		md5.Sum([]byte(m.name+"-"+m.namespace)))
+		md5.Sum([]byte(m.name+"."+m.namespace)))
 }
 
 func (m *Machine) Pid() int {
