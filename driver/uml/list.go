@@ -58,7 +58,6 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	for _, p := range processList {
 		name, err := extractFromCmdline(p.cmdline, "name")
 		if err != nil {
-			// TODO WARN
 			log.Warnf("Could not extract name from UML process (%d)", p.pid)
 			continue
 		}
@@ -69,19 +68,20 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	dir := filepath.Join(ud.Config.RunDir, "ns", namespace)
 	entries, err := os.ReadDir(dir)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		// TODO WARN
+		log.Warnf("Could not list machine list from %s\n", dir)
 		return []driver.MachineInfo{}, err
 	} else if err == nil {
 		for _, e := range entries {
-			sym, err := filepath.EvalSymlinks(filepath.Join(dir, e.Name()))
+			symPath := filepath.Join(dir, e.Name())
+			sym, err := filepath.EvalSymlinks(symPath)
 			if err != nil {
-				// TODO WARN
-				os.RemoveAll(filepath.Join(dir, e.Name()))
+				log.Warnf("Could not resolve machine symlink %s\n", symPath)
+				os.RemoveAll(symPath)
 				continue
 			}
 			fInfo, err := os.Stat(sym)
 			if err != nil {
-				// TODO WARN
+				log.Warnf("Could not stat dir %s\n", sym)
 				continue
 			}
 			if !fInfo.IsDir() {
@@ -96,12 +96,14 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 	for _, name := range machinesFound {
 		m, err := ud.Machine(name, namespace)
 		if err != nil {
-			// TODO WARN
+			log.Warnf("could not get machine %s (ns %s) from driver: %v\n",
+				name, namespace, err)
 			continue
 		}
 		info, err := m.Info()
 		if err != nil {
-			// TODO WARN
+			log.Warnf("could not get info for machine %s (ns %s): %v\n",
+				name, namespace, err)
 			continue
 		}
 		machines = append(machines, info)
@@ -110,6 +112,8 @@ func (ud *UMLDriver) ListMachinesForNamespace(namespace string) (machines []driv
 }
 
 func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
+	log.WithFields(log.Fields{"namespace": namespace, "all": all}).
+		Debug("listing machines")
 	var machines []driver.MachineInfo
 	if all {
 		namespaces, err := ud.ListAllNamespaces()

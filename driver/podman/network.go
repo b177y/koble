@@ -36,7 +36,7 @@ func (n *Network) Name() string {
 }
 
 func (n *Network) Id() string {
-	return "koble_" + n.Namespace + "_" + n.name
+	return "koble." + n.Namespace + "." + n.name
 }
 
 func (n *Network) Create(opts *driver.NetConfig) (err error) {

@@ -51,6 +51,7 @@ func getProcesses() (pList []process, err error) {
 func processBySubstring(substring ...string) int {
 	processes, err := getProcesses()
 	if err != nil {
+		log.Warnf("could not list processes: %v\n", err)
 		return -1
 	}
 	for _, p := range processes {

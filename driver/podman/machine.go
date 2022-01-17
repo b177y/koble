@@ -33,7 +33,7 @@ func (m *Machine) Name() string {
 }
 
 func (m *Machine) Id() string {
-	return "koble_" + m.namespace + "_" + m.name
+	return "koble." + m.namespace + "." + m.name
 }
 
 func (m *Machine) Exists() (bool, error) {
