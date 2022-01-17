@@ -2,7 +2,9 @@ package driver
 
 import (
 	"errors"
+	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -11,6 +13,42 @@ var (
 	ErrNotExists      = errors.New("Doesn't exist")
 	ErrNotImplemented = errors.New("Not implemented by current driver")
 )
+
+type DriverInitialiser func() Driver
+
+var registeredDrivers = map[string]DriverInitialiser{}
+
+func RegisterDriver(name string, d DriverInitialiser) {
+	if _, ok := registeredDrivers[name]; ok {
+		log.Warnf("not registering driver %s, already registered.\n")
+	}
+	fmt.Println("registering driver", name)
+	registeredDrivers[name] = d
+}
+
+func RegisterDriverCmds(cmd *cobra.Command) error {
+	for _, d := range registeredDrivers {
+		if dCmd, err := d().GetCLICommand(); err == ErrNotImplemented {
+			continue
+		} else if err != nil {
+			return err
+		} else {
+			cmd.AddCommand(dCmd)
+		}
+	}
+	return nil
+}
+
+func GetDriver(name string, conf map[string]interface{}) (d Driver,
+	err error) {
+	fmt.Println("getting driver", name, registeredDrivers)
+	if initialiser, ok := registeredDrivers[name]; ok {
+		d := initialiser()
+		return d, d.SetupDriver(conf)
+	} else {
+		return d, fmt.Errorf("Driver %s is not currently supported.", name)
+	}
+}
 
 type Driver interface {
 	// Setup the driver using config map

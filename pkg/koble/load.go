@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/b177y/koble/pkg/driver"
 	flag "github.com/spf13/pflag"
 
 	"github.com/knadh/koanf"
@@ -128,16 +129,10 @@ func (nk *Koble) processConfig() error {
 	if nk.Config.Quiet {
 		log.SetLevel(log.ErrorLevel)
 	}
-	if initialiser, ok := AvailableDrivers[nk.Config.Driver.Name]; ok {
-		nk.Driver = initialiser()
-		err := nk.Driver.SetupDriver(nk.Config.Driver.ExtraConf)
-		if err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("Driver %s is not currently supported.", nk.Config.Driver.Name)
-	}
-	return nil
+	var err error
+	nk.Driver, err = driver.GetDriver(nk.Config.Driver.Name,
+		nk.Config.Driver.ExtraConf)
+	return err
 }
 
 func Load() (*Koble, error) {

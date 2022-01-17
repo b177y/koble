@@ -14,15 +14,16 @@ import (
 )
 
 func init() {
-	registerDriver("podman", func() driver.Driver {
+	// TODO find better solution to avoid importing these drivers in pkg/koble
+	driver.RegisterDriver("podman", func() driver.Driver {
 		return new(podman.PodmanDriver)
 	})
-	registerDriver("uml", func() driver.Driver {
+	driver.RegisterDriver("uml", func() driver.Driver {
 		return new(uml.UMLDriver)
 	})
 	gob.Register(map[string]interface{}{})
-	gob.Register(&podman.PodmanDriver{})
-	gob.Register(&uml.UMLDriver{})
+	// gob.Register(&podman.PodmanDriver{})
+	// gob.Register(&uml.UMLDriver{})
 	// handleReexecFuncs["launchTerm"] = attachReexec
 	if len(os.Args) >= 2 {
 		if os.Args[1] == "launchTermReexec" {
