@@ -12,11 +12,7 @@ cgo_library(
         ],
     ),
     deps = [
-        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
-        "//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__vishvananda__netlink",
-        "//third_party/go:golang.org__x__crypto__ssh",
-        "//third_party/go:golang.org__x__crypto__ssh__terminal",
-        "//third_party/go:golang.org__x__sys__unix",
+        "//third_party/go:logrus",
+        "//third_party/go:plugins",
     ],
 )

@@ -7,9 +7,6 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//third_party/go:github.com__creack__pty",
-        "//third_party/go:github.com__docker__docker__pkg__broadcaster",
-        "//third_party/go:github.com__moby__term",
-        "//third_party/go:golang.org__x__sync__errgroup",
+        "//third_party/go:term",
     ],
 )

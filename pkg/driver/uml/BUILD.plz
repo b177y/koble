@@ -10,17 +10,6 @@ go_library(
         "//pkg/driver",
         "//pkg/driver/uml/shim",
         "//pkg/driver/uml/vecnet",
-        "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
-        "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni",
-        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
-        "//third_party/go:github.com__creasty__defaults",
-        "//third_party/go:github.com__docker__docker__pkg__reexec",
-        "//third_party/go:github.com__go-playground__validator__v10",
-        "//third_party/go:github.com__hpcloud__tail",
-        "//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__spf13__cobra",
-        "//third_party/go:koanf",
-        "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
     ],
 )
 

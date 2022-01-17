@@ -8,22 +8,11 @@ go_library(
     ),
     deps = [
         "//pkg/driver",
-        "//third_party/go:github.com__containers__buildah__copier",
-        "//third_party/go:github.com__containers__image__v5__manifest",
-        "//third_party/go:github.com__containers__podman__v3__pkg__api__handlers",
-        "//third_party/go:github.com__containers__podman__v3__pkg__bindings",
-        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
-        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__images",
-        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__network",
-        "//third_party/go:github.com__containers__podman__v3__pkg__domain__entities",
-        "//third_party/go:github.com__containers__podman__v3__pkg__specgen",
-        "//third_party/go:github.com__creasty__defaults",
-        "//third_party/go:github.com__go-playground__validator__v10",
-        "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
-        "//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__spf13__cobra",
+        "//third_party/go:validator.v10",
         "//third_party/go:koanf",
-        "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni"
+        "//third_party/go:logrus",
+        "//third_party/go:cobra",
+        #"//third_party/go:containers",
     ],
 )
 

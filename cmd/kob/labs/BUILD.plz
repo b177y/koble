@@ -9,6 +9,5 @@ go_library(
     deps = [
         "//cmd/kob/cli",
         "//pkg/koble",
-        "//third_party/go:github.com__spf13__cobra",
     ],
 )

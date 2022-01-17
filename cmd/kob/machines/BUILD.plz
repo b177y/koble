@@ -12,6 +12,5 @@ go_library(
         "//cmd/kob/cli",
         "//pkg/driver",
         #"//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__spf13__cobra",
     ],
 )
