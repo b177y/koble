@@ -1,7 +1,4 @@
-bin/
-build/
 .vim/
-docs/modules/MAN/
 
 # Entries below this point are managed by Please (DO NOT EDIT)
 plz-out
