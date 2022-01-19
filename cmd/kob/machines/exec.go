@@ -29,5 +29,5 @@ func init() {
 	execCmd.Flags().StringVarP(&workDir, "workdir", "w", "", "Working directory to execute from.")
 	cli.AddTermFlags(execCmd, "exec")
 	machineCmd.AddCommand(execCmd)
-	cli.Commands = append(cli.Commands, execCmd)
+	cli.RootCmd.AddCommand(execCmd)
 }

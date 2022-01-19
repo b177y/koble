@@ -21,7 +21,7 @@ var removeCmd = &cobra.Command{
 
 func init() {
 	machineCmd.AddCommand(removeCmd)
-	cli.Commands = append(cli.Commands, removeCmd)
+	cli.RootCmd.AddCommand(removeCmd)
 }
 
 var remove = func(cmd *cobra.Command, args []string) error {

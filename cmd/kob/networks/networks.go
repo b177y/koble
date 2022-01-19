@@ -31,7 +31,7 @@ var netCmd = &cobra.Command{
 // }
 
 func init() {
-	cli.Commands = append(cli.Commands, netCmd)
+	cli.RootCmd.AddCommand(netCmd)
 	// netCmd.AddCommand(nlistCmd)
 	// netCmd.AddCommand(ninfoCmd)
 

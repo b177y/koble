@@ -15,5 +15,5 @@ var labCmd = &cobra.Command{
 }
 
 func init() {
-	cli.Commands = append(cli.Commands, labCmd)
+	cli.RootCmd.AddCommand(labCmd)
 }

@@ -25,7 +25,7 @@ func init() {
 	cli.AddWaitFlag(stopCmd)
 	stopCmd.Flags().BoolVarP(&forceStop, "force", "f", false, "force stop machine")
 	machineCmd.AddCommand(stopCmd)
-	cli.Commands = append(cli.Commands, stopCmd)
+	cli.RootCmd.AddCommand(stopCmd)
 }
 
 var stop = func(cmd *cobra.Command, args []string) error {

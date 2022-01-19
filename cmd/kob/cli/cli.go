@@ -5,8 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Commands []*cobra.Command
-
 var NK *koble.Koble
 
 func AddTermFlags(cmd *cobra.Command, launchOpt string) {

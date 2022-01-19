@@ -1,8 +1,12 @@
-package generate
+package main
 
 import (
 	"os"
 
+	"github.com/b177y/koble/cmd/kob/cli"
+	_ "github.com/b177y/koble/cmd/kob/labs"
+	_ "github.com/b177y/koble/cmd/kob/machines"
+	_ "github.com/b177y/koble/cmd/kob/networks"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra/doc"
 )
@@ -16,11 +20,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenManTree(kob.rootCmd, header, "out")
+	err = doc.GenManTree(cli.RootCmd, header, "out")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = doc.GenMarkdownTree(cmd.KobleCLI, "out")
+	err = doc.GenMarkdownTree(cli.RootCmd, "out")
 	if err != nil {
 		log.Fatal(err)
 	}

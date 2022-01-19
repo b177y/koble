@@ -25,5 +25,5 @@ func init() {
 	if err != nil {
 		log.Warnf("could not register driver subcommands: %v\n", err)
 	}
-	cli.Commands = append(cli.Commands, driverCmd)
+	cli.RootCmd.AddCommand(driverCmd)
 }

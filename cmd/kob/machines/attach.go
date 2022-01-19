@@ -26,5 +26,5 @@ func init() {
 	cli.AddTermFlags(attachCmd, "attach")
 	cli.AddWaitFlag(attachCmd)
 	machineCmd.AddCommand(attachCmd)
-	cli.Commands = append(cli.Commands, attachCmd)
+	cli.RootCmd.AddCommand(attachCmd)
 }

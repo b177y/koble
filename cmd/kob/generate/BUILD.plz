@@ -2,10 +2,22 @@ package(default_visibility = ["PUBLIC"])
 
 go_binary(
     name = "gen-manpages",
-    srcs = ["gen_manpages.go"],
+    srcs = ["manpages.go"],
     deps = [
-        "//cmd",
+        "//cmd/kob/cli",
+        "//cmd/kob/labs",
+        "//cmd/kob/machines",
+        "//cmd/kob/networks",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__spf13__cobra__doc",
+    ],
+)
+
+genrule(
+    name = "manpages",
+    srcs = [":gen-manpages"],
+    outs = ["out"],
+    cmd = [
+        "./cmd/kob/generate/gen-manpages",
     ],
 )

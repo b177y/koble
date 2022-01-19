@@ -14,7 +14,8 @@ content:
   # - url: https://github.com/b177y/go-uml-utilities
   #   branches: main
   #   start_path: docs
-ui: 
+ui:
   bundle:
-    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
+  supplemental_files: ./supplemental-ui

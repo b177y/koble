@@ -27,5 +27,5 @@ func init() {
 	cli.AddTermFlags(shellCmd, "shell")
 	cli.AddWaitFlag(shellCmd)
 	machineCmd.AddCommand(shellCmd)
-	cli.Commands = append(cli.Commands, shellCmd)
+	cli.RootCmd.AddCommand(shellCmd)
 }

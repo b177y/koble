@@ -3,18 +3,19 @@ docker = "podman"
 # output module directory for antora
 genrule(
     name = "adoc-manpages",
-    srcs = ["//cmd:manpages"],
+    srcs = ["//cmd/kob/generate:manpages"],
     outs = ["MAN-MODULE"],
     cmd = [
         # convert
+        "mv cmd/kob/generate/out out",
         "mkdir -p MAN-MODULE/pages",
         "export HOME=\"/home/billy\"",
-        docker + " run --rm -v ./cmd/out:/documents/ docker.io/asciidoctor/docker-asciidoctor find /documents -name '*.md' -exec sh -c 'kramdoc --heading-offset=-1 {}' {} \\;",
+        docker + " run --rm -v ./out:/documents/ docker.io/asciidoctor/docker-asciidoctor find /documents -name '*.md' -exec sh -c 'kramdoc --heading-offset=-1 {}' {} \\;",
         # nav.adoc
         "echo .Manpages > MAN-MODULE/nav.adoc",
-        "find ./cmd/out -name '*.adoc' -execdir echo \"* xref:{}[]\" >> navtmp.adoc \\;",
+        "find ./out -name '*.adoc' -execdir echo \"* xref:{}[]\" >> navtmp.adoc \\;",
         "sort navtmp.adoc >> MAN-MODULE/nav.adoc",
-        "cp ./cmd/out/*.adoc MAN-MODULE/pages",
+        "cp ./out/*.adoc MAN-MODULE/pages",
     ],
 )
 
@@ -23,6 +24,7 @@ genrule(
     name = "site",
     srcs = [
         "./modules",
+        "./supplemental-ui",
         "playbook.yml",
         "antora.yml",
         ":adoc-manpages",

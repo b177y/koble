@@ -26,5 +26,5 @@ func init() {
 	logsCmd.Flags().BoolVarP(&logsFollow, "follow", "f", false, "Follow log output")
 	logsCmd.Flags().IntVar(&logsTail, "tail", -1, "Output the specified number of LINES at the end of the logs.  Defaults to -1, which prints all lines")
 	machineCmd.AddCommand(logsCmd)
-	cli.Commands = append(cli.Commands, logsCmd)
+	cli.RootCmd.AddCommand(logsCmd)
 }

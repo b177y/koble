@@ -20,7 +20,7 @@ var destroyCmd = &cobra.Command{
 
 func init() {
 	machineCmd.AddCommand(destroyCmd)
-	cli.Commands = append(cli.Commands, destroyCmd)
+	cli.RootCmd.AddCommand(destroyCmd)
 }
 
 var destroy = func(cmd *cobra.Command, args []string) error {

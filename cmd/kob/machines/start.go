@@ -32,7 +32,7 @@ func init() {
 	startCmd.Flags().Bool("launch", false, "launch attach session to machine in terminal")
 	koble.BindFlag("launch.machine_start", startCmd.Flags().Lookup("launch"))
 	machineCmd.AddCommand(startCmd)
-	cli.Commands = append(cli.Commands, startCmd)
+	cli.RootCmd.AddCommand(startCmd)
 }
 
 var start = func(cmd *cobra.Command, args []string) error {

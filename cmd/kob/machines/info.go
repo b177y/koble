@@ -23,5 +23,5 @@ koble machine info b1`,
 func init() {
 	infoCmd.Flags().BoolVar(&infoJson, "json", false, "Print machine info as json object to stdout")
 	machineCmd.AddCommand(infoCmd)
-	cli.Commands = append(cli.Commands, infoCmd)
+	cli.RootCmd.AddCommand(infoCmd)
 }
