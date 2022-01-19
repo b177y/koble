@@ -34,5 +34,7 @@ genrule(
         "mv docs/MAN-MODULE docs/modules",
         "antora docs/playbook.yml --fetch",
         "mv docs/build/site .",
+        "echo koble.b177y.dev > site/CNAME",
+        "touch site/.nojekyll",
     ],
 )
