@@ -1,1 +1,11 @@
-= Example Labs
+= Labs
+
+== Creating a Lab
+
+=== Adding Machines
+
+=== Adding Networks
+
+== Lab Commands
+
+== Advanced Configuration
