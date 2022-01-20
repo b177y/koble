@@ -1,1 +1,238 @@
 = Configuration
+
+== Namespace
+
+[source,yaml]
+----
+namespace: "GLOBAL"
+----
+
+This is the default namespace to use when not overridden by either:
+
+* `--namespace` command line flag
+* Being in a lab directory
+** namespace is set to the `namespace:` value in `lab.yml` if set
+** if not set, namespace is set to the md5 hash of the lab directory path.
+
+== Driver
+
+[source,yaml]
+----
+driver:
+  # driver to use
+  name: podman
+  # override default podman driver config
+  podman:
+    uri: "unix://run/user/1000/podman/podman.sock"
+  
+  # override default uml driver config
+  uml:
+    fs: koble-fs
+----
+
+The `name` value in the `driver` section specifies which Koble driver to use
+to create virtual machines and networks.
+The default is `podman`, which can be changed to `uml` to use User Mode
+Linux instances instead of Podman rootless containers.
+The driver can be overridden using the `--driver` flag from the command line,
+for example:
+
+.List running machines with the UML driver
+[source,sh]
+----
+koble --driver uml ls
+----
+
+All keys other than `name` will be used as driver config for the driver
+with the same name as the key.
+For driver configuration options see link:[drivers(TODO)]
+
+== Terminal
+
+[source,yaml]
+----
+terminal:
+  default: "alacritty"
+  attach: "gnome" # uses default if no option set
+  shell: "gnome" # uses default if no option set
+  exec: "this" # defaults to 'this' (launch in current tty)
+  lab_start: "gnome" # uses default if no option set
+  machine_start: "gnome" # uses default if no option set
+----
+
+The terminal section allows you to specify which terminal should be opened,
+and add extra terminals, or override existing terminals.
+
+The `default` option specifies which terminal should be used if there are no
+overrides for the command.
+This is the option most users will want to change.
+By default, this is set to use gnome terminal.
+The available terminals include:
+
+* alacritty
+* tmux
+* konsole
+* gnome
+* kitty
+* xterm
+* this
+
+The terminal `this` can be used to use the current shell for the command
+instead of opening a new terminal.
+
+Terminal choices can be set to vary by command.
+For example, you might want to use `xterm` for starting a single machine,
+but `gnome` for starting a lab machine.
+
+The options `attach`, `shell`, `exec`, `lab_start` and `machine_start` can
+be set to the name of the terminal to use for the command.
+By default, `exec` is set to `this`,
+meaning no terminal is opened, and the exec command is run in the shell
+where koble was run.
+
+Additionally, you can override the terminal by passing `--terminal NAME`
+as a command line option.
+
+=== Custom Terminals / Terminal Overrides
+
+If you wish to use a terminal which is not provided as a default option
+you can define it in your config.
+Additionally, you can override sections of already defined terminals
+to add functionality.
+
+All keys under `terminal` in the config that do not match `default`,
+`attach`, `shell`, `exec`, `machine_start` or `lab_start`
+will be considered as new terminals or terminal overrides.
+
+The structure used to define a terminal is:
+
+[source,yaml]
+----
+NAME:
+  command: ["command", "to", "run", "term"]
+  options:
+    option_name: value
+----
+
+For example, to override the default alacritty terminal,
+to add a custom class to the window, we can add
+
+[source,yaml]
+----
+terminal:
+  alacritty:
+    command:
+      - "alacritty"
+      - "--class"
+      - "koble"
+      - "-e"
+      - "{{ .Command }}"
+----
+
+The command can include golang templating (and should at least contain
+`{{ .Command }}` as this is the command to execute in the terminal).
+This templating gives access to the variables:
+
+* `Command` - the command to be executed
+* `Machine` - the machine being attached to
+* `Lab` - the current lab (if in one)
+* `Namespace` - the current namespace
+* `Options` - a string to string map of options
+
+Options allow variables to be set as default for a terminal,
+with the ability to override them with command line options.
+For example, the command for tmux uses an option called `session`,
+which defines the name of the tmux session to use.
+By default this is set to *koble* but can be overriden either with
+the config
+
+[source,yaml]
+----
+terminal:
+  tmux:
+     options:
+       session: "koble-custom"
+----
+
+Or by passing `--term-opt session=koble-custom` as a command line option.
+
+== Launch
+
+[source,yaml]
+----
+launch:
+  machine_start: true 
+  lab_start: true
+----
+
+The launch options define whether or not to launch a terminal for the machine(s)
+being started.
+`machine_start` is whether to launch for a machine started with `koble machine start`.
+`lab_start` is whether to launch for machines started with `koble lab start`.
+
+NOTE: when using launch is enabled for lab start, the terminal cannot be set to `this`.
+
+This can be overriden by using `--launch=true` or `--launch=false` as a command
+line option.
+
+== Logging / Output
+
+[source,yaml]
+----
+verbose: 0
+quiet: false
+noninteractive: false
+nocolor: false
+----
+
+By default logging is only set to show warnings.
+To disable warnings and only show errors, `quiet` can be set to true
+(or `--quiet` can be passed to the command line).
+
+To increase the log level, verbose can be set to
+
+* 1 for info logging
+* 2 for debug logging
+* 3 for trace logging
+
+NOTE: this cannot be used in combination with `quiet`
+
+To set the log level from the command line,
+you can use `--verbose=N` or `-v` / `-vv` / `-vvv`.
+
+To disable interactive output (such as animated spinners) you can set
+`noninteractive` to true or pass `--plain`.
+
+To disable coloured output you can set `nocolor` or pass `--no-color`.
+
+== Wait
+
+[source,yaml]
+----
+wait: 300
+----
+
+Wait specifies a timeout (in seconds) to wait for an action to complete.
+For example for `koble machine start m1`, a timeout of 300 will mean the command
+will block for up to 5 minutes to wait for the machine to reach a booted state.
+To prevent blocking, -1 can be used as the timeout value,
+meaning the machine will be 'powered on' but the command will not wait to
+check that it boots successfully.
+
+The timeout value can be overridden with `--wait N` from the command line.
+For example, to disable waiting you could run
+`koble machine start m1 --wait -1`.
+
+== Machine
+
+[source,yaml]
+----
+machine:
+ memory: 128 
+----
+
+NOTE: This feature is not available yet
+
+The *machine* section allows default machine values to be given.
+
+*memory* is how much RAM is assigned to the machine.
