@@ -145,7 +145,376 @@
 </aside>
 <article class="doc">
 <h1 class="page">Configuration</h1>
+<div class="sect1">
+<h2 id="_namespace"><a class="anchor" href="#_namespace"></a>Namespace</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">namespace: "GLOBAL"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is the default namespace to use when not overridden by either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>--namespace</code> command line flag</p>
+</li>
+<li>
+<p>Being in a lab directory</p>
+<div class="ulist">
+<ul>
+<li>
+<p>namespace is set to the <code>namespace:</code> value in <code>lab.yml</code> if set</p>
+</li>
+<li>
+<p>if not set, namespace is set to the md5 hash of the lab directory path.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_driver"><a class="anchor" href="#_driver"></a>Driver</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">driver:
+  # driver to use
+  name: podman
+  # override default podman driver config
+  podman:
+    uri: "unix://run/user/1000/podman/podman.sock"
 
+  # override default uml driver config
+  uml:
+    fs: koble-fs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>name</code> value in the <code>driver</code> section specifies which Koble driver to use
+to create virtual machines and networks.
+The default is <code>podman</code>, which can be changed to <code>uml</code> to use User Mode
+Linux instances instead of Podman rootless containers.
+The driver can be overridden using the <code>--driver</code> flag from the command line,
+for example:</p>
+</div>
+<div class="listingblock">
+<div class="title">List running machines with the UML driver</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble --driver uml ls</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All keys other than <code>name</code> will be used as driver config for the driver
+with the same name as the key.
+For driver configuration options see <a href="">drivers(TODO)</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_terminal"><a class="anchor" href="#_terminal"></a>Terminal</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">terminal:
+  default: "alacritty"
+  attach: "gnome" # uses default if no option set
+  shell: "gnome" # uses default if no option set
+  exec: "this" # defaults to 'this' (launch in current tty)
+  lab_start: "gnome" # uses default if no option set
+  machine_start: "gnome" # uses default if no option set</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The terminal section allows you to specify which terminal should be opened,
+and add extra terminals, or override existing terminals.</p>
+</div>
+<div class="paragraph">
+<p>The <code>default</code> option specifies which terminal should be used if there are no
+overrides for the command.
+This is the option most users will want to change.
+By default, this is set to use gnome terminal.
+The available terminals include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>alacritty</p>
+</li>
+<li>
+<p>tmux</p>
+</li>
+<li>
+<p>konsole</p>
+</li>
+<li>
+<p>gnome</p>
+</li>
+<li>
+<p>kitty</p>
+</li>
+<li>
+<p>xterm</p>
+</li>
+<li>
+<p>this</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The terminal <code>this</code> can be used to use the current shell for the command
+instead of opening a new terminal.</p>
+</div>
+<div class="paragraph">
+<p>Terminal choices can be set to vary by command.
+For example, you might want to use <code>xterm</code> for starting a single machine,
+but <code>gnome</code> for starting a lab machine.</p>
+</div>
+<div class="paragraph">
+<p>The options <code>attach</code>, <code>shell</code>, <code>exec</code>, <code>lab_start</code> and <code>machine_start</code> can
+be set to the name of the terminal to use for the command.
+By default, <code>exec</code> is set to <code>this</code>,
+meaning no terminal is opened, and the exec command is run in the shell
+where koble was run.</p>
+</div>
+<div class="paragraph">
+<p>Additionally, you can override the terminal by passing <code>--terminal NAME</code>
+as a command line option.</p>
+</div>
+<div class="sect2">
+<h3 id="_custom_terminals_terminal_overrides"><a class="anchor" href="#_custom_terminals_terminal_overrides"></a>Custom Terminals / Terminal Overrides</h3>
+<div class="paragraph">
+<p>If you wish to use a terminal which is not provided as a default option
+you can define it in your config.
+Additionally, you can override sections of already defined terminals
+to add functionality.</p>
+</div>
+<div class="paragraph">
+<p>All keys under <code>terminal</code> in the config that do not match <code>default</code>,
+<code>attach</code>, <code>shell</code>, <code>exec</code>, <code>machine_start</code> or <code>lab_start</code>
+will be considered as new terminals or terminal overrides.</p>
+</div>
+<div class="paragraph">
+<p>The structure used to define a terminal is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">NAME:
+  command: ["command", "to", "run", "term"]
+  options:
+    option_name: value</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, to override the default alacritty terminal,
+to add a custom class to the window, we can add</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">terminal:
+  alacritty:
+    command:
+      - "alacritty"
+      - "--class"
+      - "koble"
+      - "-e"
+      - "{{ .Command }}"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The command can include golang templating (and should at least contain
+<code>{{ .Command }}</code> as this is the command to execute in the terminal).
+This templating gives access to the variables:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Command</code> - the command to be executed</p>
+</li>
+<li>
+<p><code>Machine</code> - the machine being attached to</p>
+</li>
+<li>
+<p><code>Lab</code> - the current lab (if in one)</p>
+</li>
+<li>
+<p><code>Namespace</code> - the current namespace</p>
+</li>
+<li>
+<p><code>Options</code> - a string to string map of options</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Options allow variables to be set as default for a terminal,
+with the ability to override them with command line options.
+For example, the command for tmux uses an option called <code>session</code>,
+which defines the name of the tmux session to use.
+By default this is set to <strong>koble</strong> but can be overriden either with
+the config</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">terminal:
+  tmux:
+     options:
+       session: "koble-custom"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or by passing <code>--term-opt session=koble-custom</code> as a command line option.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_launch"><a class="anchor" href="#_launch"></a>Launch</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">launch:
+  machine_start: true
+  lab_start: true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The launch options define whether or not to launch a terminal for the machine(s)
+being started.
+<code>machine_start</code> is whether to launch for a machine started with <code>koble machine start</code>.
+<code>lab_start</code> is whether to launch for machines started with <code>koble lab start</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+when using launch is enabled for lab start, the terminal cannot be set to <code>this</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This can be overriden by using <code>--launch=true</code> or <code>--launch=false</code> as a command
+line option.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_logging_output"><a class="anchor" href="#_logging_output"></a>Logging / Output</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">verbose: 0
+quiet: false
+noninteractive: false
+nocolor: false</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default logging is only set to show warnings.
+To disable warnings and only show errors, <code>quiet</code> can be set to true
+(or <code>--quiet</code> can be passed to the command line).</p>
+</div>
+<div class="paragraph">
+<p>To increase the log level, verbose can be set to</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>1 for info logging</p>
+</li>
+<li>
+<p>2 for debug logging</p>
+</li>
+<li>
+<p>3 for trace logging</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+this cannot be used in combination with <code>quiet</code>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>To set the log level from the command line,
+you can use <code>--verbose=N</code> or <code>-v</code> / <code>-vv</code> / <code>-vvv</code>.</p>
+</div>
+<div class="paragraph">
+<p>To disable interactive output (such as animated spinners) you can set
+<code>noninteractive</code> to true or pass <code>--plain</code>.</p>
+</div>
+<div class="paragraph">
+<p>To disable coloured output you can set <code>nocolor</code> or pass <code>--no-color</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_wait"><a class="anchor" href="#_wait"></a>Wait</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">wait: 300</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Wait specifies a timeout (in seconds) to wait for an action to complete.
+For example for <code>koble machine start m1</code>, a timeout of 300 will mean the command
+will block for up to 5 minutes to wait for the machine to reach a booted state.
+To prevent blocking, -1 can be used as the timeout value,
+meaning the machine will be 'powered on' but the command will not wait to
+check that it boots successfully.</p>
+</div>
+<div class="paragraph">
+<p>The timeout value can be overridden with <code>--wait N</code> from the command line.
+For example, to disable waiting you could run
+<code>koble machine start m1 --wait -1</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_machine"><a class="anchor" href="#_machine"></a>Machine</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">machine:
+ memory: 128</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This feature is not available yet
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <strong>machine</strong> section allows default machine values to be given.</p>
+</div>
+<div class="paragraph">
+<p><strong>memory</strong> is how much RAM is assigned to the machine.</p>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>
