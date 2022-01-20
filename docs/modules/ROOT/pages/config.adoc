@@ -52,7 +52,7 @@ For driver configuration options see link:[drivers(TODO)]
 [source,yaml]
 ----
 terminal:
-  default: "alacritty"
+  default: "gnome"
   attach: "gnome" # uses default if no option set
   shell: "gnome" # uses default if no option set
   exec: "this" # defaults to 'this' (launch in current tty)
