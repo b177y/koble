@@ -1,5 +1,7 @@
 site:
   title: Koble Docs
+  url: https://koble.b177y.dev
+  start_page: koble-docs:ROOT:index.adoc
 content:
   sources: 
   - url: https://github.com/b177y/koble
