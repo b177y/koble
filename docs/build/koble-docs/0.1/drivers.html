@@ -75,7 +75,7 @@
     <a class="nav-link" href="installation.html">Installation</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="labs.html">Koble Labs</a>
+    <a class="nav-link" href="labs.html">Example Labs</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="config.html">Configuration</a>
@@ -155,19 +155,163 @@
 <div class="sect1">
 <h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>Koble uses a modular driver system allowing different backends to be used
+to run virtual machines and networks.
+Currently the available drivers are <strong>podman</strong> and <strong>uml</strong>.
+The podman driver uses <a href="https://podman.io/">Podman</a> rootless containers as virtual machines.
+The uml driver uses
+<a href="https://www.kernel.org/doc/html/v5.14-rc7/virt/uml/user_mode_linux_howto_v2.html">User Mode Linux</a> instances.</p>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_user_mode_linux"><a class="anchor" href="#_user_mode_linux"></a>User Mode Linux</h2>
-<div class="sectionbody">
-
 </div>
 </div>
 <div class="sect1">
 <h2 id="_podman"><a class="anchor" href="#_podman"></a>Podman</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The podman driver uses rootless containers as virtual machines.
+This provides a low level of virtualisation as these machines are just
+isolated processes running on the same host.
+This provides the benefit of speed compared as there is no translation of running
+code for virtualisation, and no need for running a separate kernel to the host.</p>
+</div>
+<div class="paragraph">
+<p>The current podman driver relies on the Podman API server running at an accessible
+endpoint.
+This can be run manually with:</p>
+</div>
+<div class="sect2">
+<h3 id="_setup"><a class="anchor" href="#_setup"></a>Setup</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you have followed the installation guide these steps will already be completed
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This driver requires Podman to be installed.
+Version 3.4 or higher is recommended.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">podman --log-level=info system service</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However the easier way to run this is with systemd socket activation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">systemctl --user start podman</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>Configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">driver:
+  name: podman
+  podman:
+    uri: "unix://run/user/1000/podman/podman.sock"
+    default_image: "koble/debian"</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>uri</strong> - The address of the podman api server.</p>
+</li>
+<li>
+<p><strong>default_image</strong> - The default container image to use for machines.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_user_mode_linux"><a class="anchor" href="#_user_mode_linux"></a>User Mode Linux</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The uml driver uses User Mode Linux instances to run virtual machines.
+This provides lightweight isolation, with each virtual machine having
+a separate kernel.
+This allows more system level tweaking (e.g. sysctl) than what is
+available/easy with containers,
+whilst being less resource intensive than traditional full virtualisation methods.</p>
+</div>
+<div class="sect2">
+<h3 id="_setup_2"><a class="anchor" href="#_setup_2"></a>Setup</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If you have followed the installation guide these steps will already be completed
+</td>
+</tr>
+</table>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Download the
+<a href="https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2">UML filesystem</a>
+to ~/.local/share/uml/images/koble-fs</p>
+</li>
+<li>
+<p>Download the
+<a href="https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2">UML kernel</a>
+to ~/.local/share/uml/kernel/koble-kernel</p>
+</li>
+<li>
+<p>Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_2"><a class="anchor" href="#_configuration_2"></a>Configuration</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">driver:
+  name: uml
+  uml:
+    storage_dir: ~/.local/share/uml
+    run_dir: /run/user/1000/uml
+    kernel: koble-kernel
+    default_image: koble-fs</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>storage_dir</strong> - The base directory for UML filesystems, overlay images and
+kernel binaries.</p>
+</li>
+<li>
+<p><strong>run_dir</strong> - The base directory for storing running instance information and sockets.</p>
+</li>
+<li>
+<p><strong>kernel</strong> - The name of the kernel binary within the
+$STORAGE_DIR/kernel/ directory.</p>
+</li>
+<li>
+<p><strong>default_image</strong> - The name of the filesystem image within the
+$STORAGE_DIR/images/ directory.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 </article>
