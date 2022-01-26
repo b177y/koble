@@ -117,6 +117,7 @@ koble shell b
 
 We can now try to ping machine *a* from the shell we have on machine *b*:
 
+.b
 [source,sh]
 ----
 ping -c1 172.16.10.1

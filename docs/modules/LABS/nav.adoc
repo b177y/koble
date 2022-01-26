@@ -1,2 +1,3 @@
 .Example Labs
 * xref:abr.adoc[]
+* xref:dns.adoc[]

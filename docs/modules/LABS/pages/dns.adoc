@@ -1,0 +1,91 @@
+= DNS
+
+== Download Lab
+
+// download
+Download the lab from here (TODO)
+
+Look at the contents of `lab.yml` and the `.startup` files.
+You can see we have the following machines:
+
+* *d0* - our DNS server. This is also a gateway to the Internet.
+* *web* - a web server.
+* *pc* - our client for testing DNS resolution.
+This is set up to use `d0` as its default DNS server.
+
+== Start Lab
+
+[source,sh]
+----
+koble lab start
+----
+
+First we will set up `tcpdump` to listen for traffic on machine `d0`.
+
+.d0
+[source,sh]
+----
+tcpdump -s0 -i any -w /hostlab/dns_lab-1.pcap
+----
+
+Now on `pc` we can attempt to resolve `google.com`.
+
+.pc
+[source,sh]
+----
+nslookup google.com
+----
+
+Now we can stop tcpdump on `d0` and view the capture from wireshark on
+the host.
+
+
+== Challenge
+
+If we try to resolve the internal web server at `internal.cyber.lab`
+we won't find anything as there are no DNS entries set for this.
+
+.pc
+[source,sh]
+----
+nslookup internal.cyber.lab
+----
+
+To make this work we need to add an entry to the `dnsmasq` config
+on `d0` for internal.cyber.lab to resolve to 10.72.16.20 and
+restart the service.
+
+.Solution
+[%collapsible]
+====
+// add dnsmasq entry for web
+./etc/dnsmasq.conf
+[source,conf]
+----
+...
+
+address=/internal.cyber.lab/10.72.16.20
+----
+
+
+.d0
+[source,sh]
+----
+systemctl restart dnsmasq
+----
+
+====
+
+Now you should be able to resolve the web server and connect to it:
+
+.pc
+[source,sh]
+----
+nslookup internal.cyber.lab
+----
+
+.pc
+[source,sh]
+----
+curl internal.cyber.lab
+----
