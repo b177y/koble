@@ -42,14 +42,11 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 	return m.p.State()
 }
 
-// TODO share with podman driver
 func (m *Machine) getLabels() map[string]string {
 	labels := make(map[string]string)
 	labels["koble"] = "true"
 	labels["koble:name"] = m.Name()
-	// if m.Lab != "" {
-	// 	labels["koble:lab"] = m.Lab
-	// }
+	labels["koble:driver"] = "uml"
 	labels["koble:namespace"] = m.namespace
 	return labels
 }
@@ -150,9 +147,9 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		s.Mounts = append(s.Mounts, mnt)
 	}
 	s.Mounts = append(s.Mounts, specs.Mount{
-		Source:      "/home/billy/.local/share/uml",
+		Source:      m.ud.Config.StorageDir,
 		Destination: "/uml",
-		Options:     []string{"exec"},
+		Options:     []string{"exec", "ro"},
 		Type:        "bind",
 	})
 	s.Mounts = append(s.Mounts, specs.Mount{
@@ -161,6 +158,10 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		Type:        "tmpfs",
 	})
 	var networks []string
+	for i := range opts.Networks {
+		cmd := fmt.Sprintf("eth%d=tuntap,nk%d", i, i)
+		networks = append(networks, cmd)
+	}
 	kernCmd, err := getKernelCMD(m, *opts, networks)
 	s.Command = append(s.Command, strings.Join(kernCmd, " "))
 	fmt.Println("starting with command", s.Command)

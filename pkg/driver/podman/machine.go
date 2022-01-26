@@ -71,9 +71,7 @@ func (m *Machine) getLabels() map[string]string {
 	labels := make(map[string]string)
 	labels["koble"] = "true"
 	labels["koble:name"] = m.Name()
-	// if m.Lab != "" {
-	// 	labels["koble:lab"] = m.Lab
-	// }
+	labels["koble:driver"] = "podman"
 	labels["koble:namespace"] = m.namespace
 	return labels
 }
