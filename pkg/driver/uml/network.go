@@ -9,6 +9,7 @@ import (
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/b177y/koble/pkg/driver/uml/vecnet"
 	"github.com/creasty/defaults"
+	log "github.com/sirupsen/logrus"
 )
 
 type Network struct {
@@ -33,19 +34,23 @@ func (n *Network) Create(opts *driver.NetConfig) error {
 	if err := defaults.Set(opts); err != nil {
 		return err
 	}
+	log.Debugf("checking if net %s already exists\n", n.name)
 	exists, err := n.Exists()
 	if err != nil {
 		return fmt.Errorf("could not check if net %s exists: %w",
 			n.name, err)
 	}
 	if exists {
+		log.Debug("net already exists")
 		return driver.ErrExists
 	}
 	if err := vecnet.NewNet(n.name, n.namespace); err != nil {
 		return err
 	}
 	if opts.External {
-		return vecnet.MakeNetExternal(n.name, n.namespace, "")
+		return vecnet.MakeNetExternal(n.name, n.namespace, opts.Subnet)
+	} else {
+		log.Debugf("network %s is internal\n", n.name)
 	}
 	netDir := filepath.Join(n.ud.Config.RunDir, "net", n.Id())
 	if err := os.MkdirAll(netDir, 0744); err != nil {

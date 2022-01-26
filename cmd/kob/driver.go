@@ -5,6 +5,7 @@ import (
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/b177y/koble/pkg/driver/podman"
 	"github.com/b177y/koble/pkg/driver/uml"
+	"github.com/b177y/koble/pkg/driver/upod"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,9 @@ func init() {
 	})
 	driver.RegisterDriver("uml", func() driver.Driver {
 		return new(uml.UMLDriver)
+	})
+	driver.RegisterDriver("upod", func() driver.Driver {
+		return new(upod.UMLDriver)
 	})
 	err := driver.RegisterDriverCmds(driverCmd)
 	if err != nil {

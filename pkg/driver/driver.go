@@ -20,9 +20,8 @@ var registeredDrivers = map[string]DriverInitialiser{}
 
 func RegisterDriver(name string, d DriverInitialiser) {
 	if _, ok := registeredDrivers[name]; ok {
-		log.Warnf("not registering driver %s, already registered.\n")
+		log.Warnf("not registering driver %s, already registered.\n", name)
 	}
-	fmt.Println("registering driver", name)
 	registeredDrivers[name] = d
 }
 
@@ -41,7 +40,6 @@ func RegisterDriverCmds(cmd *cobra.Command) error {
 
 func GetDriver(name string, conf map[string]interface{}) (d Driver,
 	err error) {
-	fmt.Println("getting driver", name, registeredDrivers)
 	if initialiser, ok := registeredDrivers[name]; ok {
 		d := initialiser()
 		return d, d.SetupDriver(conf)

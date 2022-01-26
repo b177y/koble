@@ -37,12 +37,12 @@ func (m *Machine) Id() string {
 }
 
 func (m *Machine) Exists() (bool, error) {
-	return containers.Exists(m.pd.conn, m.Id(), nil)
+	return containers.Exists(m.pd.Conn, m.Id(), nil)
 }
 
 func (m *Machine) Running() bool {
 	// TODO add err
-	inspect, err := containers.Inspect(m.pd.conn, m.Id(), nil)
+	inspect, err := containers.Inspect(m.pd.Conn, m.Id(), nil)
 	if err != nil {
 		return false
 	}
@@ -57,7 +57,7 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 		return driver.MachineState{Exists: false}, driver.ErrNotExists
 	}
 	state.Exists = true
-	inspect, err := containers.Inspect(m.pd.conn, m.Id(), nil)
+	inspect, err := containers.Inspect(m.pd.Conn, m.Id(), nil)
 	if err != nil {
 		return state, err
 	}
@@ -123,23 +123,19 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		if m.Running() {
 			return nil
 		} else {
-			prev := log.GetLevel()
-			log.SetLevel(log.ErrorLevel)
-			err = containers.Start(m.pd.conn, m.Id(), nil)
-			log.SetLevel(prev)
-			return err
+			return containers.Start(m.pd.Conn, m.Id(), nil)
 		}
 	}
 	if opts.Image == "" {
 		opts.Image = m.pd.Config.DefaultImage
 	}
-	imExists, err := images.Exists(m.pd.conn, opts.Image, nil)
+	imExists, err := images.Exists(m.pd.Conn, opts.Image, nil)
 	if err != nil {
 		return err
 	}
 	if !imExists {
 		fmt.Println("Image", opts.Image, "does not already exist, attempting to pull...")
-		_, err = images.Pull(m.pd.conn, opts.Image, nil)
+		_, err = images.Pull(m.pd.Conn, opts.Image, nil)
 		if err != nil {
 			return err
 		}
@@ -149,20 +145,27 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	s.Hostname = m.Name()
 	s.Command = []string{"/sbin/init"}
 	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
-	s.NetNS = specgen.Namespace{
-		NSMode: specgen.Bridge,
+	if len(opts.Networks) != 0 {
+		s.NetNS = specgen.Namespace{
+			NSMode: specgen.Bridge,
+		}
+		s.CNINetworks = make([]string, 0)
+		for _, n := range opts.Networks {
+			net, err := m.pd.Network(n, m.namespace)
+			if err != nil {
+				return err
+			}
+			s.CNINetworks = append(s.CNINetworks, net.Id())
+		}
+	} else {
+		s.NetNS = specgen.Namespace{
+			NSMode: specgen.NoNetwork,
+		}
 	}
 	s.UseImageHosts = true
 	s.Sysctl = make(map[string]string, 0)
 	s.Sysctl["net.ipv4.conf.all.forwarding"] = "1"
 	s.UseImageResolvConf = true
-	for _, n := range opts.Networks {
-		net, err := m.pd.Network(n, m.namespace)
-		if err != nil {
-			return err
-		}
-		s.CNINetworks = append(s.CNINetworks, net.Id())
-	}
 	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
 		Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value koble-startup-phase2.service)", "-eq", "1"},
 		Timeout: 3 * time.Second,
@@ -175,7 +178,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		}
 		s.Mounts = append(s.Mounts, mnt)
 	}
-	createResponse, err := containers.CreateWithSpec(m.pd.conn, s, nil)
+	createResponse, err := containers.CreateWithSpec(m.pd.Conn, s, nil)
 	if err != nil {
 		return err
 	}
@@ -184,12 +187,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	// if err != nil {
 	// 	return err
 	// }
-	// temporary fix to https://github.com/containers/podman/issues/12204
-	prev := log.GetLevel()
-	log.SetLevel(log.ErrorLevel)
-	err = containers.Start(m.pd.conn, createResponse.ID, nil)
-	log.SetLevel(prev)
-	return err
+	return containers.Start(m.pd.Conn, createResponse.ID, nil)
 }
 
 func (m *Machine) Stop(force bool) error {
@@ -212,9 +210,9 @@ func (m *Machine) Stop(force bool) error {
 		return fmt.Errorf("Can't stop %s as it isn't running", m.Name())
 	}
 	if force {
-		return containers.Kill(m.pd.conn, m.Id(), nil)
+		return containers.Kill(m.pd.Conn, m.Id(), nil)
 	}
-	return containers.Stop(m.pd.conn, m.Id(), nil)
+	return containers.Stop(m.pd.Conn, m.Id(), nil)
 }
 
 func (m *Machine) Remove() error {
@@ -225,17 +223,21 @@ func (m *Machine) Remove() error {
 	if !exists {
 		return nil
 	}
-	return containers.Remove(m.pd.conn, m.Id(), nil)
+	return containers.Remove(m.pd.Conn, m.Id(), nil)
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
-	s, err := containers.Inspect(m.pd.conn, m.Id(), nil)
+	s, err := containers.Inspect(m.pd.Conn, m.Id(), nil)
 	if err != nil {
 		return info, err
 	}
 	var networks []string
 	for key := range s.NetworkSettings.Networks {
-		networks = append(networks, key)
+		parts := strings.Split(key, ".")
+		if len(parts) != 3 {
+			return info, fmt.Errorf("network (%s) name format incorrect", key)
+		}
+		networks = append(networks, parts[2])
 	}
 	info = driver.MachineInfo{
 		Name:      m.name,
@@ -271,7 +273,7 @@ func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
 		fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.Name())
 		fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
 	}
-	return containers.Attach(m.pd.conn, m.Id(),
+	return containers.Attach(m.pd.Conn, m.Id(),
 		os.Stdin, os.Stdout, os.Stderr, nil, aOpts)
 }
 
@@ -294,7 +296,7 @@ func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
 	ec.AttachStdin = true
 	ec.AttachStdout = true
 	ec.Tty = true
-	exId, err := containers.ExecCreate(m.pd.conn, m.Id(), ec)
+	exId, err := containers.ExecCreate(m.pd.Conn, m.Id(), ec)
 	if err != nil {
 		return err
 	}
@@ -305,7 +307,7 @@ func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
 	options.WithAttachError(true)
 	options.WithInputStream(*bufio.NewReader(os.Stdin))
 	options.WithAttachInput(true)
-	err = containers.ExecStartAndAttach(m.pd.conn, exId, options)
+	err = containers.ExecStartAndAttach(m.pd.Conn, exId, options)
 	return err
 }
 
@@ -330,7 +332,7 @@ func (m *Machine) Exec(command string,
 		ec.AttachStderr = true
 		ec.AttachStdout = true
 	}
-	exId, err := containers.ExecCreate(m.pd.conn, m.Id(), ec)
+	exId, err := containers.ExecCreate(m.pd.Conn, m.Id(), ec)
 	if err != nil {
 		return err
 	}
@@ -341,7 +343,7 @@ func (m *Machine) Exec(command string,
 		options.WithErrorStream(io.WriteCloser(os.Stderr))
 		options.WithAttachError(true)
 	}
-	err = containers.ExecStartAndAttach(m.pd.conn, exId, options)
+	err = containers.ExecStartAndAttach(m.pd.Conn, exId, options)
 	return err
 }
 
@@ -373,7 +375,7 @@ func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
 			fmt.Println(recv)
 		}
 	}()
-	err = containers.Logs(m.pd.conn, m.Id(), lOpts, stdoutChan, stderrChan)
+	err = containers.Logs(m.pd.Conn, m.Id(), lOpts, stdoutChan, stderrChan)
 	return err
 }
 
@@ -399,7 +401,7 @@ func (m *Machine) CopyInFiles(hostlab string) error {
 			log.Fatal(err)
 		}
 	}()
-	cp, err := containers.CopyFromArchiveWithOptions(m.pd.conn, m.Id(), "/", reader, opts)
+	cp, err := containers.CopyFromArchiveWithOptions(m.pd.Conn, m.Id(), "/", reader, opts)
 	if err != nil {
 		return err
 	}

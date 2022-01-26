@@ -14,6 +14,7 @@ go_binary(
         "//pkg/driver",
         "//pkg/driver/podman",
         "//pkg/driver/uml",
+        "//pkg/driver/upod",
         "//pkg/koble",
         "//third_party/go:github.com__fatih__color",
         "//third_party/go:github.com__sirupsen__logrus",

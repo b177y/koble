@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	prettyjson "github.com/hokaccha/go-prettyjson"
 	spec "github.com/opencontainers/runtime-spec/specs-go"
+	log "github.com/sirupsen/logrus"
 )
 
 func mergeMachineConf(base driver.MachineConfig,
@@ -36,6 +37,9 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
 		net := driver.NetConfig{}
 		if labN, ok := nk.Lab.Networks[n]; ok {
 			net = labN
+			log.Debugf("using lab network %s: %+v\n", n, net)
+		} else {
+			log.Debugf("network %s not found in lab, using default\n", n)
 		}
 		err := nk.StartNetwork(n, net)
 		if err != nil && err != driver.ErrExists {

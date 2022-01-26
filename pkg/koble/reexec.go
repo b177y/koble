@@ -11,6 +11,7 @@ import (
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/b177y/koble/pkg/driver/podman"
 	"github.com/b177y/koble/pkg/driver/uml"
+	"github.com/b177y/koble/pkg/driver/upod"
 )
 
 func init() {
@@ -20,6 +21,9 @@ func init() {
 	})
 	driver.RegisterDriver("uml", func() driver.Driver {
 		return new(uml.UMLDriver)
+	})
+	driver.RegisterDriver("upod", func() driver.Driver {
+		return new(upod.UMLDriver)
 	})
 	gob.Register(map[string]interface{}{})
 	// gob.Register(&podman.PodmanDriver{})

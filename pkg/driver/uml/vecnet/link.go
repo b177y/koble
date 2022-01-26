@@ -231,7 +231,14 @@ func AddSlirpIface(name, bridge, namespace, subnet, sockpath string) error {
 		Args: getSlirpArgs(nsPath, ifaceName, subnet, sockpath),
 	}
 	// TODO find a better way to get errors from start
+	// if sockpath == "" {
+	// 	fmt.Println("running slirp with:", cmd)
+	// 	cmd.Stdout = os.Stdout
+	// 	cmd.Stderr = os.Stderr
+	// 	err = cmd.Run()
+	// } else {
 	err = cmd.Start()
+	// }
 	if err != nil {
 		return fmt.Errorf("could not start slirp4netns with args %v: %w", cmd.Args, err)
 	}

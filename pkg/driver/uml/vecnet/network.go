@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/containernetworking/plugins/pkg/ns"
+	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -54,6 +55,8 @@ func RemoveHostTap(machine, network, namespace string) error {
 }
 
 func MakeNetExternal(network, namespace, subnet string) error {
+	log.WithFields(log.Fields{"network": network, "namespace": namespace,
+		"subnet": subnet}).Debug("giving external access to network")
 	return WithNetNS(namespace, func(ns.NetNS) error {
 		bridge := "nbr_" + network
 		return AddSlirpIface("ext_"+network, bridge, namespace, subnet, "")

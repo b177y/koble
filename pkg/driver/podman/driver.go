@@ -9,7 +9,7 @@ import (
 )
 
 type PodmanDriver struct {
-	conn   context.Context
+	Conn   context.Context
 	Name   string
 	Config Config
 }

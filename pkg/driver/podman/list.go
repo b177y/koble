@@ -11,7 +11,7 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 	opts.WithAll(true)
 	filters := getFilters("", namespace, all) // TODO get namespace here
 	opts.WithFilters(filters)
-	ctrs, err := containers.List(pd.conn, opts)
+	ctrs, err := containers.List(pd.Conn, opts)
 	if err != nil {
 		return machines, err
 	}
@@ -34,7 +34,7 @@ func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
 	opts.WithAll(true)
 	filters := getFilters("", "", true)
 	opts.WithFilters(filters)
-	ctrs, err := containers.List(pd.conn, opts)
+	ctrs, err := containers.List(pd.Conn, opts)
 	if err != nil {
 		return namespaces, err
 	}

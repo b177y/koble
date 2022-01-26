@@ -64,7 +64,7 @@ func (n *Network) Create(opts *driver.NetConfig) (err error) {
 		cOpts.WithName(n.Id())
 		cOpts.WithLabels(n.getNetLabels())
 		cOpts.WithInternal(false)
-		_, err = network.Create(n.pd.conn, cOpts)
+		_, err = network.Create(n.pd.Conn, cOpts)
 		return err
 	} else {
 		home, err := os.UserHomeDir()
@@ -92,7 +92,7 @@ func (n *Network) Start() (err error) {
 }
 
 func (n *Network) Remove() (err error) {
-	_, err = network.Remove(n.pd.conn, n.Id(), nil)
+	_, err = network.Remove(n.pd.Conn, n.Id(), nil)
 	return err
 }
 
@@ -105,7 +105,7 @@ func (n *Network) Running() (running bool, err error) {
 	return n.Exists()
 }
 
-func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.NetInfo, err error) {
+func (pd *PodmanDriver) ListNetworks(namespace string, all bool) (networks []driver.NetInfo, err error) {
 	// opts := new(network.ListOptions)
 	// filters := getFilters("", lab, "GLOBAL", all)
 	// opts.WithFilters(filters)
@@ -161,7 +161,7 @@ func (pd *PodmanDriver) ListNetworks(lab string, all bool) (networks []driver.Ne
 }
 
 func (n *Network) Exists() (bool, error) {
-	return network.Exists(n.pd.conn, n.Id(), nil)
+	return network.Exists(n.pd.Conn, n.Id(), nil)
 }
 
 func (n *Network) Info() (nInfo driver.NetInfo, err error) {
@@ -172,7 +172,7 @@ func (n *Network) Info() (nInfo driver.NetInfo, err error) {
 	if !exists {
 		return nInfo, driver.ErrNotExists
 	}
-	info, err := network.Inspect(n.pd.conn, n.Id(), nil)
+	info, err := network.Inspect(n.pd.Conn, n.Id(), nil)
 	if err != nil {
 		return nInfo, err
 	}

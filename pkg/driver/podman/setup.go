@@ -14,7 +14,7 @@ func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 		return err
 	}
 	log.Debug("Attempting to connect to podman socket.")
-	pd.conn, err = bindings.NewConnection(context.Background(), pd.Config.URI)
+	pd.Conn, err = bindings.NewConnection(context.Background(), pd.Config.URI)
 	if err != nil {
 		return err
 	}
