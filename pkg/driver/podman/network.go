@@ -16,11 +16,7 @@ func (n *Network) getNetLabels() map[string]string {
 	labels := make(map[string]string)
 	labels["koble"] = "true"
 	labels["koble:name"] = n.Name()
-	// if n.Lab != "" {
-	// 	labels["koble:lab"] = n.Lab
-	// } else {
-	// 	labels["koble:nolab"] = "true"
-	// }
+	labels["koble:driver"] = "podman"
 	labels["koble:namespace"] = n.Namespace
 	return labels
 }
@@ -47,43 +43,44 @@ func (n *Network) Create(opts *driver.NetConfig) (err error) {
 	if exists {
 		return driver.ErrExists
 	}
-	if opts.External {
-		cOpts := new(network.CreateOptions)
-		if opts.Subnet != "" && opts.Gateway != "" {
-			_, sn, err := net.ParseCIDR(opts.Subnet)
-			if err != nil {
-				return err
-			}
-			gw := net.ParseIP(opts.Gateway)
-			if gw == nil {
-				return fmt.Errorf("Could not parse IP %s as Gateway", opts.Gateway)
-			}
-			cOpts.WithGateway(gw)
-			cOpts.WithSubnet(*sn)
-		}
-		cOpts.WithName(n.Id())
-		cOpts.WithLabels(n.getNetLabels())
-		cOpts.WithInternal(false)
-		_, err = network.Create(n.pd.Conn, cOpts)
-		return err
-	} else {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return err
-		}
-		// TODO check ~/.config/cni/net.d/cni.lock ??
-		f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Id()+".conflist"))
-		defer f.Close()
-		if err != nil {
-			return err
-		}
-		tmpl, err := template.New("netconf").Parse(NET)
-		if err != nil {
-			return err
-		}
-		err = tmpl.Execute(f, n)
+	home, err := os.UserHomeDir()
+	if err != nil {
 		return err
 	}
+	// TODO check ~/.config/cni/net.d/cni.lock ??
+	f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Id()+".conflist"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	var tmpl *template.Template
+	if opts.External {
+		if opts.Subnet == "" || opts.Gateway == "" {
+			return fmt.Errorf("gateway and subnet must be specified for network %s", n.name)
+		}
+		_, _, err := net.ParseCIDR(opts.Subnet)
+		if err != nil {
+			return err
+		}
+		gw := net.ParseIP(opts.Gateway)
+		if gw == nil {
+			return fmt.Errorf("Could not parse IP %s as gateway", opts.Gateway)
+		}
+		tmpl, err = template.New("netconf").Parse(EXTERNAL_NET)
+		if err != nil {
+			return err
+		}
+	} else {
+		tmpl, err = template.New("netconf").Parse(INTERNAL_NET)
+		if err != nil {
+			return err
+		}
+	}
+
+	return tmpl.Execute(f, tmplNet{
+		Net:  n,
+		Opts: *opts,
+	})
 }
 
 func (n *Network) Start() (err error) {

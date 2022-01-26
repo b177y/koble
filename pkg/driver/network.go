@@ -12,11 +12,11 @@ type NetInfo struct {
 }
 
 type NetConfig struct {
-	External bool   `default:"false" json:"external,omitempty"`
-	Gateway  string `default:"" json:"gateway,omitempty"`
-	IpRange  string `default:"" json:"iprange,omitempty"`
-	Subnet   string `default:"" json:"subnet,omitempty"`
-	IPv6     string `default:"" json:"ipv6,omitempty"`
+	External bool   `default:"false" mapstructure:"external,omitempty"`
+	Gateway  string `default:"" mapstructure:"gateway,omitempty"`
+	IpRange  string `default:"" mapstructure:"iprange,omitempty"`
+	Subnet   string `default:"" mapstructure:"subnet,omitempty"`
+	IPv6     string `default:"" mapstructure:"ipv6,omitempty"`
 }
 
 type Network interface {

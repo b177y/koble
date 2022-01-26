@@ -28,6 +28,7 @@ func (m *Machine) Name() string {
 
 func (m *Machine) Id() string {
 	return m.p.Id()
+	// return m.p.Id() + ".uml"
 }
 
 func (m *Machine) Exists() (bool, error) {
