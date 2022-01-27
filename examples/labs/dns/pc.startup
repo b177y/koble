@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ip link set eth0 up
+ip addr add 10.72.16.10/24 dev eth0

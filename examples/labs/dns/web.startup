@@ -1,0 +1,6 @@
+#!/bin/bash
+
+ip link set eth0 up
+ip addr add 10.72.16.20/24 dev eth0
+
+systemctl start apache2

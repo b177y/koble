@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ip link set eth0 up
+# ip addr add 10.16.55.10/24 dev eth0
+# ip route add default via 10.16.55.254 dev eth0
+ip link set eth1 up
+ip addr add 10.72.16.254/24 dev eth1
+systemctl start dnsmasq
