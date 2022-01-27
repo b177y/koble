@@ -110,6 +110,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 			return err
 		}
 	}
+	opts.Image = m.ud.Config.DefaultImage
 	s := specgen.NewSpecGenerator("localhost/ubuntest", false)
 	s.Name = m.Id()
 	s.Hostname = m.Name()
@@ -189,7 +190,20 @@ func (m *Machine) Remove() error {
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
-	return m.p.Info()
+	info, err = m.p.Info()
+	if err != nil {
+		return info, err
+	}
+	inspect, err := containers.Inspect(m.ud.Podman.Conn, m.Id(), nil)
+	if err != nil {
+		return info, err
+	}
+	if val, ok := inspect.Config.Labels["uml:image"]; ok {
+		info.Image = val
+	} else {
+		return info, fmt.Errorf("label uml:image not added for %s", m.Name())
+	}
+	return info, err
 }
 
 func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
@@ -218,8 +232,54 @@ func (m *Machine) Networks() ([]driver.Network, error) {
 	return []driver.Network{}, driver.ErrNotImplemented
 }
 
+func getFilters(machine, namespace, driver string, all bool) map[string][]string {
+	filters := make(map[string][]string)
+	var labelFilters []string
+	labelFilters = append(labelFilters, "koble=true")
+	labelFilters = append(labelFilters, "koble:driver=uml")
+	if !all {
+		labelFilters = append(labelFilters, "koble:namespace="+namespace)
+		if machine != "" {
+			labelFilters = append(labelFilters, "koble:name="+machine)
+		}
+	}
+	filters["label"] = labelFilters
+	return filters
+}
+
+func getInfoFromLabels(labels map[string]string) (name, namespace string) {
+	if val, ok := labels["koble:name"]; ok {
+		name = val
+	}
+	if val, ok := labels["koble:namespace"]; ok {
+		namespace = val
+	}
+	return name, namespace
+}
+
 func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
-	return ud.Podman.ListMachines(namespace, all)
+	var machines []driver.MachineInfo
+	opts := new(containers.ListOptions)
+	opts.WithAll(true)
+	filters := getFilters("", namespace, "uml", all)
+	opts.WithFilters(filters)
+	ctrs, err := containers.List(ud.Podman.Conn, opts)
+	if err != nil {
+		return machines, err
+	}
+	for _, c := range ctrs {
+		name, ns := getInfoFromLabels(c.Labels)
+		m, err := ud.Machine(name, ns)
+		if err != nil {
+			return machines, err
+		}
+		info, err := m.Info()
+		if err != nil {
+			return machines, err
+		}
+		machines = append(machines, info)
+	}
+	return machines, nil
 }
 
 func (ud *UMLDriver) ListAllNamespaces() ([]string, error) {

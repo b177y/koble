@@ -90,17 +90,14 @@ func (m *Machine) getLabels() map[string]string {
 	return labels
 }
 
-func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
+func getInfoFromLabels(labels map[string]string) (name, namespace string) {
 	if val, ok := labels["koble:name"]; ok {
 		name = val
-	}
-	if val, ok := labels["koble:lab"]; ok {
-		lab = val
 	}
 	if val, ok := labels["koble:namespace"]; ok {
 		namespace = val
 	}
-	return name, namespace, lab
+	return name, namespace
 }
 
 func getFilters(machine, namespace, driver string, all bool) map[string][]string {

@@ -16,7 +16,7 @@ func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.Machi
 		return machines, err
 	}
 	for _, c := range ctrs {
-		name, ns, _ := getInfoFromLabels(c.Labels)
+		name, ns := getInfoFromLabels(c.Labels)
 		m, err := pd.Machine(name, ns)
 		if err != nil {
 			return machines, err
@@ -39,7 +39,7 @@ func (pd *PodmanDriver) ListAllNamespaces() (namespaces []string, err error) {
 		return namespaces, err
 	}
 	for _, c := range ctrs {
-		_, ns, _ := getInfoFromLabels(c.Labels)
+		_, ns := getInfoFromLabels(c.Labels)
 		found := false
 		for _, n := range namespaces {
 			if ns == n {
