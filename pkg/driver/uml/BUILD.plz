@@ -8,50 +8,17 @@ go_library(
     ),
     deps = [
         "//pkg/driver",
-        "//pkg/driver/uml/shim",
-        "//pkg/driver/uml/vecnet",
-        "//third_party/go:github.com__b177y__go-uml-utilities__pkg__mconsole",
-        "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni",
-        "//third_party/go:github.com__containernetworking__plugins__pkg__ns",
+        "//pkg/driver/podman",
+        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
+        "//third_party/go:github.com__containers__podman__v3__pkg__bindings__images",
+        "//third_party/go:github.com__containers__podman__v3__pkg__api__handlers",
         "//third_party/go:github.com__creasty__defaults",
-        "//third_party/go:github.com__docker__docker__pkg__reexec",
-        "//third_party/go:github.com__go-playground__validator__v10",
-        "//third_party/go:github.com__hpcloud__tail",
         "//third_party/go:github.com__sirupsen__logrus",
+        "//third_party/go:github.com__containers__image__v5__manifest",
+        "//third_party/go:github.com__containers__podman__v3__pkg__specgen",
+        "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
+        "//third_party/go:github.com__go-playground__validator__v10",
         "//third_party/go:github.com__spf13__cobra",
         "//third_party/go:koanf",
-        "//third_party/go:github.com__opencontainers__runtime-spec__specs-go",
-    ],
-)
-
-http_archive(
-    name = "koble-fs",
-    strip_prefix = "koble-fs",
-    urls = ["https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2"],
-)
-
-http_archive(
-    name = "koble-kernel",
-    strip_prefix = "koble-kernel",
-    urls = ["https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2"],
-)
-
-go_test(
-    name = "uml_test",
-    srcs = glob(
-        ["*_test.go"],
-    ),
-    data = [
-        ":koble-fs",
-        ":koble-kernel",
-    ],
-    external = True,
-    deps = [
-        ":uml",
-        #":koble-fs",
-        "//driver/tests",
-        "//driver/uml/vecnet",
-        "//third_party/go:github.com__onsi__ginkgo",
-        "//third_party/go:github.com__onsi__gomega",
-    ],
+    ]
 )

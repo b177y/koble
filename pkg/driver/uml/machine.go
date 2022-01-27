@@ -1,81 +1,70 @@
 package uml
 
 import (
-	"bufio"
-	"crypto/md5"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
-	"syscall"
+	"strings"
 	"time"
 
-	"github.com/b177y/go-uml-utilities/pkg/mconsole"
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/b177y/koble/pkg/driver/uml/shim"
-	"github.com/b177y/koble/pkg/driver/uml/vecnet"
-	"github.com/containernetworking/plugins/pkg/ns"
+	"github.com/containers/image/v5/manifest"
+	"github.com/containers/podman/v3/pkg/api/handlers"
+	"github.com/containers/podman/v3/pkg/bindings/containers"
+	"github.com/containers/podman/v3/pkg/bindings/images"
+	"github.com/containers/podman/v3/pkg/specgen"
 	"github.com/creasty/defaults"
-	"github.com/docker/docker/pkg/reexec"
-	ht "github.com/hpcloud/tail"
-	spec "github.com/opencontainers/runtime-spec/specs-go"
+	"github.com/opencontainers/runtime-spec/specs-go"
 	log "github.com/sirupsen/logrus"
 )
-
-func init() {
-	reexec.Register("umlShim", shim.RunShim)
-	if reexec.Init() {
-		os.Exit(0)
-	}
-}
 
 type Machine struct {
 	name      string
 	namespace string
 	ud        *UMLDriver
+	p         driver.Machine
 }
 
 func (m *Machine) Name() string {
-	return m.name
+	return m.p.Name()
 }
 
 func (m *Machine) Id() string {
-	return fmt.Sprintf("%x",
-		md5.Sum([]byte(m.name+"."+m.namespace)))
-}
-
-func (m *Machine) Pid() int {
-	return processBySubstring("umid="+m.Id(),
-		"UMLNAMESPACE="+m.namespace)
+	return m.p.Id()
+	// return m.p.Id() + ".uml"
 }
 
 func (m *Machine) Exists() (bool, error) {
-	if m.Pid() > 0 {
-		return true, nil
-	}
-	// check uml rundir for machine
-	if _, err := os.Stat(m.mDir()); err == nil {
-		return true, nil
-	} else if err != nil && !os.IsNotExist(err) {
-		return false, err
-	}
-	return false, nil
+	return m.p.Exists()
 }
 
 func (m *Machine) Running() bool {
-	return m.Pid() > 0
+	return m.p.Running()
+}
+
+func (m *Machine) State() (state driver.MachineState, err error) {
+	return m.p.State()
+}
+
+func (m *Machine) getLabels(opts driver.MachineConfig) map[string]string {
+	labels := make(map[string]string)
+	labels["koble"] = "true"
+	labels["koble:name"] = m.Name()
+	labels["koble:driver"] = "uml"
+	labels["koble:namespace"] = m.namespace
+	labels["uml:image"] = opts.Image
+	return labels
 }
 
 func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd []string, err error) {
 	log.Debugf("generating kernel command for %s (namespace %s)", m.Name(), m.namespace)
-	cmd = []string{filepath.Join(m.ud.Config.StorageDir, "kernel", m.ud.Config.Kernel)}
+	cmd = []string{"/entrypoint.sh", filepath.Join("/uml/kernel", m.ud.Config.Kernel)}
 	cmd = append(cmd, "name="+m.name, "title="+m.name, "umid="+m.Id())
 	cmd = append(cmd, "mem=132M")
 	// fsPath := filepath.Join(ud.StorageDir, "images", ud.DefaultImage)
-	cmd = append(cmd, fmt.Sprintf("ubd0=%s,%s", m.diskPath(),
-		filepath.Join(m.ud.Config.StorageDir, "images", opts.Image)))
+	cmd = append(cmd, fmt.Sprintf("ubd0=/overlay.disk,%s",
+		filepath.Join("/uml/images", "koble-fs"))) // TODO
 	cmd = append(cmd, "root=98:0")
-	cmd = append(cmd, "uml_dir="+m.mDir())
+	cmd = append(cmd, "uml_dir=/root") //TODO
 	cmd = append(cmd, "con0=fd:0,fd:1", "con1=null")
 	cmd = append(cmd, networks...)
 	// TODO support any volume (need to modify koble-fs phase1 startup)
@@ -83,290 +72,232 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 		if v.Destination == "/hosthome" {
 			cmd = append(cmd, "hosthome="+v.Source)
 		} else if v.Destination == "/hostlab" {
-			cmd = append(cmd, "hostlab="+v.Source)
+			cmd = append(cmd, "hostlab=/hostlab")
 		}
 	}
-	cmd = append(cmd, "SELINUX_INIT=0")
-	cmd = append(cmd, "UMLNAMESPACE="+m.namespace)
-	if opts.Lab != "" {
-		cmd = append(cmd, "UMLLAB="+opts.Lab)
+	if opts.Hostlab {
+		cmd = append(cmd, "kstart:hostlab=true")
 	}
+	cmd = append(cmd, "SELINUX_INIT=0")
 	if log.GetLevel() <= log.WarnLevel {
 		cmd = append(cmd, "quiet")
 	}
 	return cmd, nil
 }
 
-func runInShim(mDir, namespace string, kernelCmd []string) error {
-	return vecnet.WithNetNS(namespace, func(ns.NetNS) error {
-		c := reexec.Command("umlShim")
-		c.Args = append(c.Args, mDir)
-		c.Args = append(c.Args, kernelCmd...)
-		c.SysProcAttr = &syscall.SysProcAttr{
-			Setsid: true,
-		}
-		log.Info("starting shim with kernelCmd: ", kernelCmd)
-		return c.Start()
-	})
-}
-
 func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
-	log.WithFields(log.Fields{"options": fmt.Sprintf("%+v", opts)}).Infof(
-		"Starting machine %s in namespace %s\n", m.Name(), m.namespace,
-	)
 	if opts == nil {
 		opts = new(driver.MachineConfig)
 	}
 	if err := defaults.Set(opts); err != nil {
 		return err
 	}
-	if opts.Image == "" {
-		opts.Image = m.ud.Config.DefaultImage
-	}
-	if m.Running() {
-		log.WithFields(log.Fields{"machine": m.Name(), "namespace": m.namespace}).
-			Debugf("machine already running, not starting")
-		return nil
-	}
-	defer func() {
-		if err != nil {
-			log.WithFields(log.Fields{"machine": m.Name(), "namespace": m.namespace}).
-				Debugf("error in machine start, removing machine: %v\n", err)
-			m.Remove()
-			os.MkdirAll(m.mDir(), 0744)
-			os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("failed"), 0644)
-		}
-	}()
-	nsMdir := filepath.Join(m.ud.Config.RunDir, "ns", m.namespace)
-	err = os.MkdirAll(nsMdir, 0744)
-	if err != nil && err != os.ErrExist {
-		return err
-	}
-	err = os.MkdirAll(m.mDir(), 0744)
-	if err != nil && err != os.ErrExist {
-		return err
-	}
-	err = os.WriteFile(filepath.Join(m.mDir(), "state"), []byte("starting"), 0644)
+	exists, err := m.Exists()
 	if err != nil {
 		return err
 	}
-	// Remove symlink if it already exists
-	if _, err := os.Stat(m.nsDir()); err == nil {
-		err = os.Remove(m.nsDir())
+	if exists {
+		if m.Running() {
+			return nil
+		} else {
+			return containers.Start(m.ud.Podman.Conn, m.Id(), nil)
+		}
+	}
+	imExists, err := images.Exists(m.ud.Podman.Conn, "ubuntest", nil)
+	if err != nil {
+		return err
+	}
+	if !imExists {
+		fmt.Println("Image ubuntest does not already exist, attempting to pull...")
+		_, err = images.Pull(m.ud.Podman.Conn, "ubuntest", nil)
 		if err != nil {
 			return err
 		}
 	}
-	err = os.Symlink(m.mDir(), m.nsDir())
-	if err != nil {
-		return err
-	}
-	err = saveInfo(m.mDir(), opts)
-	if err != nil {
-		return err
-	}
-	var networks []string
-	for i, n := range opts.Networks {
-		// setup tap
-		ifaceName, err := vecnet.AddHostToNet(m.name, n, m.namespace)
-		if err != nil {
-			return fmt.Errorf("Could not add machine %s to network %s: %w", m.Name(), n, err)
+	opts.Image = m.ud.Config.DefaultImage
+	s := specgen.NewSpecGenerator("localhost/ubuntest", false)
+	s.Name = m.Id()
+	s.Hostname = m.Name()
+	s.Command = []string{"/bin/bash", "-c"}
+	// s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN", "CAP_SYS_PTRACE", "CAP_MKNOD"}
+	s.Privileged = true // TODO
+	if len(opts.Networks) != 0 {
+		s.NetNS = specgen.Namespace{
+			NSMode: specgen.Bridge,
 		}
-		// TODO find a way to rename vec devices on boot
-		// cmd := fmt.Sprintf("vec%d:transport=tap,ifname=%s", i, ifaceName)
-		cmd := fmt.Sprintf("eth%d=tuntap,%s", i, ifaceName)
-		// add to networks for cmdline
+		s.CNINetworks = make([]string, 0)
+		for _, n := range opts.Networks {
+			net, err := m.ud.Network(n, m.namespace)
+			if err != nil {
+				return err
+			}
+			s.CNINetworks = append(s.CNINetworks, net.Id())
+		}
+	} else {
+		s.NetNS = specgen.Namespace{
+			NSMode: specgen.NoNetwork,
+		}
+	}
+	s.Env = make(map[string]string, 0)
+	s.Env["TMPDIR"] = "/tmp"
+	s.Sysctl = make(map[string]string, 0)
+	s.Sysctl["net.ipv4.conf.all.forwarding"] = "1"
+	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
+		Test:    []string{"CMD-SHELL", "test", "-f", "/run/uml/machine.ready"},
+		Timeout: 3 * time.Second,
+	}
+	s.Terminal = true
+	s.Labels = m.getLabels(*opts)
+	for _, mnt := range opts.Volumes {
+		if mnt.Type == "" {
+			mnt.Type = "bind"
+		}
+		s.Mounts = append(s.Mounts, mnt)
+	}
+	s.Mounts = append(s.Mounts, specs.Mount{
+		Source:      m.ud.Config.StorageDir,
+		Destination: "/uml",
+		Options:     []string{"exec", "ro"},
+		Type:        "bind",
+	})
+	s.Mounts = append(s.Mounts, specs.Mount{
+		Destination: "/tmp",
+		Options:     []string{"exec", "rw", "nosuid"},
+		Type:        "tmpfs",
+	})
+	var networks []string
+	for i := range opts.Networks {
+		cmd := fmt.Sprintf("eth%d=tuntap,nk%d", i, i)
 		networks = append(networks, cmd)
 	}
-	ifaceName, mgmtIp, err := vecnet.SetupMgmtIface(m.name, m.namespace, filepath.Join(m.mDir(), "slirp.sock"))
+	kernCmd, err := getKernelCMD(m, *opts, networks)
+	s.Command = append(s.Command, strings.Join(kernCmd, " "))
+	fmt.Println("starting with command", s.Command)
+	createResponse, err := containers.CreateWithSpec(m.ud.Podman.Conn, s, nil)
 	if err != nil {
-		return fmt.Errorf("Could not setup management interface: %w", err)
+		return err
 	}
-	// TODO autoconf with custom ip
-	networks = append(networks, fmt.Sprintf("vec%d:transport=tap,ifname=%s,mac=00:03:B8:FA:CA:DE autoconf_koble0=%s",
-		len(networks), ifaceName, mgmtIp))
-	if opts.HostHome {
-		opts.Volumes = append(opts.Volumes, spec.Mount{
-			Source:      os.Getenv("UML_ORIG_HOME"),
-			Destination: "/hosthome",
-		})
-	}
-	kernelcmd, err := getKernelCMD(m, *opts, networks)
-	if err != nil {
-		return fmt.Errorf("could not generate kernel cmd: %w", err)
-	}
-	// fmt.Println("Got kernelcmd", kernelcmd)
-	err = runInShim(m.mDir(), m.namespace, kernelcmd)
-	if err != nil {
-		return fmt.Errorf("failed to start instance in shim: %w", err)
-	}
-	return err
+	// TODO make m.CopyInFiles
+	// err = m.CopyInFiles(opts.Hostlab)
+	// if err != nil {
+	// 	return err
+	// }
+	return containers.Start(m.ud.Podman.Conn, createResponse.ID, nil)
 }
 
-func (m *Machine) Stop(force bool) (err error) {
-	// defer func() {
-	// 	if err == nil {
-	// 		// TODO remove this once test kernel patch reverted
-	// 		os.RemoveAll(filepath.Join(m.mDir(), m.Id()))
-	// 	}
-	// }()
-	exists, err := m.Exists()
-	if err != nil {
-		return err
-	} else if !exists {
-		// make force stop immutable (like how `rm -f` doesn't error if file doesn't exist)
-		if force {
-			return nil
-		}
-		return fmt.Errorf("can't stop %s as it does not exist", m.name)
-	}
-	if !m.Running() {
-		// make force stop immutable
-		if force {
-			return nil
-		}
-		return fmt.Errorf("can't stop %s as it isn't running", m.name)
-	}
-	umlDir := filepath.Join(m.ud.Config.RunDir, "machine", m.Id(), m.Id())
+func (m *Machine) Stop(force bool) error {
 	if !force {
-		_, err = mconsole.CommandWithSock(mconsole.CtrlAltDel(),
-			filepath.Join(umlDir, "mconsole"))
-		// if socket timeout return nil
-		// TODO patch UML kernel to respond before executing cad action
-		// if err, ok := err.(net.Error); ok && err.Timeout() {
-		// string error comparison is bad practice but above does not work
-		// no documentation found for unix socket deadline exceeded errors
-		if err.Error() == "read socket timeout" {
-			return nil
-		}
-		return err
-	}
-	pid := m.Pid()
-	// Check if process exists
-	killErr := syscall.Kill(-pid, 0)
-	if killErr != nil {
-		return fmt.Errorf("Could not crash machine %s (%d): %w", m.name, pid, killErr)
-	}
-	// Send shutdown signal to UML instance
-	sig := syscall.SIGKILL
-	err = syscall.Kill(-pid, sig)
-	if err != nil {
-		return err
-	}
-	for i := 0; i < 10; i++ {
-		// wait for kill 0 to give err (shows pid no longer running)
-		err = syscall.Kill(-pid, 0)
+		ec := new(handlers.ExecCreateConfig)
+		ec.Cmd = []string{"mconsole"}
+		ec.Cmd = append(ec.Cmd, filepath.Join("/root", m.Id(), "mconsole"))
+		ec.Cmd = append(ec.Cmd, "cad")
+		ec.Detach = true
+		exId, err := containers.ExecCreate(m.ud.Podman.Conn, m.Id(), ec)
 		if err != nil {
-			break
+			return err
 		}
-		time.Sleep(500 * time.Millisecond)
+		return containers.ExecStart(m.ud.Podman.Conn, exId, nil)
 	}
-	if err == nil { // kill 0 error == nil means still running
-		return fmt.Errorf("Could not kill machine %s (%d)",
-			m.name, pid)
-	}
-	return nil
+	return m.p.Stop(true)
 }
 
 func (m *Machine) Remove() error {
-	// TODO WARN on non fatal errors (cannot remove paths etc)
-	if m.Running() {
-		return errors.New("Machine can't be removed as it's running")
-	}
-	os.RemoveAll(m.mDir())
-	os.RemoveAll(filepath.Join(m.nsDir(), m.name))
-	err := vecnet.RemoveSlirp(filepath.Join(m.mDir(), "slirp.sock"))
+	return m.p.Remove()
+}
+
+func (m *Machine) Info() (info driver.MachineInfo, err error) {
+	info, err = m.p.Info()
 	if err != nil {
-		log.Warnf("Could not remove slirp for machine %s: %w\n",
-			m.Name(), err)
+		return info, err
 	}
-	err = vecnet.RemoveMachineNets(m.Name(), m.namespace, true)
+	inspect, err := containers.Inspect(m.ud.Podman.Conn, m.Id(), nil)
 	if err != nil {
-		log.Warnf("Could not remove networks for machine %s: %w\n",
-			m.Name(), err)
+		return info, err
 	}
-	os.Remove(m.diskPath())
-	return nil
+	if val, ok := inspect.Config.Labels["uml:image"]; ok {
+		info.Image = val
+	} else {
+		return info, fmt.Errorf("label uml:image not added for %s", m.Name())
+	}
+	return info, err
 }
 
 func (m *Machine) Attach(opts *driver.AttachOptions) (err error) {
-	if opts == nil {
-		opts = new(driver.AttachOptions)
-	}
-	if !m.Running() {
-		return fmt.Errorf("cannot attach to machine %s: not running", m.name)
-	}
-	if os.Getenv("_KOBLE_IN_TERM") == "" && (log.GetLevel() > log.ErrorLevel) {
-		fmt.Printf("Attaching to %s, Use key sequence <ctrl><p>, <ctrl><q> to detach.\n", m.name)
-		fmt.Printf("You might need to hit <enter> once attached to get a prompt.\n\n")
-	}
-	return shim.Attach(filepath.Join(m.mDir(), "attach.sock"))
+	return m.p.Attach(opts)
+}
+
+func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
+	return driver.ErrNotImplemented
 }
 
 func (m *Machine) Exec(command string,
 	opts *driver.ExecOptions) (err error) {
-	// TODO check opts and fill with defaults
-	if opts == nil {
-		opts = new(driver.ExecOptions)
-	}
-	return vecnet.ExecCommand(m.name, opts.User, command, m.namespace)
-}
-
-func (m *Machine) Shell(opts *driver.ShellOptions) (err error) {
-	// TODO check opts and fill with defaults
-	if opts == nil {
-		opts = new(driver.ShellOptions)
-	}
-	return vecnet.RunShell(m.name, opts.User, m.namespace)
+	return driver.ErrNotImplemented
 }
 
 func (m *Machine) Logs(opts *driver.LogOptions) (err error) {
-	// TODO check opts and fill with defaults
-	if opts == nil {
-		opts = new(driver.LogOptions)
-	}
-	fn := filepath.Join(m.ud.Config.RunDir, "machine", m.Id(), "machine.log")
-	if opts.Follow {
-		t, err := ht.TailFile(fn, ht.Config{Follow: true})
-		if err != nil {
-			return err
-		}
-		for line := range t.Lines {
-			fmt.Println(line.Text)
-		}
-	} else {
-		f, err := os.Open(fn)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		var lines []string
-		for scanner.Scan() {
-			lines = append(lines, scanner.Text())
-		}
-		startLine := 0
-		if opts.Tail >= 0 && opts.Tail < len(lines) {
-			startLine = len(lines) - opts.Tail
-		}
-		for i := startLine; i < len(lines); i++ {
-			fmt.Println(lines[i])
-		}
-	}
-	return nil
+	return m.p.Logs(opts)
 }
 
 func (m *Machine) WaitUntil(timeout time.Duration,
 	target, failOn *driver.MachineState) error {
-	log.WithFields(log.Fields{
-		"target": fmt.Sprintf("%+v", target),
-		"failon": fmt.Sprintf("%+v", failOn),
-	}).Infof(
-		"WaitUntil for machine %s in namespace %s\n", m.Name(), m.namespace,
-	)
-	return driver.WaitUntil(m, timeout, target, failOn)
+	return m.p.WaitUntil(timeout, target, failOn)
 }
 
 func (m *Machine) Networks() ([]driver.Network, error) {
-	return []driver.Network{}, nil
+	return []driver.Network{}, driver.ErrNotImplemented
+}
+
+func getFilters(machine, namespace, driver string, all bool) map[string][]string {
+	filters := make(map[string][]string)
+	var labelFilters []string
+	labelFilters = append(labelFilters, "koble=true")
+	labelFilters = append(labelFilters, "koble:driver=uml")
+	if !all {
+		labelFilters = append(labelFilters, "koble:namespace="+namespace)
+		if machine != "" {
+			labelFilters = append(labelFilters, "koble:name="+machine)
+		}
+	}
+	filters["label"] = labelFilters
+	return filters
+}
+
+func getInfoFromLabels(labels map[string]string) (name, namespace string) {
+	if val, ok := labels["koble:name"]; ok {
+		name = val
+	}
+	if val, ok := labels["koble:namespace"]; ok {
+		namespace = val
+	}
+	return name, namespace
+}
+
+func (ud *UMLDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {
+	var machines []driver.MachineInfo
+	opts := new(containers.ListOptions)
+	opts.WithAll(true)
+	filters := getFilters("", namespace, "uml", all)
+	opts.WithFilters(filters)
+	ctrs, err := containers.List(ud.Podman.Conn, opts)
+	if err != nil {
+		return machines, err
+	}
+	for _, c := range ctrs {
+		name, ns := getInfoFromLabels(c.Labels)
+		m, err := ud.Machine(name, ns)
+		if err != nil {
+			return machines, err
+		}
+		info, err := m.Info()
+		if err != nil {
+			return machines, err
+		}
+		machines = append(machines, info)
+	}
+	return machines, nil
+}
+
+func (ud *UMLDriver) ListAllNamespaces() ([]string, error) {
+	return ud.Podman.ListAllNamespaces()
 }

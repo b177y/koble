@@ -10,7 +10,6 @@ go_library(
         "//pkg/driver",
         "//pkg/driver/podman",
         "//pkg/driver/uml",
-        "//pkg/driver/upod",
         "//pkg/output",
         "//util/topsort",
         "//third_party/go:go-humanize",
