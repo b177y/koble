@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/b177y/koble/pkg/driver"
+	"github.com/containers/image/v5/manifest"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
@@ -43,12 +44,13 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 	return m.p.State()
 }
 
-func (m *Machine) getLabels() map[string]string {
+func (m *Machine) getLabels(opts driver.MachineConfig) map[string]string {
 	labels := make(map[string]string)
 	labels["koble"] = "true"
 	labels["koble:name"] = m.Name()
 	labels["koble:driver"] = "uml"
 	labels["koble:namespace"] = m.namespace
+	labels["uml:image"] = opts.Image
 	return labels
 }
 
@@ -135,12 +137,12 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	s.Env["TMPDIR"] = "/tmp"
 	s.Sysctl = make(map[string]string, 0)
 	s.Sysctl["net.ipv4.conf.all.forwarding"] = "1"
-	// s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
-	// 	Test:    []string{"CMD-SHELL", "test", "$(systemctl show -p ExecMainCode --value koble-startup-phase2.service)", "-eq", "1"},
-	// 	Timeout: 3 * time.Second,
-	// }
+	s.ContainerHealthCheckConfig.HealthConfig = &manifest.Schema2HealthConfig{
+		Test:    []string{"CMD-SHELL", "test", "-f", "/run/uml/machine.ready"},
+		Timeout: 3 * time.Second,
+	}
 	s.Terminal = true
-	s.Labels = m.getLabels()
+	s.Labels = m.getLabels(*opts)
 	for _, mnt := range opts.Volumes {
 		if mnt.Type == "" {
 			mnt.Type = "bind"

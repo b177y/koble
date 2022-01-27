@@ -61,7 +61,21 @@ func (m *Machine) State() (state driver.MachineState, err error) {
 	if err != nil {
 		return state, err
 	}
-	state.State = &inspect.State.Status
+	if inspect.State.Status == "running" {
+		hc, err := containers.RunHealthCheck(m.pd.Conn, m.Id(), nil)
+		if err != nil {
+			return state, err
+		}
+		var s string
+		if hc.Status == "healthy" {
+			s = "running"
+		} else {
+			s = "booting"
+		}
+		state.State = &s
+	} else {
+		state.State = &inspect.State.Status
+	}
 	state.ExitCode = &inspect.State.ExitCode
 	state.Running = &inspect.State.Running
 	return state, nil
@@ -238,6 +252,7 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 		}
 		networks = append(networks, parts[2])
 	}
+	// TODO get healthcheck
 	info = driver.MachineInfo{
 		Name:      m.name,
 		Namespace: m.namespace,
