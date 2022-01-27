@@ -7,24 +7,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/b177y/koble/pkg/driver"
-	"github.com/b177y/koble/pkg/driver/podman"
-	"github.com/b177y/koble/pkg/driver/uml"
 )
 
-func init() {
-	// TODO find better solution to avoid importing these drivers in pkg/koble
-	driver.RegisterDriver("podman", func() driver.Driver {
-		return new(podman.PodmanDriver)
-	})
-	driver.RegisterDriver("uml", func() driver.Driver {
-		return new(uml.UMLDriver)
-	})
+func Reexec() {
 	gob.Register(map[string]interface{}{})
-	// gob.Register(&podman.PodmanDriver{})
-	// gob.Register(&uml.UMLDriver{})
-	// handleReexecFuncs["launchTerm"] = attachReexec
 	if len(os.Args) >= 2 {
 		if os.Args[1] == "launchTermReexec" {
 			handleReexec()
