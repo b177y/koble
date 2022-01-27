@@ -8,6 +8,7 @@ import (
 
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/containers/image/v5/manifest"
+	"github.com/containers/podman/v3/pkg/api/handlers"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
 	"github.com/containers/podman/v3/pkg/specgen"
@@ -182,7 +183,19 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 }
 
 func (m *Machine) Stop(force bool) error {
-	return m.p.Stop(force)
+	if !force {
+		ec := new(handlers.ExecCreateConfig)
+		ec.Cmd = []string{"mconsole"}
+		ec.Cmd = append(ec.Cmd, filepath.Join("/root", m.Id(), "mconsole"))
+		ec.Cmd = append(ec.Cmd, "cad")
+		ec.Detach = true
+		exId, err := containers.ExecCreate(m.ud.Podman.Conn, m.Id(), ec)
+		if err != nil {
+			return err
+		}
+		return containers.ExecStart(m.ud.Podman.Conn, exId, nil)
+	}
+	return m.p.Stop(true)
 }
 
 func (m *Machine) Remove() error {

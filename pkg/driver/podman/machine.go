@@ -354,8 +354,7 @@ func (m *Machine) Exec(command string,
 		options.WithErrorStream(io.WriteCloser(os.Stderr))
 		options.WithAttachError(true)
 	}
-	err = containers.ExecStartAndAttach(m.pd.Conn, exId, options)
-	return err
+	return containers.ExecStartAndAttach(m.pd.Conn, exId, options)
 }
 
 func (m *Machine) Logs(opts *driver.LogOptions) (err error) {

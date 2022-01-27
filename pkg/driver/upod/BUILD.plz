@@ -11,6 +11,7 @@ go_library(
         "//pkg/driver/podman",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings__images",
+        "//third_party/go:github.com__containers__podman__v3__pkg__api__handlers",
         "//third_party/go:github.com__creasty__defaults",
         "//third_party/go:github.com__sirupsen__logrus",
         "//third_party/go:github.com__containers__image__v5__manifest",
