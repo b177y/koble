@@ -9,6 +9,7 @@ import (
 
 func (pd *PodmanDriver) SetupDriver(conf map[string]interface{}) (err error) {
 	pd.Name = "Podman"
+	pd.DriverName = "podman"
 	err = pd.loadConfig(conf)
 	if err != nil {
 		return err

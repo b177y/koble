@@ -9,5 +9,10 @@ func (ud *UMLDriver) SetupDriver(conf map[string]interface{}) (err error) {
 		return err
 	}
 	ud.Podman = podman.PodmanDriver{}
-	return ud.Podman.SetupDriver(conf)
+	err = ud.Podman.SetupDriver(conf)
+	if err != nil {
+		return err
+	}
+	ud.Podman.DriverName = "uml"
+	return
 }

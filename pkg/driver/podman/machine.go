@@ -33,7 +33,7 @@ func (m *Machine) Name() string {
 }
 
 func (m *Machine) Id() string {
-	return "koble." + m.namespace + "." + m.name
+	return "koble." + m.namespace + "." + m.name + "." + m.pd.DriverName
 }
 
 func (m *Machine) Exists() (bool, error) {
@@ -89,10 +89,11 @@ func getInfoFromLabels(labels map[string]string) (name, namespace, lab string) {
 	return name, namespace, lab
 }
 
-func getFilters(machine, namespace string, all bool) map[string][]string {
+func getFilters(machine, namespace, driver string, all bool) map[string][]string {
 	filters := make(map[string][]string)
 	var labelFilters []string
 	labelFilters = append(labelFilters, "koble=true")
+	labelFilters = append(labelFilters, "koble:driver="+driver)
 	if !all {
 		labelFilters = append(labelFilters, "koble:namespace="+namespace)
 		if machine != "" {
@@ -232,7 +233,7 @@ func (m *Machine) Info() (info driver.MachineInfo, err error) {
 	var networks []string
 	for key := range s.NetworkSettings.Networks {
 		parts := strings.Split(key, ".")
-		if len(parts) != 3 {
+		if len(parts) != 4 {
 			return info, fmt.Errorf("network (%s) name format incorrect", key)
 		}
 		networks = append(networks, parts[2])
