@@ -71,7 +71,7 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 		if v.Destination == "/hosthome" {
 			cmd = append(cmd, "hosthome="+v.Source)
 		} else if v.Destination == "/hostlab" {
-			cmd = append(cmd, "hostlab="+v.Source)
+			cmd = append(cmd, "hostlab=/hostlab")
 		}
 	}
 	cmd = append(cmd, "SELINUX_INIT=0")
