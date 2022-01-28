@@ -168,7 +168,8 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	})
 	var networks []string
 	for i := range opts.Networks {
-		cmd := fmt.Sprintf("eth%d=tuntap,nk%d", i, i)
+		// cmd := fmt.Sprintf("eth%d=tuntap,nk%d", i, i)
+		cmd := fmt.Sprintf("vec%d:transport=raw,ifname=eth%d", i, i)
 		networks = append(networks, cmd)
 	}
 	kernCmd, err := getKernelCMD(m, *opts, networks)
