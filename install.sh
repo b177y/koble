@@ -69,7 +69,7 @@ sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
 wget "https://github.com/b177y/koble-fs/releases/download/${UMLFS_VERSION}/koble-fs.tar.bz2" -O /tmp/koble-fs.tar.bz2
 wget "https://github.com/b177y/koble-kernel/releases/download/${UMLKERN_VERSION}/koble-kernel.tar.bz2" -O /tmp/koble-kernel.tar.bz2
 mkdir -p ~/.local/share/uml/images
-mkdir -p ~/.local/share/uml/overlay
 mkdir -p ~/.local/share/uml/kernel
-tar -C ~/.local/share/uml/images -jvf /tmp/koble-fs.tar.bz2
-tar -C ~/.local/share/uml/kernel -jvf /tmp/koble-kernel.tar.bz2
+tar -C ~/.local/share/uml/images -xjvf /tmp/koble-fs.tar.bz2
+tar -C ~/.local/share/uml/kernel -xjvf /tmp/koble-kernel.tar.bz2
+mv ~/.local/share/uml/kernel/linux ~/.local/share/uml/kernel/koble-kernel
