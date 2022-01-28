@@ -104,19 +104,19 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 			return containers.Start(m.ud.Podman.Conn, m.Id(), nil)
 		}
 	}
-	imExists, err := images.Exists(m.ud.Podman.Conn, "ubuntest", nil)
+	imExists, err := images.Exists(m.ud.Podman.Conn, "docker.io/b177y/uml-runner", nil)
 	if err != nil {
 		return err
 	}
 	if !imExists {
-		fmt.Println("Image ubuntest does not already exist, attempting to pull...")
-		_, err = images.Pull(m.ud.Podman.Conn, "ubuntest", nil)
+		fmt.Println("Image docker.io/b177y/uml-runner does not already exist, attempting to pull...")
+		_, err = images.Pull(m.ud.Podman.Conn, "docker.io/b177y/uml-runner", nil)
 		if err != nil {
 			return err
 		}
 	}
 	opts.Image = m.ud.Config.DefaultImage
-	s := specgen.NewSpecGenerator("localhost/ubuntest", false)
+	s := specgen.NewSpecGenerator("docker.io/b177y/uml-runner", false)
 	s.Name = m.Id()
 	s.Hostname = m.Name()
 	s.Command = []string{"/bin/bash", "-c"}

@@ -19,7 +19,7 @@ func (pd *PodmanDriver) loadConfig(conf map[string]interface{}) error {
 	vpl := koanf.New(".")
 	err := vpl.Load(confmap.Provider(map[string]interface{}{
 		"podman.uri":           fmt.Sprintf("unix://run/user/%d/podman/podman.sock", os.Getuid()),
-		"podman.default_image": "localhost/koble-deb-test",
+		"podman.default_image": "docker.io/b177y/koble-deb",
 	}, "."), nil)
 	if err != nil {
 		return err
