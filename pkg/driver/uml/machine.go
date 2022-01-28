@@ -78,6 +78,7 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	if opts.Hostlab {
 		cmd = append(cmd, "kstart:hostlab=true")
 	}
+	cmd = append(cmd, "kstart:driver=UML")
 	cmd = append(cmd, "SELINUX_INIT=0")
 	if log.GetLevel() <= log.WarnLevel {
 		cmd = append(cmd, "quiet")

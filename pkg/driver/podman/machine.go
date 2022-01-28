@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -188,6 +189,9 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 		}
 		s.Mounts = append(s.Mounts, mnt)
 	}
+	s.Env = make(map[string]string, 0)
+	s.Env["kstart-driver"] = "podman"
+	s.Env["kstart-quiet"] = strconv.FormatBool(log.GetLevel() <= log.ErrorLevel)
 	createResponse, err := containers.CreateWithSpec(m.pd.Conn, s, nil)
 	if err != nil {
 		return err
