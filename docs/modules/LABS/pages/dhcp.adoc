@@ -1,0 +1,121 @@
+= DHCP
+
+== Download Lab
+
+Download the lab from
+link:https://github.com/b177y/koble/releases/download/v0.1/lab-dhcp.tar.xz[here].
+
+[source,sh]
+----
+tar -xvf lab-dhcp.tar.xz
+cd dhcp
+----
+
+Look at the contents of `lab.yml` and the `.startup` files.
+You can see we have the following machines:
+
+* *dh* - DHCP server. This is also a gateway to the Internet.
+* *pc* - our client for testing DHCP.
+
+== Start Lab
+
+[source,sh]
+----
+koble lab start
+----
+
+First we will set up `tcpdump` to listen for traffic on machine `dh`.
+
+.dh
+[source,sh]
+----
+tcpdump -s0 -i eth1 -w /hostlab/dhcp_lab-1.pcap
+----
+
+First on `pc` we can check our network settings:
+
+.pc
+[source,sh]
+----
+ip addr show eth0
+ip route show
+----
+
+You should be able to see that we have no IP address and there is no default route.
+
+.pc
+[source,sh]
+----
+dhclient -v eth0
+----
+
+Now we can stop tcpdump on `dh` and view the capture from wireshark on
+the host.
+
+If we check the network settings again we should have an IP address from the
+pool 10.72.16.50-10.72.16.150.
+and a default route to the gateway 10.72.16.254.
+
+.pc
+[source,sh]
+----
+ip addr show eth0
+ip route show
+----
+
+As we have an IP address and gateway we can reach the internet:
+
+.pc
+[source,sh]
+----
+ping google.com
+----
+
+== Task
+
+__Modify the DHCP server configuration so we get the set IP address 10.72.16.28__
+
+.Solution
+[%collapsible]
+====
+// add dnsmasq entry for web
+./etc/dnsmasq.conf
+[source,conf]
+----
+...
+
+dhcp-host=4e:a5:c4:29:3d:7c,10.72.16.28
+----
+
+
+.dh
+[source,sh]
+----
+systemctl restart dnsmasq
+----
+
+====
+
+Now you should be able to get this IP address from the DHCP server:
+
+.pc
+[source,sh]
+----
+dhclient -r # release current IP
+dhclient -v eth0
+----
+
+Check that the IP address has been set correctly:
+
+.pc
+[source,sh]
+----
+ip addr show eth0
+----
+
+You can now shutdown and remove the machines with:
+
+[source,sh]
+----
+koble lab destroy
+----

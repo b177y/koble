@@ -98,6 +98,9 @@
   <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="dns.html">DNS</a>
   </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="dhcp.html">DHCP</a>
+  </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="0">
@@ -246,7 +249,14 @@
 <h2 id="_download_lab"><a class="anchor" href="#_download_lab"></a>Download Lab</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Download the lab from here (TODO)</p>
+<p>Download the lab from
+<a href="https://github.com/b177y/koble/releases/download/v0.1/lab-dns.tar.xz">here</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">tar -xvf lab-dns.tar.xz
+cd dns</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>Look at the contents of <code>lab.yml</code> and the <code>.startup</code> files.
@@ -301,10 +311,14 @@ the host.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_challenge"><a class="anchor" href="#_challenge"></a>Challenge</h2>
+<h2 id="_task"><a class="anchor" href="#_task"></a>Task</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>If we try to resolve the internal web server at <code>internal.cyber.lab</code>
+<p><em>Modify the DNS server configuration so we can resolve the internal
+web server <strong>internal.cyber.lab</strong> at 10.72.16.20</em></p>
+</div>
+<div class="paragraph">
+<p>If we try to resolve the internal web server at <strong>internal.cyber.lab</strong>
 we won&#8217;t find anything as there are no DNS entries set for this.</p>
 </div>
 <div class="listingblock">
@@ -315,7 +329,8 @@ we won&#8217;t find anything as there are no DNS entries set for this.</p>
 </div>
 <div class="paragraph">
 <p>To make this work we need to add an entry to the <code>dnsmasq</code> config
-on <code>d0</code> and restart the service.</p>
+on <code>d0</code> for internal.cyber.lab to resolve to 10.72.16.20 and
+restart the service.</p>
 </div>
 <details>
 <summary class="title">Solution</summary>
@@ -349,6 +364,14 @@ address=/internal.cyber.lab/10.72.16.20</code></pre>
 <div class="title">pc</div>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl internal.cyber.lab</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can now shutdown and remove the machines with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab destroy</code></pre>
 </div>
 </div>
 </div>

@@ -2,8 +2,14 @@
 
 == Download Lab
 
-// download
-Download the lab from here (TODO)
+Download the lab from
+link:https://github.com/b177y/koble/releases/download/v0.1/lab-dns.tar.xz[here].
+
+[source,sh]
+----
+tar -xvf lab-dns.tar.xz
+cd dns
+----
 
 Look at the contents of `lab.yml` and the `.startup` files.
 You can see we have the following machines:
@@ -40,9 +46,12 @@ Now we can stop tcpdump on `d0` and view the capture from wireshark on
 the host.
 
 
-== Challenge
+== Task
 
-If we try to resolve the internal web server at `internal.cyber.lab`
+__Modify the DNS server configuration so we can resolve the internal
+web server *internal.cyber.lab* at 10.72.16.20__
+
+If we try to resolve the internal web server at *internal.cyber.lab*
 we won't find anything as there are no DNS entries set for this.
 
 .pc
@@ -88,4 +97,11 @@ nslookup internal.cyber.lab
 [source,sh]
 ----
 curl internal.cyber.lab
+----
+
+You can now shutdown and remove the machines with:
+
+[source,sh]
+----
+koble lab destroy
 ----
