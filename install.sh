@@ -28,34 +28,35 @@ mkdir -p "$DIR"
 
 echo "Downloading Koble ${VERSION}..."
 wget "$KOBLE_URL" -O "${DIR}/koble"
-# chmod +x "${DIR}/koble"
+chmod +x "${DIR}/koble"
 
 # work out which shell (bash/zsh/fish)
 USER_SHELL=$(basename "$SHELL")
 
-if [ "$USER_SHELL" -eq "zsh" ]; then
+if [ "$USER_SHELL" == "zsh" ]; then
     _PATH=$(zsh -c echo \$PATH)
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        echo "export PATH=\"\$PATH:\$HOME\.local/bin # Koble PATH" >> ~/.zprofile
+        echo "export PATH=\"\$PATH:\$HOME\.local/bin\" # Koble PATH" >> ~/.zprofile
         echo "Added koble to PATH. Run source ~/.zshrc for it to take effect in this shell session."
     fi
     grep "# Koble completion" ~/.zshrc || \
         echo "source <(koble completion zsh) # Koble completion" >> ~/.zshrc
-elif [ "$USER_SHELL" -eq "bash" ]; then
+elif [ "$USER_SHELL" == "bash" ]; then
     _PATH=$(bash -c echo \$PATH)
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        echo "export PATH=\"\$PATH:\$HOME\.local/bin # Koble PATH" >> ~/.profile
+        echo "export PATH=\"\$PATH:\$HOME\.local/bin\" # Koble PATH" >> ~/.profile
         echo "Added koble to PATH. Run source ~/.bashrc for it to take effect in this shell session."
     fi
     grep "# Koble completion" ~/.bashrc || \
         echo "source <(koble completion bash) # Koble completion" >> ~/.bashrc
-elif [ "$USER_SHELL" -eq "fish" ]; then
+elif [ "$USER_SHELL" == "fish" ]; then
     echo "fish shell is not supported for automatic setup."
 else
     echo "Shell $USER_SHELL is not currently supported."
 fi
 
 # Install podman dependencies
+sudo apt install ca-certificates
 source /etc/os-release
 echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
 curl -L "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key" | sudo apt-key add -
@@ -64,6 +65,9 @@ sudo apt -y install podman
 sudo sysctl kernel.unprivileged_userns_clone=1
 sudo touch /etc/subuid /etc/subgid
 sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
+systemctl --user enable --now podman.socket
+podman pull docker.io/b177y/uml-runner
+podman pull docker.io/b177y/koble-deb
 
 # Install UML dependencies
 wget "https://github.com/b177y/koble-fs/releases/download/${UMLFS_VERSION}/koble-fs.tar.bz2" -O /tmp/koble-fs.tar.bz2
