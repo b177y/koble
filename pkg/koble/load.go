@@ -146,8 +146,10 @@ func Load() (*Koble, error) {
 		home = os.Getenv("HOME")
 		confPath = filepath.Join(home, "/.config/koble/config.yml")
 	}
-	if err := Koanf.Load(file.Provider(confPath), yaml.Parser()); err != nil {
-		return nil, fmt.Errorf("error reading config.yml: %w", err)
+	if fileExists(confPath) {
+		if err := Koanf.Load(file.Provider(confPath), yaml.Parser()); err != nil {
+			return nil, fmt.Errorf("error reading config.yml: %w", err)
+		}
 	}
 	var err error
 	nk.LabRoot, err = getLabRoot()

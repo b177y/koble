@@ -16,7 +16,6 @@ import (
 type Config struct {
 	DefaultImage string `koanf:"default_image" validate:"required"`
 	Kernel       string `koanf:"kernel" validate:"required"`
-	RunDir       string `koanf:"run_dir" validate:"max=24" validate:"required"`
 	StorageDir   string `koanf:"storage_dir" validate:"required"`
 	Testing      bool   `koanf:"testing"`
 }
@@ -55,10 +54,6 @@ func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 	}
 	log.WithFields(log.Fields{"driver": "uml",
 		"config": fmt.Sprintf("%+v", ud.Config)}).Debug("loaded driver config")
-	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "overlay"), 0744)
-	if err != nil && err != os.ErrExist {
-		return fmt.Errorf("Could not mkdir on overlay dir")
-	}
 	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "images"), 0744)
 	if err != nil && err != os.ErrExist {
 		return fmt.Errorf("Could not mkdir on imagesdir")
@@ -66,10 +61,6 @@ func (ud *UMLDriver) loadConfig(conf map[string]interface{}) error {
 	err = os.MkdirAll(filepath.Join(ud.Config.StorageDir, "kernel"), 0744)
 	if err != nil && err != os.ErrExist {
 		return fmt.Errorf("Could not mkdir on imagesdir")
-	}
-	err = os.MkdirAll(filepath.Join(ud.Config.RunDir, "ns", "GLOBAL"), 0744)
-	if err != nil && err != os.ErrExist {
-		return fmt.Errorf("Could not mkdir on ud.RunDir")
 	}
 	if ud.Config.Testing {
 		imagesDir := filepath.Join(ud.Config.StorageDir, "images")
