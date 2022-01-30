@@ -1,7 +1,11 @@
 created_at: 21-01-2022
 koble_version: 0.0.1
-# driver:
-#   name: uml
+authors:
+  Billy Bromell
+description: |
+  Simple lab with basic DNS demo
+web:
+  - https://koble.b177y.dev/koble-docs/0.1/LABS/dns.html
 machines:
   d0:
     networks:

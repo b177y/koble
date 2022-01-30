@@ -1,0 +1,22 @@
+created_at: 21-01-2022
+authors:
+  - Billy Bromell
+description: |
+  Simple lab with basic DHCP demo
+web:
+  - https://koble.b177y.dev/koble-docs/0.1/LABS/dhcp.html
+koble_version: 0.0.1
+machines:
+  dh:
+    networks:
+      - ext
+      - lan
+  pc:
+    networks:
+      - lan
+
+networks:
+  ext:
+    external: true
+    gateway: 10.16.55.254
+    subnet: 10.16.55.0/24

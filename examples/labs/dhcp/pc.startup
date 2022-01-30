@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ip link set eth0 address 4e:a5:c4:29:3d:7c
+ip link set eth0 up

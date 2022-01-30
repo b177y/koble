@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ip link set eth0 up
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+ip link set eth1 up
+ip addr add 10.72.16.254/24 dev eth1
+systemctl start dnsmasq
