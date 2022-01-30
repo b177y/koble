@@ -125,15 +125,15 @@ func (nk *Koble) MachineInfo(name string, json bool) error {
 	return nil
 }
 
-func (nk *Koble) StopMachine(name string, force bool) error {
+func (nk *Koble) StopMachine(name string, force bool, out io.Writer) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
 	if force {
-		fmt.Printf("Crashing machine %s\n", name)
+		fmt.Fprintf(out, "Crashing machine %s\n", name)
 	} else {
-		fmt.Printf("Halting machine %s\n", name)
+		fmt.Fprintf(out, "Halting machine %s\n", name)
 	}
 	err = m.Stop(force)
 	if err != nil {
@@ -145,16 +145,16 @@ func (nk *Koble) StopMachine(name string, force bool) error {
 	return nil
 }
 
-func (nk *Koble) RemoveMachine(name string) error {
+func (nk *Koble) RemoveMachine(name string, out io.Writer) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("removing machine %s\n", name)
+	fmt.Fprintf(out, "removing machine %s\n", name)
 	return m.Remove()
 }
 
-func (nk *Koble) DestroyMachine(machine string) error {
+func (nk *Koble) DestroyMachine(machine string, out io.Writer) error {
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -164,10 +164,10 @@ func (nk *Koble) DestroyMachine(machine string) error {
 		return err
 	}
 	if !exists {
-		fmt.Printf("no machine to remove\n")
+		fmt.Fprintf(out, "no machine to remove\n")
 		return nil
 	}
-	fmt.Printf("Crashing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Crashing machine %s\n", m.Name())
 	err = m.Stop(true)
 	if err != nil {
 		return err
@@ -176,7 +176,7 @@ func (nk *Koble) DestroyMachine(machine string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Removing machine %s\n", m.Name())
+	fmt.Fprintf(out, "Removing machine %s\n", m.Name())
 	return m.Remove()
 }
 

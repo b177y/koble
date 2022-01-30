@@ -74,7 +74,7 @@ func (nk *Koble) LabDestroy(mlist []string) error {
 			}
 		}()
 		out.Start()
-		return nk.DestroyMachine(name)
+		return nk.DestroyMachine(name, out)
 	})
 }
 
@@ -90,7 +90,7 @@ func (nk *Koble) LabRemove(mlist []string) error {
 			}
 		}()
 		out.Start()
-		return nk.RemoveMachine(name)
+		return nk.RemoveMachine(name, out)
 	})
 }
 
@@ -106,7 +106,7 @@ func (nk *Koble) LabStop(mlist []string, force bool) error {
 			}
 		}()
 		out.Start()
-		return nk.StopMachine(name, force)
+		return nk.StopMachine(name, force, out)
 	})
 }
 

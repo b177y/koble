@@ -80,8 +80,12 @@ func getKernelCMD(m *Machine, opts driver.MachineConfig, networks []string) (cmd
 	}
 	cmd = append(cmd, "kstart:driver=UML")
 	cmd = append(cmd, "SELINUX_INIT=0")
-	if log.GetLevel() <= log.WarnLevel {
+	if log.GetLevel() < log.WarnLevel {
 		cmd = append(cmd, "quiet")
+	} else if log.GetLevel() < log.InfoLevel {
+		cmd = append(cmd, "loglevel=6")
+	} else {
+		cmd = append(cmd, "loglevel=7")
 	}
 	return cmd, nil
 }
@@ -174,16 +178,10 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	}
 	kernCmd, err := getKernelCMD(m, *opts, networks)
 	s.Command = append(s.Command, strings.Join(kernCmd, " "))
-	fmt.Println("starting with command", s.Command)
 	createResponse, err := containers.CreateWithSpec(m.ud.Podman.Conn, s, nil)
 	if err != nil {
 		return err
 	}
-	// TODO make m.CopyInFiles
-	// err = m.CopyInFiles(opts.Hostlab)
-	// if err != nil {
-	// 	return err
-	// }
 	return containers.Start(m.ud.Podman.Conn, createResponse.ID, nil)
 }
 

@@ -34,6 +34,6 @@ var destroy = func(cmd *cobra.Command, args []string) error {
 					out.Success("Destroyed machine " + args[0])
 				}
 			}()
-			return cli.NK.DestroyMachine(args[0])
+			return cli.NK.DestroyMachine(args[0], out)
 		})
 }
