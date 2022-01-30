@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/b177y/koble/pkg/driver"
+	"github.com/b177y/koble/pkg/output"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,25 +22,29 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 		return err
 	}
 	if waitTimeout := nk.Config.Wait; waitTimeout > 0 {
-		fmt.Printf("waiting for %s to be created\r", machine)
-		ctx, cancel := context.WithTimeout(context.Background(),
-			waitTimeout*time.Second)
-		defer cancel()
-		for {
-			time.Sleep(200 * time.Millisecond)
-			// check timeout
-			if err := ctx.Err(); err != nil {
-				return fmt.Errorf("timed out waiting for %s to be created: %w",
-					m.Name(), err)
-			}
-			exists, err := m.Exists()
-			if err != nil {
-				return err
-			}
-			if exists {
-				break
-			}
-		}
+		err := output.WithSimpleContainer(fmt.Sprintf("attaching to %s", machine),
+			nil, nk.Config.NonInteractive, func(o output.Output) error {
+				ctx, cancel := context.WithTimeout(context.Background(),
+					waitTimeout*time.Second)
+				defer cancel()
+				for {
+					time.Sleep(200 * time.Millisecond)
+					// check timeout
+					if err := ctx.Err(); err != nil {
+						return fmt.Errorf("timed out waiting for %s to be created: %w",
+							m.Name(), err)
+					}
+					exists, err := m.Exists()
+					if err != nil {
+						return err
+					}
+					if exists {
+						break
+					}
+				}
+				o.Success("attached to machine " + machine)
+				return nil
+			})
 		state, err := m.State()
 		if err != nil {
 			return err

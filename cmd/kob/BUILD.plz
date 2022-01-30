@@ -6,6 +6,7 @@ go_binary(
         ["*.go"],
         exclude = ["*_test.go"],
     ),
+    #static=True,
     deps = [
         "//cmd/kob/cli",
         "//cmd/kob/labs",

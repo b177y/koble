@@ -22,7 +22,8 @@ func mergeMachineConf(base driver.MachineConfig,
 	return base
 }
 
-func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
+func (nk *Koble) StartMachine(name string, conf driver.MachineConfig,
+	attachTerm string) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -70,7 +71,11 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig) error {
 	if err != nil {
 		return err
 	}
-	if waitTimeout := nk.Config.Wait; waitTimeout > 0 {
+	if attachTerm != "" {
+		return nk.AttachToMachine(name, attachTerm)
+	}
+	if waitTimeout := nk.Config.Wait; waitTimeout > 0 &&
+		attachTerm != "this" {
 		fmt.Println("booting")
 		return m.WaitUntil(waitTimeout, driver.BootedState(), driver.ExitedState())
 	}

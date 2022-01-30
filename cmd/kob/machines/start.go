@@ -41,13 +41,11 @@ var start = func(cmd *cobra.Command, args []string) error {
 		nil,
 		cli.NK.Config.NonInteractive,
 		func(out output.Output) (err error) {
+			attachTerm := ""
 			if cli.NK.Config.Launch.MachineStart {
-				err := cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
-				if err != nil {
-					return err
-				}
+				attachTerm = cli.NK.Config.Terminal.MachineStart
 			}
-			err = cli.NK.StartMachine(args[0], startOpts)
+			err = cli.NK.StartMachine(args[0], startOpts, attachTerm)
 			if err != nil {
 				return err
 			}
