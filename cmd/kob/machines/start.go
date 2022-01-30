@@ -36,7 +36,7 @@ func init() {
 }
 
 var start = func(cmd *cobra.Command, args []string) error {
-	return output.WithSimpleContainer(
+	err := output.WithSimpleContainer(
 		fmt.Sprintf("Starting machine %s", args[0]),
 		nil,
 		cli.NK.Config.NonInteractive,
@@ -45,11 +45,19 @@ var start = func(cmd *cobra.Command, args []string) error {
 			if cli.NK.Config.Launch.MachineStart {
 				attachTerm = cli.NK.Config.Terminal.MachineStart
 			}
-			err = cli.NK.StartMachine(args[0], startOpts, attachTerm)
+			err = cli.NK.StartMachine(args[0], startOpts, attachTerm, out)
 			if err != nil {
 				return err
 			}
 			out.Success("Started machine " + args[0])
 			return nil
 		})
+	if err != nil {
+		return err
+	}
+	if cli.NK.Config.Launch.MachineStart &&
+		cli.NK.Config.Terminal.MachineStart == "this" {
+		return cli.NK.AttachToMachine(args[0], cli.NK.Config.Terminal.MachineStart)
+	}
+	return nil
 }

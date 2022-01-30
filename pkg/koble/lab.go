@@ -25,7 +25,7 @@ func (nk *Koble) LabStart(mlist []string) error {
 		if nk.Config.Launch.LabStart {
 			attachTerm = nk.Config.Terminal.LabStart
 		}
-		return nk.StartMachine(name, mconf, attachTerm)
+		return nk.StartMachine(name, mconf, attachTerm, out)
 	})
 }
 

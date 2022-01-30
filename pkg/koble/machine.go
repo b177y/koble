@@ -2,6 +2,7 @@ package koble
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/b177y/koble/pkg/driver"
@@ -23,7 +24,7 @@ func mergeMachineConf(base driver.MachineConfig,
 }
 
 func (nk *Koble) StartMachine(name string, conf driver.MachineConfig,
-	attachTerm string) error {
+	attachTerm string, out io.Writer) error {
 	m, err := nk.Driver.Machine(name, nk.Config.Namespace)
 	if err != nil {
 		return err
@@ -53,7 +54,7 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig,
 		if err != nil {
 			return err
 		}
-		fmt.Printf("waiting for dependency %s to boot", dependency)
+		fmt.Fprintf(out, "waiting for dependency %s to boot", dependency)
 		err = dep.WaitUntil(60*5, driver.BootedState(), nil)
 		if err != nil {
 			return fmt.Errorf("Error waiting for dependency %s to boot: %w", dependency, err)
@@ -71,12 +72,15 @@ func (nk *Koble) StartMachine(name string, conf driver.MachineConfig,
 	if err != nil {
 		return err
 	}
-	if attachTerm != "" {
-		return nk.AttachToMachine(name, attachTerm)
+	if attachTerm != "" && attachTerm != "this" {
+		err = nk.AttachToMachine(name, attachTerm)
+		if err != nil {
+			return err
+		}
 	}
 	if waitTimeout := nk.Config.Wait; waitTimeout > 0 &&
 		attachTerm != "this" {
-		fmt.Println("booting")
+		fmt.Fprintln(out, "booting")
 		return m.WaitUntil(waitTimeout, driver.BootedState(), driver.ExitedState())
 	}
 	return nil

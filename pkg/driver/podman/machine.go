@@ -146,6 +146,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	}
 	if !imExists {
 		fmt.Println("Image", opts.Image, "does not already exist, attempting to pull...")
+		// t := new(images.PullOptions)
 		_, err = images.Pull(m.pd.Conn, opts.Image, nil)
 		if err != nil {
 			return err
