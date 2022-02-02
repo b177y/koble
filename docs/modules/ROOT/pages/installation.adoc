@@ -3,18 +3,18 @@
 == Ubuntu 20.04
 
 The install script for can be found
-link:https://github.com/b177y/koble/releases/download/v0/install.sh[here].
+link:https://github.com/b177y/koble/releases/download/v0.1/install.sh[here].
 
 This will install Koble and the dependencies for both the Podman and UML driver.
 
 [source,sh]
 ----
-wget https://github.com/b177y/koble/releases/download/v0/install.sh
+wget https://github.com/b177y/koble/releases/download/v0.1/install.sh
 
 # manually inspect installer, check code is trusted before executing
 less install.sh
 
-sh install.sh
+bash install.sh
 ----
 
 == Manual Installation
@@ -25,7 +25,7 @@ If you want to install on a distro other than Ubuntu 20.04,
 you will need the following:
 
 * Download the
-link:https://github.com/b177y/koble/releases/download/v0/koble[koble binary]
+link:https://github.com/b177y/koble/releases/download/v0.1/koble[koble binary]
 to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.
 * For the Podman driver
 ** Install Podman (recommended version > 3.4)

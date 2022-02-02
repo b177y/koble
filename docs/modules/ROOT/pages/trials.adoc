@@ -1,0 +1,81 @@
+= User Trials
+
+== Overview
+
+The purpose of this project is to explore the use of containers within
+network emulation tools.
+I have developed Koble as a 'modern' Netkit alternative,
+which gives you the ability to use either Podman containers
+or User Mode Linux virtual machines (which are used for the original Netkit).
+You don't need any understanding of how these technologies work for the purpose
+of this task.
+
+The task involves testing a few simple labs with both drivers,
+and answering some basic questions about your experience.
+You should read the rest of this page before you begin the tasks.
+
+After one of the tasks you will need to uncomment part of the lab config file,
+to switch to the UML driver.
+When and how to do this will be explained below.
+
+== Google Survey
+
+You will give your feedback via a google survey,
+which is broken into 5 short sections:
+
+* initial feedback on tool from testing ABR lab
+* Lab A - using Podman driver
+* Lab B - using UML driver
+* Driver feedback
+* Additional (optional) feedback
+
+== Install
+
+Firstly you will need to install `koble` on an Ubuntu 20.04 virtual machine.
+This can be done on the same VM that you use for Netkit, but it is recommended
+that you take a snapshot of the VM before the task so you can easily roll back
+if you face any problems.
+
+To install the tool and it's dependencies on Ubuntu 20.04 you can download
+and execute this install script:
+
+The install script for can be found
+link:https://github.com/b177y/koble/releases/download/v0.1/install.sh[here].
+
+[source,sh]
+----
+wget https://github.com/b177y/koble/releases/download/v0.1/install.sh
+
+# manually inspect installer, check code is trusted before executing
+less install.sh
+
+bash install.sh
+----
+
+== Tasks
+
+For one of the labs you will need to edit the `lab.yml` lab config file
+to change the following:
+
+[source,yaml]
+----
+# driver: uml
+  # name: uml
+----
+should be uncommented to become:
+[source,yaml]
+----
+driver: uml
+  name: uml
+----
+
+* xref:LABS:abr.adoc[ABR Lab]
+* Answer section 1 of survey
+* xref:LABS:dns.adoc[DNS Lab]
+** If you are group 1 you don't need to change anything
+** If you are group 2 you need to uncomment the driver section in `lab.yml`
+* Answer section 2 of survey
+* xref:LABS:dhcp.adoc[DHCP Lab]
+** If you are group 1 you need to uncomment the driver section in `lab.yml`
+** If you are group 2 you don't need to change anything
+* Answer sections 3, 4 and 5 of survey

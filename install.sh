@@ -33,7 +33,7 @@ chmod +x "${DIR}/koble"
 # work out which shell (bash/zsh/fish)
 USER_SHELL=$(basename "$SHELL")
 
-if [ "$USER_SHELL" == "zsh" ]; then
+if [ "$USER_SHELL" = "zsh" ]; then
     _PATH=$(zsh -c echo \$PATH)
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
         echo "export PATH=\"\$PATH:\$HOME\.local/bin\" # Koble PATH" >> ~/.zprofile
@@ -41,7 +41,7 @@ if [ "$USER_SHELL" == "zsh" ]; then
     fi
     grep "# Koble completion" ~/.zshrc || \
         echo "source <(koble completion zsh) # Koble completion" >> ~/.zshrc
-elif [ "$USER_SHELL" == "bash" ]; then
+elif [ "$USER_SHELL" = "bash" ]; then
     _PATH=$(bash -c echo \$PATH)
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
         echo "export PATH=\"\$PATH:\$HOME\.local/bin\" # Koble PATH" >> ~/.profile
@@ -49,7 +49,7 @@ elif [ "$USER_SHELL" == "bash" ]; then
     fi
     grep "# Koble completion" ~/.bashrc || \
         echo "source <(koble completion bash) # Koble completion" >> ~/.bashrc
-elif [ "$USER_SHELL" == "fish" ]; then
+elif [ "$USER_SHELL" = "fish" ]; then
     echo "fish shell is not supported for automatic setup."
 else
     echo "Shell $USER_SHELL is not currently supported."

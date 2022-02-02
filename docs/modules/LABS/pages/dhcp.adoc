@@ -68,7 +68,7 @@ As we have an IP address and gateway we can reach the internet:
 .pc
 [source,sh]
 ----
-ping google.com
+ping -c1 google.com
 ----
 
 == Task

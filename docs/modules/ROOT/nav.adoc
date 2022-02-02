@@ -5,3 +5,4 @@
 * xref:config.adoc[]
 * xref:drivers.adoc[]
 * xref:namespaces.adoc[]
+* xref:trials.adoc[]
