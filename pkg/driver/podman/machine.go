@@ -19,6 +19,7 @@ import (
 	"github.com/containers/podman/v3/pkg/api/handlers"
 	"github.com/containers/podman/v3/pkg/bindings/containers"
 	"github.com/containers/podman/v3/pkg/bindings/images"
+	"github.com/containers/podman/v3/pkg/bindings/network"
 	"github.com/containers/podman/v3/pkg/specgen"
 	log "github.com/sirupsen/logrus"
 )
@@ -238,7 +239,15 @@ func (m *Machine) Remove() error {
 	if !exists {
 		return nil
 	}
-	return containers.Remove(m.pd.Conn, m.Id(), nil)
+	err = containers.Remove(m.pd.Conn, m.Id(), nil)
+	if err != nil {
+		return err
+	}
+	opts := network.PruneOptions{}
+	opts.Filters = make(map[string][]string)
+	opts.Filters["label"] = []string{"koble:driver=" + m.pd.DriverName}
+	_, err = network.Prune(m.pd.Conn, nil)
+	return err
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
