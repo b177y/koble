@@ -55,12 +55,17 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 		}
 		if state.State != nil {
 			if *state.State != "running" {
-				err = m.WaitUntil(5*time.Second, driver.BootingState(), driver.ExitedState())
+				err = m.WaitUntil(5*time.Second, driver.BootingState(),
+					driver.ExitedState())
 				if err != nil {
 					return err
 				}
 			}
 		}
+	}
+	err = nk.MachineLogs(m.Name(), false, -1)
+	if err != nil {
+		return err
 	}
 	return m.Attach(nil)
 }
