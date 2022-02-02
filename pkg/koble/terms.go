@@ -133,7 +133,7 @@ func (nk *Koble) getTerm(terminal string) (term Terminal, err error) {
 	return term, fmt.Errorf("Terminal %s not found in config or default terminals.", terminal)
 }
 
-func (nk *Koble) LaunchInTerm(machine, terminal string) error {
+func (nk *Koble) LaunchInTerm(machine, terminal, command string) error {
 	term, err := nk.getTerm(terminal)
 	if err != nil {
 		return err
@@ -146,7 +146,7 @@ func (nk *Koble) LaunchInTerm(machine, terminal string) error {
 	opts.Lab = nk.LabRoot
 	opts.Namespace = nk.Config.Namespace
 	opts.Machine = machine
-	opts.Command, err = nk.reexecAttach(machine)
+	opts.Command = command
 	if err != nil {
 		return err
 	}

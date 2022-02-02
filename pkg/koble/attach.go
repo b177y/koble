@@ -15,7 +15,11 @@ func (nk *Koble) AttachToMachine(machine, term string) error {
 	if os.Getenv("_KOBLE_IN_TERM") != "true" && term != "this" {
 		log.WithFields(log.Fields{"machine": machine}).
 			Debug("attach not in terminal, relaunching now")
-		return nk.LaunchInTerm(machine, term)
+		command, err := nk.reexecAttach(machine)
+		if err != nil {
+			return err
+		}
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach, command)
 	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
@@ -66,7 +70,11 @@ func (nk *Koble) Exec(machine, command, user string,
 	if os.Getenv("_KOBLE_IN_TERM") != "true" && nk.Config.Terminal.Exec != "this" {
 		log.WithFields(log.Fields{"machine": machine}).
 			Debug("exec not in terminal, relaunching now")
-		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+		command, err := nk.reexecExec(machine, command, user, detach, workdir)
+		if err != nil {
+			return err
+		}
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Exec, command)
 	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
@@ -83,7 +91,11 @@ func (nk *Koble) Shell(machine, user, workdir string) error {
 	if os.Getenv("_KOBLE_IN_TERM") != "true" && nk.Config.Terminal.Shell != "this" {
 		log.WithFields(log.Fields{"machine": machine}).
 			Debug("shell not in terminal, relaunching now")
-		return nk.LaunchInTerm(machine, nk.Config.Terminal.Attach)
+		command, err := nk.reexecShell(machine, user, workdir)
+		if err != nil {
+			return err
+		}
+		return nk.LaunchInTerm(machine, nk.Config.Terminal.Shell, command)
 	}
 	m, err := nk.Driver.Machine(machine, nk.Config.Namespace)
 	if err != nil {
