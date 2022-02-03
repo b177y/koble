@@ -274,68 +274,14 @@ which are lightweight and do not require root privileges to run.</p>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The install script for Ubuntu 20.04 can be found
-<a href="https://github.com/b177y/koble/releases/download/v0/install.sh">here</a>.</p>
+<a href="https://github.com/b177y/koble/releases/download/v0.1/install.sh">here</a>.</p>
 </div>
 <div class="paragraph">
 <p>This will install Koble and the dependencies for both the Podman and UML driver.</p>
 </div>
-<div class="sect2">
-<h3 id="_manual_install"><a class="anchor" href="#_manual_install"></a>Manual Install</h3>
-<div class="admonitionblock caution">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
-</td>
-<td class="content">
-This has not been tested and is not guaranteed to work on all distros.
-</td>
-</tr>
-</table>
-</div>
 <div class="paragraph">
-<p>If you want to install on a distro other than Ubuntu 20.04,
-you will need the following:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Download the
-<a href="https://github.com/b177y/koble/releases/download/v0/koble">koble binary</a>
-to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.</p>
-</li>
-<li>
-<p>For the Podman driver</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Install Podman (recommended version &gt; 3.4)</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>For the User Mode Linux driver</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Download the
-<a href="https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2">UML filesystem</a>
-to ~/.local/share/uml/images/koble-fs</p>
-</li>
-<li>
-<p>Download the
-<a href="https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2">UML kernel</a>
-to ~/.local/share/uml/kernel/koble-kernel</p>
-</li>
-<li>
-<p>Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)</p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
+<p>On distros other than Ubuntu 20.04, see the instructions in the
+<a href="installation.html" class="xref page">installation guide</a>.</p>
 </div>
 </div>
 </div>
