@@ -241,13 +241,21 @@ func (m *Machine) Remove() error {
 	}
 	err = containers.Remove(m.pd.Conn, m.Id(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not remove container: %w", err)
 	}
 	opts := network.PruneOptions{}
 	opts.Filters = make(map[string][]string)
 	opts.Filters["label"] = []string{"koble:driver=" + m.pd.DriverName}
 	_, err = network.Prune(m.pd.Conn, nil)
-	return err
+	if err != nil {
+		if strings.Contains(err.Error(), "no such container") {
+			log.Tracef("error pruning networks: %w", err)
+			return nil
+		} else {
+			return fmt.Errorf("could not prune networks: %w", err)
+		}
+	}
+	return nil
 }
 
 func (m *Machine) Info() (info driver.MachineInfo, err error) {
