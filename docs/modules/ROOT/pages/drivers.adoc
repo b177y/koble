@@ -25,7 +25,8 @@ This can be run manually with:
 
 NOTE: If you have followed the installation guide these steps will already be completed
 
-This driver requires Podman to be installed.
+This driver requires Podman to be
+link:https://podman.io/getting-started/installation[installed].
 Version 3.4 or higher is recommended.
 
 [source,sh]
@@ -54,6 +55,12 @@ driver:
 * *uri* - The address of the podman api server.
 * *default_image* - The default container image to use for machines.
 
+CAUTION: Using a remote instance of Podman will not work properly
+due to a bug with creating Podman networks.
+As a current workaround, Koble creates cni networks on disk manually.
+This will be resolved once Podman issue
+link:https://github.com/containers/podman/issues/12990[12990] is fixed.
+
 == User Mode Linux
 
 The uml driver uses User Mode Linux instances to run virtual machines.
@@ -63,17 +70,20 @@ This allows more system level tweaking (e.g. sysctl) than what is
 available/easy with containers,
 whilst being less resource intensive than traditional full virtualisation methods.
 
+The uml driver runs instances within Podman containers to allow for full rootless
+networking, attach/detach functionality, easier instance management etc.
+
 === Setup
 
 NOTE: If you have followed the installation guide these steps will already be completed
 
+* link:https://podman.io/getting-started/installation[Install Podman]
 * Download the
 link:https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2[UML filesystem]
 to ~/.local/share/uml/images/koble-fs
 * Download the
 link:https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2[UML kernel]
 to ~/.local/share/uml/kernel/koble-kernel
-* Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)
 
 === Configuration
 
@@ -83,14 +93,12 @@ driver:
   name: uml
   uml:
     storage_dir: ~/.local/share/uml
-    run_dir: /run/user/1000/uml
     kernel: koble-kernel
     default_image: koble-fs
 ----
 
 * *storage_dir* - The base directory for UML filesystems, overlay images and
 kernel binaries.
-* *run_dir* - The base directory for storing running instance information and sockets.
 * *kernel* - The name of the kernel binary within the
 $STORAGE_DIR/kernel/ directory.
 * *default_image* - The name of the filesystem image within the 

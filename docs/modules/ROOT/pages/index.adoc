@@ -15,30 +15,12 @@ which are lightweight and do not require root privileges to run.
 == Quick Start
 
 The install script for Ubuntu 20.04 can be found
-link:https://github.com/b177y/koble/releases/download/v0/install.sh[here].
+link:https://github.com/b177y/koble/releases/download/v0.1/install.sh[here].
 
 This will install Koble and the dependencies for both the Podman and UML driver.
 
-=== Manual Install
-
-CAUTION: This has not been tested and is not guaranteed to work on all distros.
-
-If you want to install on a distro other than Ubuntu 20.04,
-you will need the following:
-
-* Download the
-link:https://github.com/b177y/koble/releases/download/v0/koble[koble binary]
-to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.
-* For the Podman driver
-** Install Podman (recommended version > 3.4)
-* For the User Mode Linux driver
-** Download the
-link:https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2[UML filesystem]
-to ~/.local/share/uml/images/koble-fs
-** Download the
-link:https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2[UML kernel]
-to ~/.local/share/uml/kernel/koble-kernel
-** Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)
+On distros other than Ubuntu 20.04, see the instructions in the
+xref:installation.adoc[installation guide].
 
 == Usage
 

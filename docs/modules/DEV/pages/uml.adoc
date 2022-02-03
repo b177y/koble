@@ -1,9 +1,5 @@
 = User Mode Linux
 
-== UML Run Filesystem
+== `uml-runner` Container Image
 
-== UML Kernel and Filesystem
-
-== Vector Networking
-
-== Shim
+== Kernel and Filesystem

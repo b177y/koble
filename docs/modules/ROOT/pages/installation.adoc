@@ -1,6 +1,6 @@
 = Installation
 
-== Ubuntu 20.04
+== Using Install Script (Ubuntu 20.04 only)
 
 The install script for can be found
 link:https://github.com/b177y/koble/releases/download/v0.1/install.sh[here].
@@ -20,20 +20,35 @@ bash install.sh
 == Manual Installation
 
 CAUTION: This has not been tested and is not guaranteed to work on all distros.
+Currently binaries are only available for linux amd64 architectures.
 
 If you want to install on a distro other than Ubuntu 20.04,
 you will need the following:
 
 * Download the
-link:https://github.com/b177y/koble/releases/download/v0.1/koble[koble binary]
+link:https://github.com/b177y/koble/releases/download/v0.1/koble_linux_amd64[koble binary]
 to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.
-* For the Podman driver
-** Install Podman (recommended version > 3.4)
-* For the User Mode Linux driver
+You will need to make this executable (`chmod +x ~/.local/bin/koble`)
+It is recommended to add `koble completion bash` to your bashrc or
+`koble completion zsh` to your zshrc if you use zsh.
+* link:https://podman.io/getting-started/installation[Install Podman] (recommended version > 3.4)
+* For the User Mode Linux driver:
 ** Download the
 link:https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2[UML filesystem]
-to ~/.local/share/uml/images/koble-fs
+and extract to ~/.local/share/uml/images/koble-fs
 ** Download the
 link:https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2[UML kernel]
-to ~/.local/share/uml/kernel/koble-kernel
-** Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)
+and extract to ~/.local/share/uml/kernel/koble-kernel
+
+Finally, set up your system to allow rootless containers to run,
+and setup Podman:
+
+[source,sh]
+----
+sudo sysctl kernel.unprivileged_userns_clone=1
+sudo touch /etc/subuid /etc/subgid
+sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
+systemctl --user enable --now podman.socket
+podman pull docker.io/b177y/uml-runner
+podman pull docker.io/b177y/koble-deb
+----

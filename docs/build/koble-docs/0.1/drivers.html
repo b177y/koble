@@ -291,7 +291,8 @@ If you have followed the installation guide these steps will already be complete
 </table>
 </div>
 <div class="paragraph">
-<p>This driver requires Podman to be installed.
+<p>This driver requires Podman to be
+<a href="https://podman.io/getting-started/installation">installed</a>.
 Version 3.4 or higher is recommended.</p>
 </div>
 <div class="listingblock">
@@ -329,6 +330,22 @@ Version 3.4 or higher is recommended.</p>
 </li>
 </ul>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Using a remote instance of Podman will not work properly
+due to a bug with creating Podman networks.
+As a current workaround, Koble creates cni networks on disk manually.
+This will be resolved once Podman issue
+<a href="https://github.com/containers/podman/issues/12990">12990</a> is fixed.
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </div>
@@ -342,6 +359,10 @@ a separate kernel.
 This allows more system level tweaking (e.g. sysctl) than what is
 available/easy with containers,
 whilst being less resource intensive than traditional full virtualisation methods.</p>
+</div>
+<div class="paragraph">
+<p>The uml driver runs instances within Podman containers to allow for full rootless
+networking, attach/detach functionality, easier instance management etc.</p>
 </div>
 <div class="sect2">
 <h3 id="_setup_2"><a class="anchor" href="#_setup_2"></a>Setup</h3>
@@ -360,6 +381,9 @@ If you have followed the installation guide these steps will already be complete
 <div class="ulist">
 <ul>
 <li>
+<p><a href="https://podman.io/getting-started/installation">Install Podman</a></p>
+</li>
+<li>
 <p>Download the
 <a href="https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2">UML filesystem</a>
 to ~/.local/share/uml/images/koble-fs</p>
@@ -368,9 +392,6 @@ to ~/.local/share/uml/images/koble-fs</p>
 <p>Download the
 <a href="https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2">UML kernel</a>
 to ~/.local/share/uml/kernel/koble-kernel</p>
-</li>
-<li>
-<p>Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)</p>
 </li>
 </ul>
 </div>
@@ -383,7 +404,6 @@ to ~/.local/share/uml/kernel/koble-kernel</p>
   name: uml
   uml:
     storage_dir: ~/.local/share/uml
-    run_dir: /run/user/1000/uml
     kernel: koble-kernel
     default_image: koble-fs</code></pre>
 </div>
@@ -393,9 +413,6 @@ to ~/.local/share/uml/kernel/koble-kernel</p>
 <li>
 <p><strong>storage_dir</strong> - The base directory for UML filesystems, overlay images and
 kernel binaries.</p>
-</li>
-<li>
-<p><strong>run_dir</strong> - The base directory for storing running instance information and sockets.</p>
 </li>
 <li>
 <p><strong>kernel</strong> - The name of the kernel binary within the

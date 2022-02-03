@@ -249,7 +249,7 @@
 <article class="doc">
 <h1 class="page">Installation</h1>
 <div class="sect1">
-<h2 id="_ubuntu_20_04"><a class="anchor" href="#_ubuntu_20_04"></a>Ubuntu 20.04</h2>
+<h2 id="_using_install_script_ubuntu_20_04_only"><a class="anchor" href="#_using_install_script_ubuntu_20_04_only"></a>Using Install Script (Ubuntu 20.04 only)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The install script for can be found
@@ -281,6 +281,7 @@ bash install.sh</code></pre>
 </td>
 <td class="content">
 This has not been tested and is not guaranteed to work on all distros.
+Currently binaries are only available for linux amd64 architectures.
 </td>
 </tr>
 </table>
@@ -293,40 +294,47 @@ you will need the following:</p>
 <ul>
 <li>
 <p>Download the
-<a href="https://github.com/b177y/koble/releases/download/v0.1/koble">koble binary</a>
-to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.</p>
+<a href="https://github.com/b177y/koble/releases/download/v0.1/koble_linux_amd64">koble binary</a>
+to ~/.local/bin/koble and make sure "~/.local/bin" is in your PATH.
+You will need to make this executable (<code>chmod +x ~/.local/bin/koble</code>)
+It is recommended to add <code>koble completion bash</code> to your bashrc or
+<code>koble completion zsh</code> to your zshrc if you use zsh.</p>
 </li>
 <li>
-<p>For the Podman driver</p>
-<div class="ulist">
-<ul>
-<li>
-<p>Install Podman (recommended version &gt; 3.4)</p>
-</li>
-</ul>
-</div>
+<p><a href="https://podman.io/getting-started/installation">Install Podman</a> (recommended version &gt; 3.4)</p>
 </li>
 <li>
-<p>For the User Mode Linux driver</p>
+<p>For the User Mode Linux driver:</p>
 <div class="ulist">
 <ul>
 <li>
 <p>Download the
 <a href="https://github.com/b177y/koble-fs/releases/download/v0/koble-fs.tar.bz2">UML filesystem</a>
-to ~/.local/share/uml/images/koble-fs</p>
+and extract to ~/.local/share/uml/images/koble-fs</p>
 </li>
 <li>
 <p>Download the
 <a href="https://github.com/b177y/koble-kernel/releases/download/v0/koble-kernel.tar.bz2">UML kernel</a>
-to ~/.local/share/uml/kernel/koble-kernel</p>
-</li>
-<li>
-<p>Install slirp4netns (tested with version 1.1.12) to /usr/bin/slirp4netns (this should be installed already if you have installed Podman)</p>
+and extract to ~/.local/share/uml/kernel/koble-kernel</p>
 </li>
 </ul>
 </div>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>Finally, set up your system to allow rootless containers to run,
+and setup Podman:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">sudo sysctl kernel.unprivileged_userns_clone=1
+sudo touch /etc/subuid /etc/subgid
+sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 $USER
+systemctl --user enable --now podman.socket
+podman pull docker.io/b177y/uml-runner
+podman pull docker.io/b177y/koble-deb</code></pre>
+</div>
 </div>
 </div>
 </div>
