@@ -193,7 +193,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	}
 	s.Env = make(map[string]string, 0)
 	s.Env["kstart-driver"] = "podman"
-	s.Env["kstart-quiet"] = strconv.FormatBool(log.GetLevel() <= log.ErrorLevel)
+	s.Env["kstart-quiet"] = strconv.FormatBool(log.GetLevel() <= log.WarnLevel)
 	createResponse, err := containers.CreateWithSpec(m.pd.Conn, s, nil)
 	if err != nil {
 		return err
