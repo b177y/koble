@@ -68,7 +68,7 @@ restart the service.
 [%collapsible]
 ====
 // add dnsmasq entry for web
-./etc/dnsmasq.conf
+./etc/dnsmasq.conf (d0)
 [source,conf]
 ----
 ...

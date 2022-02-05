@@ -79,7 +79,7 @@ __Modify the DHCP server configuration so we get the set IP address 10.72.16.28_
 [%collapsible]
 ====
 // add dnsmasq entry for web
-./etc/dnsmasq.conf
+./etc/dnsmasq.conf (dh)
 [source,conf]
 ----
 ...
