@@ -20,7 +20,7 @@ link:https://github.com/b177y/koble/releases/download/v0.1/install.sh[here].
 This will install Koble and the dependencies for both the Podman and UML driver.
 
 ifdef::env-github[]
-This content is for GitHub only.
+On distros other than Ubuntu 20.04, see the instructions in the
 link:https://koble.b177y.dev/koble-docs/0.1/installation.html[installation guide].
 endif::[]
 ifndef:env-github[]
