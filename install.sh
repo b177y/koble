@@ -71,8 +71,8 @@ podman pull docker.io/b177y/uml-runner
 podman pull docker.io/b177y/koble-deb
 
 # Install UML dependencies
-wget "https://github.com/b177y/koble-fs/releases/download/${UMLFS_VERSION}/koble-fs.tar.bz2" -O /tmp/koble-fs.tar.bz2
-wget "https://github.com/b177y/koble-kernel/releases/download/${UMLKERN_VERSION}/koble-kernel.tar.bz2" -O /tmp/koble-kernel.tar.bz2
+wget "https://sourceforge.net/projects/koble-fs/files/v0/koble-fs.tar.bz2/download" -O /tmp/koble-fs.tar.bz2
+wget "https://sourceforge.net/projects/koble-kernel/files/v0/koble-kernel.tar.bz2/download" -O /tmp/koble-kernel.tar.bz2
 mkdir -p ~/.local/share/uml/images
 mkdir -p ~/.local/share/uml/kernel
 tar -C ~/.local/share/uml/images -xjvf /tmp/koble-fs.tar.bz2

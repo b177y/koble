@@ -91,7 +91,7 @@ var defaultTerms = map[string]Terminal{
 		// create session if not exists, then attach in new window
 		Command: []string{"tmux", "has-session", `-t={{ index .Options "session" | ShellEscape }}`,
 			"||", "tmux", "new", "-d", "-s", `{{ index .Options "session" | ShellEscape }}`,
-			";", "tmux", "new-window", `-t={{ index .Options "session" | ShellEscape }}`, `{{ .Command }}`},
+			";", "tmux", "new-window", "-n", `{{ .Machine }}`, `-t={{ index .Options "session" | ShellEscape }}`, `{{ .Command }}`},
 		Options: map[string]string{"session": "koble"},
 	},
 	"konsole": {
