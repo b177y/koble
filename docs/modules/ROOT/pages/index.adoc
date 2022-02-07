@@ -42,7 +42,6 @@ Available Commands:
   attach      attach to the main tty of a machine
   completion  Generate the autocompletion script for the specified shell
   destroy     force stop and remove a machine
-  driver      manage a koble driver
   exec        run a command on a machine
   help        Help about any command
   info        get info about a machine
@@ -57,7 +56,7 @@ Available Commands:
   stop        stop a machine
 
 Flags:
-      --driver string      disable interactive and coloured output
+      --driver string      name of driver to use
   -h, --help               help for koble
       --namespace string   namespace to use
       --no-color           disable coloured output
@@ -65,6 +64,9 @@ Flags:
       --quiet              only show errors in log errors
   -v, --verbose count      verbose output
       --version            version for koble
+
+Additional help topics:
+  koble driver     manage a koble driver
 
 Use "koble [command] --help" for more information about a command.
 ----
