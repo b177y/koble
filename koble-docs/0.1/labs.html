@@ -251,20 +251,120 @@
 <div class="sect1">
 <h2 id="_creating_a_lab"><a class="anchor" href="#_creating_a_lab"></a>Creating a Lab</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>To turn the current directory into a Koble lab:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab init</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or to create a new directory for the lab:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab init --name newlab</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To see more options, check out the <a href="MAN/koble_lab_init.html" class="xref page">manpage</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_lab_yml"><a class="anchor" href="#_lab_yml"></a>lab.yml</h3>
+<div class="paragraph">
+<p>The lab config is stored in <code>lab.yml</code>,
+in the root of the lab directory.</p>
+</div>
+<div class="paragraph">
+<p>An example config could be:</p>
+</div>
+<div class="listingblock">
+<div class="title">lab.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">authors:
+- John Doe
+created_at: 15-12-2021
+driver:
+  name: uml
+koble_version: 0.0.1
+machines:
+  a:
+    networks:
+    - ar</code></pre>
+</div>
+</div>
+</div>
 <div class="sect2">
 <h3 id="_adding_machines"><a class="anchor" href="#_adding_machines"></a>Adding Machines</h3>
-
+<div class="paragraph">
+<p>To add a machine to a lab:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble machine add newmachine --network firstnet --network another</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will add an entry to the machines in <code>lab.yml</code>,
+create a folder for the machine contents and
+create a machine startup file.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_adding_networks"><a class="anchor" href="#_adding_networks"></a>Adding Networks</h3>
-
+<div class="paragraph">
+<p>To add a network to a lab:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble net add firstnet</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_lab_commands"><a class="anchor" href="#_lab_commands"></a>Lab Commands</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>You can perform some of the commands that can be used for single machines against
+a whole lab.
+These include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>start</p>
+</li>
+<li>
+<p>stop</p>
+</li>
+<li>
+<p>remove</p>
+</li>
+<li>
+<p>destroy</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For example in a lab with machines <strong>a</strong> and <strong>b</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab stop</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Is equivalent to doing</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble stop a
+koble stop b</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
