@@ -2,10 +2,90 @@
 
 == Creating a Lab
 
+To turn the current directory into a Koble lab:
+
+[source,sh]
+----
+koble lab init
+----
+
+or to create a new directory for the lab:
+
+[source,sh]
+----
+koble lab init --name newlab
+----
+
+To see more options, check out the xref:MAN:koble_lab_init.adoc[manpage].
+
+=== lab.yml
+
+The lab config is stored in `lab.yml`,
+in the root of the lab directory.
+
+An example config could be:
+
+.lab.yml
+[source,yaml]
+----
+authors:
+- John Doe
+created_at: 15-12-2021
+driver:
+  name: uml
+koble_version: 0.0.1
+machines:
+  a:
+    networks:
+    - ar
+----
+
 === Adding Machines
+
+To add a machine to a lab:
+
+[source,sh]
+----
+koble machine add newmachine --network firstnet --network another
+----
+
+This will add an entry to the machines in `lab.yml`,
+create a folder for the machine contents and
+create a machine startup file.
 
 === Adding Networks
 
+To add a network to a lab:
+
+[source,sh]
+----
+koble net add firstnet
+----
+
 == Lab Commands
+
+You can perform some of the commands that can be used for single machines against
+a whole lab.
+These include:
+
+* start
+* stop
+* remove
+* destroy
+
+For example in a lab with machines *a* and *b*:
+
+[source,sh]
+----
+koble lab stop
+----
+
+Is equivalent to doing
+
+[source,sh]
+----
+koble stop a
+koble stop b
+----
 
 == Advanced Configuration

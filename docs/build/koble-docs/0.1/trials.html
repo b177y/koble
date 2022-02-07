@@ -324,7 +324,11 @@ and execute this install script:</p>
 # manually inspect installer, check code is trusted before executing
 less install.sh
 
-bash install.sh</code></pre>
+bash install.sh
+
+# after you have run the install you will need to reload your shell configuration
+# or start a new terminal
+source ~/.bashrc # or ~/.zshrc if you use zsh</code></pre>
 </div>
 </div>
 </div>
@@ -332,6 +336,8 @@ bash install.sh</code></pre>
 <div class="sect1">
 <h2 id="_tasks"><a class="anchor" href="#_tasks"></a>Tasks</h2>
 <div class="sectionbody">
+<div class="exampleblock">
+<div class="content">
 <div class="paragraph">
 <p>For one of the labs you will need to edit the <code>lab.yml</code> lab config file
 to change the following:</p>
@@ -351,6 +357,8 @@ to change the following:</p>
   name: uml</code></pre>
 </div>
 </div>
+</div>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -364,10 +372,11 @@ to change the following:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>If you are group 1 you don&#8217;t need to change anything</p>
+<p>If you are group 1 you don&#8217;t need to change anything (this means you are using Podman).</p>
 </li>
 <li>
-<p>If you are group 2 you need to uncomment the driver section in <code>lab.yml</code></p>
+<p>If you are group 2 you need to uncomment the driver section in <code>lab.yml</code>
+(this means you are using UML).</p>
 </li>
 </ul>
 </div>
@@ -380,10 +389,12 @@ to change the following:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>If you are group 1 you need to uncomment the driver section in <code>lab.yml</code></p>
+<p>If you are group 1 you need to uncomment the driver section in <code>lab.yml</code>
+(this means you are using UML).</p>
 </li>
 <li>
-<p>If you are group 2 you don&#8217;t need to change anything</p>
+<p>If you are group 2 you don&#8217;t need to change anything
+(this means you are using Podman).</p>
 </li>
 </ul>
 </div>

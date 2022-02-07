@@ -50,10 +50,15 @@ wget https://github.com/b177y/koble/releases/download/v0.1/install.sh
 less install.sh
 
 bash install.sh
+
+# after you have run the install you will need to reload your shell configuration
+# or start a new terminal
+source ~/.bashrc # or ~/.zshrc if you use zsh
 ----
 
 == Tasks
 
+====
 For one of the labs you will need to edit the `lab.yml` lab config file
 to change the following:
 
@@ -68,14 +73,18 @@ should be uncommented to become:
 driver: uml
   name: uml
 ----
+====
 
 * xref:LABS:abr.adoc[ABR Lab]
 * Answer section 1 of survey
 * xref:LABS:dns.adoc[DNS Lab]
-** If you are group 1 you don't need to change anything
+** If you are group 1 you don't need to change anything (this means you are using Podman).
 ** If you are group 2 you need to uncomment the driver section in `lab.yml`
+(this means you are using UML).
 * Answer section 2 of survey
 * xref:LABS:dhcp.adoc[DHCP Lab]
 ** If you are group 1 you need to uncomment the driver section in `lab.yml`
+(this means you are using UML).
 ** If you are group 2 you don't need to change anything
+(this means you are using Podman).
 * Answer sections 3, 4 and 5 of survey

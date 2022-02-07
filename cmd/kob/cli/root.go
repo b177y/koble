@@ -40,7 +40,7 @@ func init() {
 	koble.BindFlag("verbose", RootCmd.PersistentFlags().Lookup("verbose"))
 	RootCmd.PersistentFlags().Bool("quiet", false, "only show errors in log errors")
 	koble.BindFlag("quiet", RootCmd.PersistentFlags().Lookup("quiet"))
-	RootCmd.PersistentFlags().String("driver", "", "disable interactive and coloured output")
+	RootCmd.PersistentFlags().String("driver", "", "name of driver to use")
 	koble.BindFlag("driver.name", RootCmd.PersistentFlags().Lookup("driver"))
 	// TODO add autocomp for --driver (list available drivers)
 	RootCmd.PersistentFlags().Bool("plain", false, "disable interactive and coloured output")
