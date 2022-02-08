@@ -64,13 +64,13 @@ to change the following:
 
 [source,yaml]
 ----
-# driver: uml
+# driver:
   # name: uml
 ----
 should be uncommented to become:
 [source,yaml]
 ----
-driver: uml
+driver:
   name: uml
 ----
 ====

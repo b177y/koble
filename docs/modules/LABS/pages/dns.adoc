@@ -31,7 +31,7 @@ First we will set up `tcpdump` to listen for traffic on machine `d0`.
 .d0
 [source,sh]
 ----
-tcpdump -s0 -i any -w /hostlab/dns_lab-1.pcap
+tcpdump -s0 -i eth1 -w /hostlab/dns_lab-1.pcap
 ----
 
 Now on `pc` we can attempt to resolve `google.com`.

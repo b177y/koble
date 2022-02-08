@@ -108,7 +108,7 @@ TIP: Use `--terminal this` to attach in the current shell, then press
 koble attach r
 ----
 
-A terminal will open, connected to the console of machine *a*.
+A terminal will open, connected to the console of machine *r*.
 Check which network interfaces are available with
 `ip addr show` in this terminal.
 You can now close this window.
