@@ -60,7 +60,7 @@ func (nk *Koble) InitLab(options InitOpts) error {
 		labMap["emails"] = options.Emails
 	}
 	if len(options.Webs) != 0 {
-		labMap["webs"] = options.Webs
+		labMap["web"] = options.Webs
 	}
 	vpl.Load(confmap.Provider(labMap, "."), nil)
 	labBytes, err := vpl.Marshal(yaml.Parser())
