@@ -2,8 +2,65 @@
 
 == Overview
 
-== Global Namespace
+Koble uses *namespaces* to allow machines and networks with the same names to
+be created and used simultaneously.
+For example you could have two labs which both contain machines *a* and *b*
+but run at the same time in different namespaces.
+Alternatively you might want two labs to share some networks and connect together.
+You can do this by putting them in the same namespace.
+
+NOTE: Custom namespace names must be alphanumeric and no more than 32 characters.
 
 == Lab Namespace
 
+When you're in a lab directory,
+a namespace will be created automatically.
+This is created to be unique to the lab directory,
+meaning machines and networks names won't clash with those in other labs.
+
+To use a specified namespace instead of the automatically created one,
+you can override it in *lab.yml*:
+
+.lab.yml
+[source,yaml]
+----
+namespace: mycustomns
+----
+
+You can do this using the same namespace name within two or more labs to
+"join" them together.
+
+If you want to run commands for this custom namespace from outside the lab
+directory you can use `--namespace mycustomns` in the command, e.g:
+
+[source,sh]
+----
+koble --namespace mycustomns list
+----
+
+== Global Namespace
+
+By default when you're not in a lab directory,
+all machines will be created in the GLOBAL namespace.
+
+If you want to use different namespaces without a lab,
+you can use `--namespace mycustomns` in the command, e.g:
+
+[source,sh]
+----
+koble --namespace adifferentns list
+----
+
 == Custom Namespaces
+
+If for some reason you don't want the default namespace to be *GLOBAL*,
+you can override it in your *config.yml*:
+
+[source,yaml]
+----
+namespace: DEFAULTNS
+----
+
+Now if you create a machine when you're not in a lab directory
+(and not using the `--namespace` override),
+the machine will be created in the namespace *DEFAULTNS*.

@@ -40,6 +40,59 @@ machines:
     - ar
 ----
 
+* *created_at* - date in the format DD-MM-YYYY
+* *koble_version* - version of Koble that the lab was created with
+* *description* - a short description of the lab
+* *authors* - a list of lab authors
+* *emails* - a list of lab authors' email addresses
+* *web* - a list of URIs associated with the lab (e.g. git repo /
+documentation page)
+* *machines* - a _map_ of lab machines.
+All machines in the lab must be declared in _lab.yml_.
+* *networks* - a _map_ of lab networks.
+If a network is attached to a machine but does not have an entry
+in *networks* it will be a simple network with no external access,
+no set subnet / gateway etc.
+
+.lab.yml example machine
+[source,yaml]
+----
+machines:
+  m1:
+    networks:
+    - ext
+    hosthome: false
+    hostlab: true
+    depends_on:
+    - m2
+----
+
+* *networks* - a list of network names to join machine to.
+* *hosthome* - whether to mount $HOME on the host to /hosthome in the
+virtual machine.
+* *hostlab* - whether to mount the lab directory on the host to /hostlab
+in the virtual machine.
+If this is false then startup scripts and machine directories won't be
+available inside the VM.
+* *depends_on* - machines that need to finish booting before this machine
+starts.
+
+.lab.yml example network
+[source,yaml]
+----
+networks:
+  ext:
+    external: true
+    gateway: 10.16.55.254
+    subnet: 10.16.55.0/24
+----
+
+* *external* - whether this machine should have external network access.
+If the host machine has internet access then setting external to true will
+give the VM internet access.
+* *gateway* - the gateway address to use for the network
+* *subnet* the subnet to use for the network
+
 === Adding Machines
 
 To add a machine to a lab:
@@ -89,3 +142,20 @@ koble stop b
 ----
 
 == Advanced Configuration
+
+.lab.yml
+[source,yaml]
+----
+driver:
+  name: uml
+----
+
+Additional configuration in *lab.yml* can be used to override global
+Koble settings.
+For example we can use the `driver` option to override the driver used for
+the lab.
+
+CAUTION: You should only run trusted labs where you have read the code
+and configuration.
+Arbitrary code can be run using some of the overrides,
+such as a lab adding an additional terminal with a reverse shell in the command 😎
