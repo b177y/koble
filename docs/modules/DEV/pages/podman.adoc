@@ -1,5 +1,25 @@
 = Podman
 
-== API Service
+== Golang API Bindings
+
+The podman driver for Koble is an API client using
+link:https://github.com/containers/podman/tree/main/pkg/bindings[pkg/bindings].
+This means that a Podman API server must be running to handle client requests.
+It is technically possible to use the functions provided by libpod for managing
+containers directly from the `koble` binary,
+which would remove Podman as a runtime dependency.
+However this would add significant complexity to the project.
+
+The documentation for podman's *pkg/bindings* is the source code.
+For working on the driver its useful to use the
+link:https://pkg.go.dev/github.com/containers/podman/v3@v3.4.4/pkg/bindings[Godoc reference],
+in addition to the
+link:https://github.com/containers/podman/tree/main/pkg/bindings[source code].
+Using an IDE / editor with good Golang support is helpful and can make usage
+of the Podman bindings relatively easy.
 
 == Container Images
+
+The images used by Koble's Podman "machines" are created using
+link:https://github.com/b177y/koble-fs[koble-fs].
+The default Debian image is published at `docker.io/b177y/koble-deb`.

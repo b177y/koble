@@ -217,10 +217,10 @@
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../Koble%20UML%20Kernel/0.1/index.html">Koble UML Kernel</a>
+      <a class="title" href="../../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../Koble%20UML%20Kernel/0.1/index.html">0.1</a>
+          <a href="../../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -251,13 +251,40 @@
 <div class="sect1">
 <h2 id="_uml_runner_container_image"><a class="anchor" href="#_uml_runner_container_image"></a><code>uml-runner</code> Container Image</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The UML driver uses a Podman rootless container to allow
+easy attaching / detaching from the tty,
+to allow fully rootless networking and for easier machine management.</p>
+</div>
+<div class="paragraph">
+<p>This is built using
+<a href="https://github.com/b177y/koble-fs">koble-fs</a>
+and is published at <code>docker.io/b177y/uml-runner</code>.</p>
+</div>
+<div class="paragraph">
+<p>It is an ubuntu container image with the tools needed for running
+and managing UML instances.
+The entrypoint script sets up interfaces / mount points,
+then runs the UML kernel command.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_kernel_and_filesystem"><a class="anchor" href="#_kernel_and_filesystem"></a>Kernel and Filesystem</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The UML filesystem is built using
+<a href="https://github.com/b177y/koble-fs">koble-fs</a>.
+It is based on the same filesystem as that used for the Podman
+driver but contains additions needed for UML,
+and is formatted as an ext4 image.</p>
+</div>
+<div class="paragraph">
+<p>The kernel is built using
+<a href="https://github.com/b177y/koble-kernel">koble-kernel</a>.
+For docs on building and modifying the kernel for Koble see the
+<a href="../../../uml-kernel/0.1/index.html" class="xref page">docs</a>.</p>
+</div>
 </div>
 </div>
 </article>

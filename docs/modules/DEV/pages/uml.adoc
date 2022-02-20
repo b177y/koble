@@ -2,4 +2,28 @@
 
 == `uml-runner` Container Image
 
+The UML driver uses a Podman rootless container to allow
+easy attaching / detaching from the tty,
+to allow fully rootless networking and for easier machine management.
+
+This is built using
+link:https://github.com/b177y/koble-fs[koble-fs]
+and is published at `docker.io/b177y/uml-runner`.
+
+It is an ubuntu container image with the tools needed for running
+and managing UML instances.
+The entrypoint script sets up interfaces / mount points,
+then runs the UML kernel command.
+
 == Kernel and Filesystem
+
+The UML filesystem is built using
+link:https://github.com/b177y/koble-fs[koble-fs].
+It is based on the same filesystem as that used for the Podman
+driver but contains additions needed for UML,
+and is formatted as an ext4 image.
+
+The kernel is built using
+link:https://github.com/b177y/koble-kernel[koble-kernel].
+For docs on building and modifying the kernel for Koble see the
+xref:uml-kernel:ROOT:index.adoc[docs].

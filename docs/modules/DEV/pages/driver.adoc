@@ -2,6 +2,71 @@
 
 == What is a Driver
 
+TIP: For a higher level overview of drivers from a user viewpoint,
+see xref:ROOT:drivers.adoc[drivers].
+
+The `koble` package uses a `Driver` (defined by package *pkg/driver*)
+link:https://gobyexample.com/interfaces[interface]
+to control and manage virtual machines and networks.
+The `Driver`
+link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Driver[Godoc reference]
+shows the functions that must be defined for a type to satisfy the interface.
+This means that we can have multiple implementations,
+and therefore different virtualisation technologies,
+without having to change any code in *pkg/koble*.
+
+There are currently two implementations of the `Driver` interface:
+
+* podman (*pkg/driver/podman*)
+* uml (*pkg/driver/uml*)
+
+These provide driver types which have the correct methods to satisfy the interface
+defined by *pkg/driver*.
+
+.Key interfaces and implementations
+|===
+|Interface (*pkg/driver*) |Podman Implementation |UML Implementation
+
+|link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Driver[Driver]
+|link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#PodmanDriver[PodmanDriver]
+|link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#UMLDriver[UMLDriver]
+
+|link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Machine[Machine]
+|Podman link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#Machine[Machine]
+|UML link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#Machine[Machine]
+
+|link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Network[Network]
+|Podman link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#Network[Network]
+|UML link:https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#Network[Network]
+
+|===
+
 == Developing a New Driver
 
-== Existing Drivers
+The easiest way to create a driver is to look at the Godoc references for the interfaces
+and create types to satisfy these.
+Looking at the implementations of the other drivers (particularly in *pkg/driver/podman*)
+is likely to help understand how to write driver functions.
+
+To make a driver package available to the *koble* binary,
+it needs to be registered in `cmd/kob/driver.go`:
+
+[source,go]
+----
+func init() {
+	driver.RegisterDriver("podman", func() driver.Driver {
+		return new(podman.PodmanDriver)
+	})
+	driver.RegisterDriver("uml", func() driver.Driver {
+		return new(uml.UMLDriver)
+	})
+	// new addition
+	driver.RegisterDriver("mynewdriver", func() driver.Driver {
+		return new(mypkg.MYDriver)
+	})
+	// end of new addition
+	err := driver.RegisterDriverCmds(driverCmd)
+
+    ...
+}
+----

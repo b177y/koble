@@ -10,7 +10,7 @@ content:
   # - url: https://github.com/b177y/netkit-fs
   #   branches: main
   #   start_path: docs
-  - url: https://github.com/b177y/netkit-kernel
+  - url: https://github.com/b177y/koble-kernel
     branches: main
     start_path: docs
   # - url: https://github.com/b177y/go-uml-utilities
