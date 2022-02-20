@@ -217,10 +217,10 @@
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../Koble%20UML%20Kernel/0.1/index.html">Koble UML Kernel</a>
+      <a class="title" href="../../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../Koble%20UML%20Kernel/0.1/index.html">0.1</a>
+          <a href="../../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -251,13 +251,126 @@
 <div class="sect1">
 <h2 id="_setup_development_environment"><a class="anchor" href="#_setup_development_environment"></a>Setup Development Environment</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>To work on Koble you will need <a href="https://go.dev/doc/install">go 1.17</a>.
+It is recommended to use
+<a href="https://medium.com/the-andela-way/gopls-language-server-setup-for-go-projects-3ee79dcac123">gopls</a>
+as a language server within your IDE / text editor,
+and <code>gofmt</code> for formatting the code.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_learning_golang"><a class="anchor" href="#_learning_golang"></a>Learning Golang</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you are new to using Golang,
+you might find the following resources useful for getting started:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://go.dev/tour/welcome/1">Tour of Go</a></p>
+</li>
+<li>
+<p><a href="https://gobyexample.com/">Go by Example</a></p>
+</li>
+<li>
+<p><a href="https://go.dev/doc/effective_go/">Effective Go</a></p>
+</li>
+<li>
+<p><a href="http://www.golangbootcamp.com/book/">Golang Bootcamp</a></p>
+</li>
+<li>
+<p><a href="https://gophercises.com/">Gophercises</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_the_project_structure"><a class="anchor" href="#_understanding_the_project_structure"></a>Understanding the Project Structure</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The "entrypoint" of the Koble binary is through the <strong>cmd/kob</strong> package.
+Under this we have the <strong>cli</strong> package, where our
+<a href="https://github.com/spf13/cobra">Cobra</a> root command is defined.
+We also have the packages <strong>labs</strong>, <strong>machines</strong> and <strong>networks</strong>
+for subcommands.
+Within these packages there is a file for each command.
+For example <code>koble lab start</code> is defined by <code>startCmd</code> in
+<strong>cmd/kob/labs/start.go</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Most of the cobra commands are wrappers around functions defined by <strong>pkg/koble</strong>.
+For example the <code>RunE</code> function of <code>startCmd</code> in <strong>cmd/kob/labs/start.go</strong>
+calls <code>cli.NK.LabStart(args)</code>,
+where <code>cli.NK</code> is an instance of the <code>Koble</code> struct defined by <strong>pkg/koble</strong>.
+The <strong>koble</strong> package is responsible for lab management, config, starting
+and stopping etc.
+This is similar to the job of <code>lstart</code> / <code>vstart</code> in
+<a href="https://github.com/netkit-jh/netkit-jh-build">Netkit</a>.
+This package provides wrappers around <strong>driver</strong> functions for controlling
+machines and networks.
+Where possible,
+<strong>cmd/kob</strong> should call functions from <strong>pkg/koble</strong> instead of <strong>pkg/driver</strong>.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>koble</strong> package should always call code from <strong>pkg/driver</strong> and NOT driver
+subpackages.
+This allows us to assure the abstraction between the driver interface and the
+workings of specific drivers.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>driver</strong> package in <strong>pkg/driver</strong> provides a <code>Driver</code> interface,
+declaring functions which should be available for a struct to be a valid driver.
+It also contains <code>Machine</code> and <code>Network</code> interfaces which need to be satisfied
+by driver implementations.</p>
+</div>
+<div class="paragraph">
+<p>The current driver implementations are <strong>uml</strong> and <strong>podman</strong>.
+These contain structs which satisfy the <code>Driver</code>, <code>Machine</code> and <code>Network</code>
+interfaces.
+These are the key parts of how Koble runs virtual machines and networks.
+Currently, the <strong>uml</strong> driver inherits much of its functionality from the <strong>podman</strong>
+driver as it works by running a User-Mode Linux instance within a Podman container.</p>
+</div>
+<div class="paragraph">
+<p>One way to navigate the project structure is to use the
+<a href="https://pkg.go.dev/github.com/b177y/koble">Godoc Reference</a>.
+Starting at <code>cmd</code> you can easily navigate your way through the source code.
+Additionally, using a tool or IDE where you can "jump to definition"
+(GitHub has some level of this feature although not perfect),
+is a huge help in navigating through source code,
+especially in a large Go project with lots of packages.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_building_the_koble_binary"><a class="anchor" href="#_building_the_koble_binary"></a>Building the Koble Binary</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>To build the standard <strong>koble</strong> binary run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">plz build //cmd/kob</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <strong>koble</strong> binary can be found at <em>plz-out/bin/cmd/kob/kob</em></p>
+</div>
+<div class="paragraph">
+<p>To build the binary for systems which don&#8217;t have the correct glibc version:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">CGO_ENABLED=0 go build -tags "exclude_graphdriver_btrfs btrfs_noversion exclude_graphdriver_devicemapper containers_image_openpgp" -o koble_linux_amd64 cmd/kob/*.go</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <strong>koble</strong> binary can be found at <strong>koble_linux_amd64</strong>.</p>
+</div>
 </div>
 </div>
 </article>

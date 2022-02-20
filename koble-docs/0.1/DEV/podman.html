@@ -217,10 +217,10 @@
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../Koble%20UML%20Kernel/0.1/index.html">Koble UML Kernel</a>
+      <a class="title" href="../../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../Koble%20UML%20Kernel/0.1/index.html">0.1</a>
+          <a href="../../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -249,15 +249,36 @@
 <article class="doc">
 <h1 class="page">Podman</h1>
 <div class="sect1">
-<h2 id="_api_service"><a class="anchor" href="#_api_service"></a>API Service</h2>
+<h2 id="_golang_api_bindings"><a class="anchor" href="#_golang_api_bindings"></a>Golang API Bindings</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The podman driver for Koble is an API client using
+<a href="https://github.com/containers/podman/tree/main/pkg/bindings">pkg/bindings</a>.
+This means that a Podman API server must be running to handle client requests.
+It is technically possible to use the functions provided by libpod for managing
+containers directly from the <code>koble</code> binary,
+which would remove Podman as a runtime dependency.
+However this would add significant complexity to the project.</p>
+</div>
+<div class="paragraph">
+<p>The documentation for podman&#8217;s <strong>pkg/bindings</strong> is the source code.
+For working on the driver its useful to use the
+<a href="https://pkg.go.dev/github.com/containers/podman/v3@v3.4.4/pkg/bindings">Godoc reference</a>,
+in addition to the
+<a href="https://github.com/containers/podman/tree/main/pkg/bindings">source code</a>.
+Using an IDE / editor with good Golang support is helpful and can make usage
+of the Podman bindings relatively easy.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_container_images"><a class="anchor" href="#_container_images"></a>Container Images</h2>
 <div class="sectionbody">
-
+<div class="paragraph">
+<p>The images used by Koble&#8217;s Podman "machines" are created using
+<a href="https://github.com/b177y/koble-fs">koble-fs</a>.
+The default Debian image is published at <code>docker.io/b177y/koble-deb</code>.</p>
+</div>
 </div>
 </div>
 </article>

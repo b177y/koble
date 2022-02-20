@@ -217,10 +217,10 @@
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../Koble%20UML%20Kernel/0.1/index.html">Koble UML Kernel</a>
+      <a class="title" href="../../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../Koble%20UML%20Kernel/0.1/index.html">0.1</a>
+          <a href="../../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -251,19 +251,114 @@
 <div class="sect1">
 <h2 id="_what_is_a_driver"><a class="anchor" href="#_what_is_a_driver"></a>What is a Driver</h2>
 <div class="sectionbody">
-
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+For a higher level overview of drivers from a user viewpoint,
+see <a href="../drivers.html" class="xref page">drivers</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>koble</code> package uses a <code>Driver</code> (defined by package <strong>pkg/driver</strong>)
+<a href="https://gobyexample.com/interfaces">interface</a>
+to control and manage virtual machines and networks.
+The <code>Driver</code>
+<a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Driver">Godoc reference</a>
+shows the functions that must be defined for a type to satisfy the interface.
+This means that we can have multiple implementations,
+and therefore different virtualisation technologies,
+without having to change any code in <strong>pkg/koble</strong>.</p>
+</div>
+<div class="paragraph">
+<p>There are currently two implementations of the <code>Driver</code> interface:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>podman (<strong>pkg/driver/podman</strong>)</p>
+</li>
+<li>
+<p>uml (<strong>pkg/driver/uml</strong>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These provide driver types which have the correct methods to satisfy the interface
+defined by <strong>pkg/driver</strong>.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Key interfaces and implementations</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Interface (<strong>pkg/driver</strong>)</th>
+<th class="tableblock halign-left valign-top">Podman Implementation</th>
+<th class="tableblock halign-left valign-top">UML Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Driver">Driver</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#PodmanDriver">PodmanDriver</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#UMLDriver">UMLDriver</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Machine">Machine</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Podman <a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#Machine">Machine</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UML <a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#Machine">Machine</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver#Network">Network</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Podman <a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/podman#Network">Network</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UML <a href="https://pkg.go.dev/github.com/b177y/koble/pkg/driver/uml#Network">Network</a></p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_developing_a_new_driver"><a class="anchor" href="#_developing_a_new_driver"></a>Developing a New Driver</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>The easiest way to create a driver is to look at the Godoc references for the interfaces
+and create types to satisfy these.
+Looking at the implementations of the other drivers (particularly in <strong>pkg/driver/podman</strong>)
+is likely to help understand how to write driver functions.</p>
+</div>
+<div class="paragraph">
+<p>To make a driver package available to the <strong>koble</strong> binary,
+it needs to be registered in <code>cmd/kob/driver.go</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-go hljs" data-lang="go">func init() {
+	driver.RegisterDriver("podman", func() driver.Driver {
+		return new(podman.PodmanDriver)
+	})
+	driver.RegisterDriver("uml", func() driver.Driver {
+		return new(uml.UMLDriver)
+	})
+	// new addition
+	driver.RegisterDriver("mynewdriver", func() driver.Driver {
+		return new(mypkg.MYDriver)
+	})
+	// end of new addition
+	err := driver.RegisterDriverCmds(driverCmd)
 
+    ...
+}</code></pre>
 </div>
 </div>
-<div class="sect1">
-<h2 id="_existing_drivers"><a class="anchor" href="#_existing_drivers"></a>Existing Drivers</h2>
-<div class="sectionbody">
-
 </div>
 </div>
 </article>

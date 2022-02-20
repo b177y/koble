@@ -217,10 +217,10 @@
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../Koble%20UML%20Kernel/0.1/index.html">Koble UML Kernel</a>
+      <a class="title" href="../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../Koble%20UML%20Kernel/0.1/index.html">0.1</a>
+          <a href="../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -293,6 +293,98 @@ machines:
     networks:
     - ar</code></pre>
 </div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>created_at</strong> - date in the format DD-MM-YYYY</p>
+</li>
+<li>
+<p><strong>koble_version</strong> - version of Koble that the lab was created with</p>
+</li>
+<li>
+<p><strong>description</strong> - a short description of the lab</p>
+</li>
+<li>
+<p><strong>authors</strong> - a list of lab authors</p>
+</li>
+<li>
+<p><strong>emails</strong> - a list of lab authors' email addresses</p>
+</li>
+<li>
+<p><strong>web</strong> - a list of URIs associated with the lab (e.g. git repo /
+documentation page)</p>
+</li>
+<li>
+<p><strong>machines</strong> - a <em>map</em> of lab machines.
+All machines in the lab must be declared in <em>lab.yml</em>.</p>
+</li>
+<li>
+<p><strong>networks</strong> - a <em>map</em> of lab networks.
+If a network is attached to a machine but does not have an entry
+in <strong>networks</strong> it will be a simple network with no external access,
+no set subnet / gateway etc.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">lab.yml example machine</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">machines:
+  m1:
+    networks:
+    - ext
+    hosthome: false
+    hostlab: true
+    depends_on:
+    - m2</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>networks</strong> - a list of network names to join machine to.</p>
+</li>
+<li>
+<p><strong>hosthome</strong> - whether to mount $HOME on the host to /hosthome in the
+virtual machine.</p>
+</li>
+<li>
+<p><strong>hostlab</strong> - whether to mount the lab directory on the host to /hostlab
+in the virtual machine.
+If this is false then startup scripts and machine directories won&#8217;t be
+available inside the VM.</p>
+</li>
+<li>
+<p><strong>depends_on</strong> - machines that need to finish booting before this machine
+starts.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="title">lab.yml example network</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">networks:
+  ext:
+    external: true
+    gateway: 10.16.55.254
+    subnet: 10.16.55.0/24</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>external</strong> - whether this machine should have external network access.
+If the host machine has internet access then setting external to true will
+give the VM internet access.</p>
+</li>
+<li>
+<p><strong>gateway</strong> - the gateway address to use for the network</p>
+</li>
+<li>
+<p><strong>subnet</strong> the subnet to use for the network</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
@@ -370,7 +462,34 @@ koble stop b</code></pre>
 <div class="sect1">
 <h2 id="_advanced_configuration"><a class="anchor" href="#_advanced_configuration"></a>Advanced Configuration</h2>
 <div class="sectionbody">
-
+<div class="listingblock">
+<div class="title">lab.yml</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">driver:
+  name: uml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Additional configuration in <strong>lab.yml</strong> can be used to override global
+Koble settings.
+For example we can use the <code>driver</code> option to override the driver used for
+the lab.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+You should only run trusted labs where you have read the code
+and configuration.
+Arbitrary code can be run using some of the overrides,
+such as a lab adding an additional terminal with a reverse shell in the command 😎
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 </article>
