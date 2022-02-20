@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Getting Started :: Koble Docs</title>
-    <link rel="canonical" href="https://koble.b177y.dev/koble-docs/0.1/DEV/index.html">
+    <title>DNS :: Koble Docs</title>
+    <link rel="canonical" href="https://koble.b177y.dev/koble-docs/0.1/LABS/dns.html">
     <meta name="generator" content="Antora 3.0.1">
     <link rel="stylesheet" href="../../../_/css/site.css">
     <script>var uiRootPath = '../../../_'</script>
@@ -96,13 +96,13 @@
     <span class="nav-text">Example Labs</span>
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/abr.html">ABR</a>
+    <a class="nav-link" href="abr.html">ABR</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="dns.html">DNS</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/dns.html">DNS</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/dhcp.html">DHCP</a>
+    <a class="nav-link" href="dhcp.html">DHCP</a>
   </li>
 </ul>
   </li>
@@ -110,20 +110,20 @@
     <button class="nav-item-toggle"></button>
     <span class="nav-text">Development</span>
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="1">
-    <a class="nav-link" href="index.html">Getting Started</a>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../DEV/index.html">Getting Started</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="site.html">Docs Site</a>
+    <a class="nav-link" href="../DEV/site.html">Docs Site</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="driver.html">Driver</a>
+    <a class="nav-link" href="../DEV/driver.html">Driver</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="podman.html">Podman</a>
+    <a class="nav-link" href="../DEV/podman.html">Podman</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="uml.html">User Mode Linux</a>
+    <a class="nav-link" href="../DEV/uml.html">User Mode Linux</a>
   </li>
 </ul>
   </li>
@@ -236,131 +236,146 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="../index.html">Koble Docs</a></li>
-    <li>Development</li>
-    <li><a href="index.html">Getting Started</a></li>
+    <li>Example Labs</li>
+    <li><a href="dns.html">DNS</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="file:///home/billy/repos/koble/plz-out/tmp/site._build/docs/modules/DEV/pages/index.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="file:///home/billy/repos/koble/plz-out/tmp/site._build/docs/modules/LABS/pages/dns.adoc">Edit this Page</a></div>
 </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Getting Started</h1>
+<h1 class="page">DNS</h1>
 <div class="sect1">
-<h2 id="_setup_development_environment"><a class="anchor" href="#_setup_development_environment"></a>Setup Development Environment</h2>
+<h2 id="_download_lab"><a class="anchor" href="#_download_lab"></a>Download Lab</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To work on Koble you will need <a href="https://go.dev/doc/install">go 1.17</a>.
-It is recommended to use
-<a href="https://medium.com/the-andela-way/gopls-language-server-setup-for-go-projects-3ee79dcac123">gopls</a>
-as a language server within your IDE / text editor,
-and <code>gofmt</code> for formatting the code.</p>
+<p>Download the lab from
+<a href="https://github.com/b177y/koble/releases/download/v0.1/lab-dns.tar.xz">here</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">tar -xvf lab-dns.tar.xz
+cd dns</code></pre>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_learning_golang"><a class="anchor" href="#_learning_golang"></a>Learning Golang</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>If you are new to using Golang,
-you might find the following resources useful for getting started:</p>
+<p>Look at the contents of <code>lab.yml</code> and the <code>.startup</code> files.
+You can see we have the following machines:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://go.dev/tour/welcome/1">Tour of Go</a></p>
+<p><strong>d0</strong> - our DNS server. This is also a gateway to the Internet.</p>
 </li>
 <li>
-<p><a href="https://gobyexample.com/">Go by Example</a></p>
+<p><strong>web</strong> - a web server.</p>
 </li>
 <li>
-<p><a href="https://go.dev/doc/effective_go/">Effective Go</a></p>
-</li>
-<li>
-<p><a href="http://www.golangbootcamp.com/book/">Golang Bootcamp</a></p>
-</li>
-<li>
-<p><a href="https://gophercises.com/">Gophercises</a></p>
+<p><strong>pc</strong> - our client for testing DNS resolution.
+This is set up to use <code>d0</code> as its default DNS server.</p>
 </li>
 </ul>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_understanding_the_project_structure"><a class="anchor" href="#_understanding_the_project_structure"></a>Understanding the Project Structure</h2>
+<h2 id="_start_lab"><a class="anchor" href="#_start_lab"></a>Start Lab</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The "entrypoint" of the Koble binary is through the <strong>cmd/kob</strong> package.
-Under this we have the <strong>cli</strong> package, where our
-<a href="https://github.com/spf13/cobra">Cobra</a> root command is defined.
-We also have the packages <strong>labs</strong>, <strong>machines</strong> and <strong>networks</strong>
-for subcommands.
-Within these packages there is a file for each command.
-For example <code>koble lab start</code> is defined by <code>startCmd</code> in
-<strong>cmd/kob/labs/start.go</strong>.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab start</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>Most of the cobra commands are wrappers around functions defined by <strong>pkg/koble</strong>.
-For example the <code>RunE</code> function of <code>startCmd</code> in <strong>cmd/kob/labs/start.go</strong>
-calls <code>cli.NK.LabStart(args)</code>,
-where <code>cli.NK</code> is an instance of the <code>Koble</code> struct defined by <strong>pkg/koble</strong>.
-The <strong>koble</strong> package is responsible for lab management, config, starting
-and stopping etc.
-This is similar to the job of <code>lstart</code> / <code>vstart</code> in
-<a href="https://github.com/netkit-jh/netkit-jh-build">Netkit</a>.
-This package provides wrappers around <strong>driver</strong> functions for controlling
-machines and networks.
-Where possible,
-<strong>cmd/kob</strong> should call functions from <strong>pkg/koble</strong> instead of <strong>pkg/driver</strong>.</p>
+<p>First we will set up <code>tcpdump</code> to listen for traffic on machine <code>d0</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">d0</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">tcpdump -s0 -i eth1 -w /hostlab/dns_lab-1.pcap</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>The <strong>koble</strong> package should always call code from <strong>pkg/driver</strong> and NOT driver
-subpackages.
-This allows us to assure the abstraction between the driver interface and the
-workings of specific drivers.</p>
+<p>Now on <code>pc</code> we can attempt to resolve <code>google.com</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">pc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">nslookup google.com</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>The <strong>driver</strong> package in <strong>pkg/driver</strong> provides a <code>Driver</code> interface,
-declaring functions which should be available for a struct to be a valid driver.
-It also contains <code>Machine</code> and <code>Network</code> interfaces which need to be satisfied
-by driver implementations.</p>
-</div>
-<div class="paragraph">
-<p>The current driver implementations are <strong>uml</strong> and <strong>podman</strong>.
-These contain structs which satisfy the <code>Driver</code>, <code>Machine</code> and <code>Network</code>
-interfaces.
-These are the key parts of how Koble runs virtual machines and networks.
-Currently, the <strong>uml</strong> driver inherits much of its functionality from the <strong>podman</strong>
-driver as it works by running a User-Mode Linux instance within a Podman container.</p>
+<p>Now we can stop tcpdump on <code>d0</code> and view the capture from wireshark on
+the host.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_building_the_koble_binary"><a class="anchor" href="#_building_the_koble_binary"></a>Building the Koble Binary</h2>
+<h2 id="_task"><a class="anchor" href="#_task"></a>Task</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To build the standard <strong>koble</strong> binary run:</p>
+<p><em>Modify the DNS server configuration so we can resolve the internal
+web server <strong>internal.cyber.lab</strong> at 10.72.16.20</em></p>
+</div>
+<div class="paragraph">
+<p>If we try to resolve the internal web server at <strong>internal.cyber.lab</strong>
+we won&#8217;t find anything as there are no DNS entries set for this.</p>
+</div>
+<div class="listingblock">
+<div class="title">pc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">nslookup internal.cyber.lab</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To make this work we need to add an entry to the <code>dnsmasq</code> config
+on <code>d0</code> for internal.cyber.lab to resolve to 10.72.16.20 and
+restart the service.</p>
+</div>
+<details>
+<summary class="title">Solution</summary>
+<div class="content">
+<div class="listingblock">
+<div class="title">/etc/dnsmasq.conf (d0)</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-conf hljs" data-lang="conf">...
+
+address=/internal.cyber.lab/10.72.16.20</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">d0</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">systemctl restart dnsmasq</code></pre>
+</div>
+</div>
+</div>
+</details>
+<div class="paragraph">
+<p>Now you should be able to resolve the web server and connect to it:</p>
+</div>
+<div class="listingblock">
+<div class="title">pc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">nslookup internal.cyber.lab</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">pc</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">curl internal.cyber.lab</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can now shutdown and remove the machines with:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">plz build //cmd/kob</code></pre>
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">koble lab destroy</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>The <strong>koble</strong> binary can be found at <em>plz-out/bin/cmd/kob/kob</em></p>
-</div>
-<div class="paragraph">
-<p>To build the binary for systems which don&#8217;t have the correct glibc version:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">CGO_ENABLED=0 go build -tags "exclude_graphdriver_btrfs btrfs_noversion exclude_graphdriver_devicemapper containers_image_openpgp" -o koble_linux_amd64 cmd/kob/*.go</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The <strong>koble</strong> binary can be found at <strong>koble_linux_amd64</strong>.</p>
 </div>
 </div>
 </div>

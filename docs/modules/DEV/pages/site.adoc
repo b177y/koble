@@ -2,6 +2,61 @@
 
 == Antora
 
+Koble uses link:https://docs.antora.org/antora/latest/[Antora] for the
+documentation site as it uses Asciidoc which is simple to use yet has an
+extensive list of features.
+
+If you are unfamiliar with Asciidoc,
+it is conceptually similar to markdown and is easy to use.
+The link:https://docs.asciidoctor.org/asciidoc/latest/syntax-quick-reference/[syntax reference]
+is a useful resource for writing asciidocs.
+
+The install guide for Antora can be found
+link:https://docs.antora.org/antora/latest/install-and-run-quickstart/[here].
+
 == Building The Site
 
+The site can be built using *please*.
+
+[source,sh]
+----
+plz build //:site
+# OR if you haven't installed plz
+./pleasew build //:site
+----
+
+This will output the static files to *plz-out/gen/site*.
+
+You can easily preview this with a static webserver.
+If you have Python3 installed you can run:
+
+[source,sh]
+----
+python3 -m http.server -d plz-out/gen/site
+----
+
+Then go to link:http://localhost:8000[] to preview the site.
+
 == Github Pages
+
+NOTE: This is only relevant for project collaborators with direct access to
+the GitHub repo.
+
+A GitHub action is available through `.github/workflows/publish.yml`,
+which allows the contents of `docs/build` in the *main* branch
+to be pushed to the root of the *gh-pages* branch.
+This is hosted as a static site with Github Pages.
+
+First build the site and copy to *docs/build*:
+
+[source,sh]
+----
+plz build //:site
+cp -r plz-out/gen/site docs/build
+----
+
+Once this has been pushed to the `main` branch on GitHub,
+you can go to the
+link:https://github.com/b177y/koble/actions/workflows/publish.yml[publish action]
+page and press *Run workflow*, making sure the `main` branch is selected
+then pressing to confirm.

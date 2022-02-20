@@ -2,4 +2,88 @@
 
 == Setup Development Environment
 
+To work on Koble you will need link:https://go.dev/doc/install[go 1.17].
+It is recommended to use
+link:https://medium.com/the-andela-way/gopls-language-server-setup-for-go-projects-3ee79dcac123[gopls]
+as a language server within your IDE / text editor,
+and `gofmt` for formatting the code.
+
+== Learning Golang
+
+If you are new to using Golang,
+you might find the following resources useful for getting started:
+
+* link:https://go.dev/tour/welcome/1[Tour of Go]
+* link:https://gobyexample.com/[Go by Example]
+* link:https://go.dev/doc/effective_go/[Effective Go]
+* link:http://www.golangbootcamp.com/book/[Golang Bootcamp]
+* link:https://gophercises.com/[Gophercises]
+
+== Understanding the Project Structure
+
+The "entrypoint" of the Koble binary is through the *cmd/kob* package.
+Under this we have the *cli* package, where our
+link:https://github.com/spf13/cobra[Cobra] root command is defined.
+We also have the packages *labs*, *machines* and *networks*
+for subcommands.
+Within these packages there is a file for each command.
+For example `koble lab start` is defined by `startCmd` in
+*cmd/kob/labs/start.go*.
+
+Most of the cobra commands are wrappers around functions defined by *pkg/koble*.
+For example the `RunE` function of `startCmd` in *cmd/kob/labs/start.go*
+calls `cli.NK.LabStart(args)`,
+where `cli.NK` is an instance of the `Koble` struct defined by *pkg/koble*.
+The *koble* package is responsible for lab management, config, starting
+and stopping etc.
+This is similar to the job of `lstart` / `vstart` in
+link:https://github.com/netkit-jh/netkit-jh-build[Netkit].
+This package provides wrappers around *driver* functions for controlling
+machines and networks.
+Where possible,
+*cmd/kob* should call functions from *pkg/koble* instead of *pkg/driver*.
+
+The *koble* package should always call code from *pkg/driver* and NOT driver
+subpackages.
+This allows us to assure the abstraction between the driver interface and the
+workings of specific drivers.
+
+The *driver* package in *pkg/driver* provides a `Driver` interface,
+declaring functions which should be available for a struct to be a valid driver.
+It also contains `Machine` and `Network` interfaces which need to be satisfied
+by driver implementations.
+
+The current driver implementations are *uml* and *podman*.
+These contain structs which satisfy the `Driver`, `Machine` and `Network`
+interfaces.
+These are the key parts of how Koble runs virtual machines and networks.
+Currently, the *uml* driver inherits much of its functionality from the *podman*
+driver as it works by running a User-Mode Linux instance within a Podman container.
+
+One way to navigate the project structure is to use the
+link:https://pkg.go.dev/github.com/b177y/koble[Godoc Reference].
+Starting at `cmd` you can easily navigate your way through the source code.
+Additionally, using a tool or IDE where you can "jump to definition"
+(GitHub has some level of this feature although not perfect),
+is a huge help in navigating through source code,
+especially in a large Go project with lots of packages.
+
 == Building the Koble Binary
+
+To build the standard *koble* binary run:
+
+[source,sh]
+----
+plz build //cmd/kob
+----
+
+The *koble* binary can be found at _plz-out/bin/cmd/kob/kob_
+
+To build the binary for systems which don't have the correct glibc version:
+
+[source,sh]
+----
+CGO_ENABLED=0 go build -tags "exclude_graphdriver_btrfs btrfs_noversion exclude_graphdriver_devicemapper containers_image_openpgp" -o koble_linux_amd64 cmd/kob/*.go
+----
+
+The *koble* binary can be found at *koble_linux_amd64*.
