@@ -7,9 +7,9 @@ content:
   - url: .
     start_path: docs
     branches: main
-  # - url: https://github.com/b177y/netkit-fs
-  #   branches: main
-  #   start_path: docs
+  - url: https://github.com/b177y/koble-fs
+    branches: main
+    start_path: docs
   - url: https://github.com/b177y/koble-kernel
     branches: main
     start_path: docs

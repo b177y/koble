@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>koble lab start :: Koble Docs</title>
-    <link rel="canonical" href="https://koble.b177y.dev/koble-docs/0.1/MAN/koble_lab_start.html">
+    <title>Packages :: Koble Docs</title>
+    <link rel="canonical" href="https://koble.b177y.dev/koble-fs/0.1/packages.html">
     <meta name="generator" content="Antora 3.0.1">
-    <link rel="stylesheet" href="../../../_/css/site.css">
-    <script>var uiRootPath = '../../../_'</script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <script>var uiRootPath = '../../_'</script>
   </head>
   <body class="article">
 <header class="header" role="banner">
@@ -57,145 +57,32 @@
   </nav>
 </header>
 <div class="body">
-<div class="nav-container" data-component="koble-docs" data-version="0.1">
+<div class="nav-container" data-component="koble-fs" data-version="0.1">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
   <nav class="nav-menu">
-    <h3 class="title"><a href="../index.html">Koble Docs</a></h3>
+    <h3 class="title"><a href="index.html">Koble Filesystem</a></h3>
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
-    <button class="nav-item-toggle"></button>
-    <span class="nav-text">Usage</span>
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../index.html">Koble</a>
+    <a class="nav-link" href="index.html">Overview</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../installation.html">Installation</a>
+    <a class="nav-link" href="build.html">Building the Filesystem</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../labs.html">Labs</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../config.html">Configuration</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../drivers.html">Drivers</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../namespaces.html">Namespaces</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../trials.html">User Trials</a>
-  </li>
-</ul>
-  </li>
-  <li class="nav-item" data-depth="0">
-    <button class="nav-item-toggle"></button>
-    <span class="nav-text">Example Labs</span>
-<ul class="nav-list">
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/abr.html">ABR</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/dns.html">DNS</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../LABS/dhcp.html">DHCP</a>
-  </li>
-</ul>
-  </li>
-  <li class="nav-item" data-depth="0">
-    <button class="nav-item-toggle"></button>
-    <span class="nav-text">Development</span>
-<ul class="nav-list">
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../DEV/index.html">Getting Started</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../DEV/site.html">Docs Site</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../DEV/driver.html">Driver</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../DEV/podman.html">Podman</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../DEV/uml.html">User Mode Linux</a>
-  </li>
-</ul>
-  </li>
-  <li class="nav-item" data-depth="0">
-    <button class="nav-item-toggle"></button>
-    <span class="nav-text">Manpages</span>
-<ul class="nav-list">
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_add.html">koble add</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble.html">koble</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_attach.html">koble attach</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_destroy.html">koble destroy</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_exec.html">koble exec</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_info.html">koble info</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_lab.html">koble lab</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_lab_destroy.html">koble lab destroy</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_lab_init.html">koble lab init</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_lab_remove.html">koble lab remove</a>
+    <a class="nav-link" href="fs-tweaks.html">Filesystem Tweaks</a>
   </li>
   <li class="nav-item is-current-page" data-depth="1">
-    <a class="nav-link" href="koble_lab_start.html">koble lab start</a>
+    <a class="nav-link" href="packages.html">Packages</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_lab_stop.html">koble lab stop</a>
+    <a class="nav-link" href="kstart.html">kstart</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_list.html">koble list</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_logs.html">koble logs</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_machine.html">koble machine</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_net_add.html">koble net add</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_net.html">koble net</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_net_info.html">koble net info</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_remove.html">koble remove</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_shell.html">koble shell</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_start.html">koble start</a>
-  </li>
-  <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="koble_stop.html">koble stop</a>
+    <a class="nav-link" href="uml-runner.html">uml-runner</a>
   </li>
 </ul>
   </li>
@@ -204,31 +91,31 @@
 </div>
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
-    <span class="title">Koble Docs</span>
+    <span class="title">Koble Filesystem</span>
     <span class="version">0.1</span>
   </div>
   <ul class="components">
+    <li class="component">
+      <a class="title" href="../../koble-docs/0.1/index.html">Koble Docs</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../koble-docs/0.1/index.html">0.1</a>
+        </li>
+      </ul>
+    </li>
     <li class="component is-current">
-      <a class="title" href="../index.html">Koble Docs</a>
+      <a class="title" href="index.html">Koble Filesystem</a>
       <ul class="versions">
         <li class="version is-current is-latest">
-          <a href="../index.html">0.1</a>
+          <a href="index.html">0.1</a>
         </li>
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../koble-fs/0.1/index.html">Koble Filesystem</a>
+      <a class="title" href="../../uml-kernel/0.1/index.html">UML Kernel</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../koble-fs/0.1/index.html">0.1</a>
-        </li>
-      </ul>
-    </li>
-    <li class="component">
-      <a class="title" href="../../../uml-kernel/0.1/index.html">UML Kernel</a>
-      <ul class="versions">
-        <li class="version is-latest">
-          <a href="../../../uml-kernel/0.1/index.html">0.1</a>
+          <a href="../../uml-kernel/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -240,86 +127,62 @@
 <main class="article">
 <div class="toolbar" role="navigation">
 <button class="nav-toggle"></button>
-  <a href="../index.html" class="home-link"></a>
+  <a href="../../koble-docs/0.1/index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
-    <li><a href="../index.html">Koble Docs</a></li>
-    <li>Manpages</li>
-    <li><a href="koble_lab_start.html">koble lab start</a></li>
+    <li><a href="index.html">Koble Filesystem</a></li>
+    <li><a href="packages.html">Packages</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="file:///home/billy/repos/koble/plz-out/tmp/site._build/docs/modules/MAN/pages/koble_lab_start.adoc">Edit this Page</a></div>
-</div>
+  <div class="edit-this-page"><a href="https://github.com/b177y/koble-fs/edit/main/docs/modules/ROOT/pages/packages.adoc">Edit this Page</a></div>
+  </div>
   <div class="content">
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">koble lab start</h1>
-<div id="preamble">
+<h1 class="page">Packages</h1>
+<div class="sect1">
+<h2 id="_installing_additional_packages"><a class="anchor" href="#_installing_additional_packages"></a>Installing Additional Packages</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>start a lab</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>koble lab start [options] MACHINE [MACHINE...]</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_examples"><a class="anchor" href="#_examples"></a>Examples</h2>
-<div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre>koble lab start --launch=false
-koble lab start --terminal tmux
-koble lab start a b</pre>
-</div>
+<p>To install additional packages to the filesystem,
+edit <code>packages-list</code> and add the package name to the list.
+The name to add would be the name you would use with the package manager.
+For example,
+to install nginx we would run <code>apt install nginx</code>,
+so we add <code>nginx</code> to the list.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_options"><a class="anchor" href="#_options"></a>Options</h2>
+<h2 id="_modifying_disabled_services"><a class="anchor" href="#_modifying_disabled_services"></a>Modifying Disabled Services</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre>  -h, --help                      help for start
-      --launch                    launch terminal attach sessions to started lab machines (conflicts with terminal 'this')
-      --term-opt stringToString   option to pass to terminal (default [])
-  -t, --terminal string           terminal to launch (default "gnome")
-      --wait int                  seconds to wait for machine to boot before timeout, negative value will disable wait (default 300)</pre>
-</div>
+<div class="paragraph">
+<p>Sometimes packages will add a <code>systemd</code> service which will be enabled
+after install,
+which often isn&#8217;t necessary for a Koble machine.
+It is best to disable these services in the image build,
+and then enable them in machine <code>.startup</code> files if needed.
+To do this we add the name of the service to <code>disabled-services</code>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_options_inherited_from_parent_commands"><a class="anchor" href="#_options_inherited_from_parent_commands"></a>Options inherited from parent commands</h2>
+<h2 id="_debconf_package_selections"><a class="anchor" href="#_debconf_package_selections"></a>Debconf Package Selections</h2>
 <div class="sectionbody">
-<div class="listingblock">
-<div class="content">
-<pre>      --driver string      name of driver to use
-      --namespace string   namespace to use
-      --no-color           disable coloured output
-      --plain              disable interactive and coloured output
-      --quiet              only show errors in log errors
-  -v, --verbose count      verbose output</pre>
+<div class="paragraph">
+<p>Some packages allow you to make configuration choices during installation.
+As the Koble image build is automated and not interactive,
+we need to make these selections manually.</p>
 </div>
+<div class="paragraph">
+<p>Using
+<a href="http://manpages.ubuntu.com/manpages/bionic/man1/debconf-set-selections.1.html">debconf-set-selections</a>
+we can modify values in the debconf database.
+The file <code>debconf-package-selections</code> can be modified to change debconf seletions
+for the image build where necessary.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>SEE ALSO</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><a href="koble_lab.html" class="xref page">koble lab</a>	 - manage labs</p>
-</li>
-</ul>
-</div>
-<h5 id="_auto_generated_by_spf13cobra_on_19_feb_2022" class="discrete">Auto generated by spf13/cobra on 19-Feb-2022</h5>
 </div>
 </div>
 </article>
@@ -330,7 +193,7 @@ koble lab start a b</pre>
   <p>This page was built using the Antora default UI.</p>
   <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
 </footer>
-<script src="../../../_/js/site.js"></script>
-<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/site.js"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
   </body>
 </html>

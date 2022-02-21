@@ -69,7 +69,13 @@
     <span class="nav-text">Koble Kernel</span>
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="1">
-    <a class="nav-link" href="index.html">Koble Kernel</a>
+    <a class="nav-link" href="index.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="build.html">Building</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="patches.html">Patches</a>
   </li>
 </ul>
   </li>
@@ -87,6 +93,14 @@
       <ul class="versions">
         <li class="version is-latest">
           <a href="../../koble-docs/0.1/index.html">0.1</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../koble-fs/0.1/index.html">Koble Filesystem</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../koble-fs/0.1/index.html">0.1</a>
         </li>
       </ul>
     </li>
@@ -111,7 +125,7 @@
   <ul>
     <li><a href="index.html">UML Kernel</a></li>
     <li>Koble Kernel</li>
-    <li><a href="index.html">Koble Kernel</a></li>
+    <li><a href="index.html">Overview</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/b177y/koble-kernel/edit/main/docs/modules/ROOT/pages/index.adoc">Edit this Page</a></div>
@@ -130,46 +144,9 @@
 <a href="https://www.kernel.org/doc/html/v5.14-rc7/virt/uml/user_mode_linux_howto_v2.html#building-a-uml-instance">User Mode Linux</a>
 kernel for use with <a href="https://github.com/b177y/koble">Koble</a>.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_building"><a class="anchor" href="#_building"></a>Building</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>To build the kernel run</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">./pleasew build //:kernel</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This will output the kernel to <code>plz-out/bin/linux</code>.</p>
-</div>
-<div class="paragraph">
-<p>OR to create a kernel tarball:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">./pleasew build //:archive</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This will create an archive at <code>plz-out/gen/koble-kernel-VERSION.tar.gz</code>
-containing the <code>linux</code> binary.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-If you already have <code>plz</code> installed you can replace <code>./pleasew</code> with
-it in these commands.
-</td>
-</tr>
-</table>
+<p>For instructions on how to build the kernel binary see the
+<a href="build.html" class="xref page">build guide</a>.</p>
 </div>
 </div>
 </div>
