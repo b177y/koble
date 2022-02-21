@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>https://koble.b177y.dev/uml-kernel/0.1/build.html</loc>
+<lastmod>2022-02-21T12:52:46.399Z</lastmod>
+</url>
+<url>
 <loc>https://koble.b177y.dev/uml-kernel/0.1/index.html</loc>
-<lastmod>2022-02-20T22:49:36.942Z</lastmod>
+<lastmod>2022-02-21T12:52:46.399Z</lastmod>
+</url>
+<url>
+<loc>https://koble.b177y.dev/uml-kernel/0.1/patches.html</loc>
+<lastmod>2022-02-21T12:52:46.399Z</lastmod>
 </url>
 </urlset>

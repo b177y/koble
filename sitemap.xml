@@ -4,6 +4,9 @@
 <loc>https://koble.b177y.dev/sitemap-koble-docs.xml</loc>
 </sitemap>
 <sitemap>
+<loc>https://koble.b177y.dev/sitemap-koble-fs.xml</loc>
+</sitemap>
+<sitemap>
 <loc>https://koble.b177y.dev/sitemap-uml-kernel.xml</loc>
 </sitemap>
 </sitemapindex>
