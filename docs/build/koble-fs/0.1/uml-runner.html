@@ -142,7 +142,86 @@
 </aside>
 <article class="doc">
 <h1 class="page">uml-runner</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>uml-runner</code> container image is used to run User-Mode Linux
+instances within Podman rootless containers.
+It is an Ubuntu 22.04 image with an entrypoint script which sets up the
+container for the guest UML instance.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building"><a class="anchor" href="#_building"></a>Building</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>First you need to compile the <code>mconsole</code> binary:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">git clone https://github.com/b177y/go-uml-utilities
+cd go-uml-utilities
+go build -o mconsole cmd/mconsole/main.go</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then you can build the image using the <code>Containerfile</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">git clone https://github.com/b177y/koble-fs
+cd koble-fs
+cp /path/to/go-uml-utilities/mconsole .
 
+podman build -f Containerfile -t docker.io/b177y/uml-runner</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_entrypoint"><a class="anchor" href="#_entrypoint"></a>Entrypoint</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The script <code>entrypoint.sh</code> performs the following actions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>For each network interface</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Add <code>kstart</code> param for interface address and default GW to add
+to the kernel command line</p>
+</li>
+<li>
+<p>Delete IP address from interface</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Setup mountpoints</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Create directory <strong>/run/uml</strong> (which uml guest will mount to /run/uml-guest)</p>
+</li>
+<li>
+<p>Remove file <strong>/run/uml/machine.ready</strong> which could be left from previous run</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Start UML kernel binary</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>

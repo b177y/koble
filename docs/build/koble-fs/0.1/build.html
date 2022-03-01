@@ -175,6 +175,14 @@ build speeds.</p>
 <h2 id="_building_the_podman_image"><a class="anchor" href="#_building_the_podman_image"></a>Building the Podman Image</h2>
 <div class="sectionbody">
 <div class="paragraph">
+<p>Before building the image you need to build <code>kstart</code>
+(see the guide <a href="kstart.html" class="xref page">here</a>).</p>
+</div>
+<div class="paragraph">
+<p>You will also need the <code>modules</code> directory created from the
+<a href="#koble-kernel:ROOT:build.adoc" class="xref unresolved">kernel build</a>.</p>
+</div>
+<div class="paragraph">
 <p>To build the image for the podman driver run <code>build.sh</code>.
 This will create an image tagged as <code>docker.io/b177y/koble-deb</code>.
 This will override the default image used by Koble.

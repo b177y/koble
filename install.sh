@@ -48,13 +48,13 @@ podman pull docker.io/b177y/uml-runner
 podman pull docker.io/b177y/koble-deb
 
 # Install UML dependencies
-wget "https://sourceforge.net/projects/koble-fs/files/v0/koble-fs.tar.bz2/download" -O /tmp/koble-fs.tar.bz2
-wget "https://sourceforge.net/projects/koble-kernel/files/v0/koble-kernel.tar.bz2/download" -O /tmp/koble-kernel.tar.bz2
-mkdir -p ~/.local/share/uml/images
-mkdir -p ~/.local/share/uml/kernel
-tar -C ~/.local/share/uml/images -xjvf /tmp/koble-fs.tar.bz2
-tar -C ~/.local/share/uml/kernel -xjvf /tmp/koble-kernel.tar.bz2
-mv ~/.local/share/uml/kernel/linux ~/.local/share/uml/kernel/koble-kernel
+# wget "https://sourceforge.net/projects/koble-fs/files/v0/koble-fs.tar.bz2/download" -O /tmp/koble-fs.tar.bz2
+# wget "https://sourceforge.net/projects/koble-kernel/files/v0/koble-kernel.tar.bz2/download" -O /tmp/koble-kernel.tar.bz2
+# mkdir -p ~/.local/share/uml/images
+# mkdir -p ~/.local/share/uml/kernel
+# tar -C ~/.local/share/uml/images -xjvf /tmp/koble-fs.tar.bz2
+# tar -C ~/.local/share/uml/kernel -xjvf /tmp/koble-kernel.tar.bz2
+# mv ~/.local/share/uml/kernel/linux ~/.local/share/uml/kernel/koble-kernel
 
 echo "Downloading Koble ${VERSION}..."
 wget "$KOBLE_URL" -O "${DIR}/koble"

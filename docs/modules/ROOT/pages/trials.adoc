@@ -10,26 +10,19 @@ or User Mode Linux virtual machines (which are used for the original Netkit).
 You don't need any understanding of how these technologies work for the purpose
 of this task.
 
-The task involves testing a few simple labs with both drivers,
-and answering some basic questions about your experience.
-You should read the rest of this page before you begin the tasks.
-
-After one of the tasks you will need to uncomment part of the lab config file,
-to switch to the UML driver.
-When and how to do this will be explained below.
-
 == Google Survey
 
-You will give your feedback via a google survey,
-which is broken into 5 short sections:
-
-* initial feedback on tool from testing ABR lab
-* Lab A - using Podman driver
-* Lab B - using UML driver
-* Driver feedback
-* Additional (optional) feedback
+You will give your feedback via a google survey.
+The link for this will be given to you in the session.
 
 == Install
+
+CAUTION: This only covers installation for Ubuntu 20.04.
+This will not work for Ubuntu 21.04.
+It won't work for CentOS.
+It won't work for Arch.
+If you're not using Ubuntu 20.04 use the manual install guide
+xref:installation.adoc#_manual_installation[here].
 
 Firstly you will need to install `koble` on an Ubuntu 20.04 virtual machine.
 This can be done on the same VM that you use for Netkit, but it is recommended
@@ -58,33 +51,21 @@ source ~/.bashrc # or ~/.zshrc if you use zsh
 
 == Tasks
 
-====
-For one of the labs you will need to edit the `lab.yml` lab config file
-to change the following:
-
-[source,yaml]
-----
-# driver:
-  # name: uml
-----
-should be uncommented to become:
-[source,yaml]
-----
-driver:
-  name: uml
-----
-====
-
 * xref:LABS:abr.adoc[ABR Lab]
-* Answer section 1 of survey
-* xref:LABS:dns.adoc[DNS Lab]
-** If you are group 1 you don't need to change anything (this means you are using Podman).
-** If you are group 2 you need to uncomment the driver section in `lab.yml`
-(this means you are using UML).
-* Answer section 2 of survey
-* xref:LABS:dhcp.adoc[DHCP Lab]
-** If you are group 1 you need to uncomment the driver section in `lab.yml`
-(this means you are using UML).
-** If you are group 2 you don't need to change anything
-(this means you are using Podman).
-* Answer sections 3, 4 and 5 of survey
+* Answer section 1 of survey (ABR Lab Feedback)
+* Start converting the lab that you submitted for ISS CW2 to use Koble instead of
+Netkit.
+This will involve creating a `lab.yml` file with all your machines.
+Looking through the *Usage* section of this docs site should help you
+getting started with Koble.
+For complex labs this is a big task so you could pick one or two features of the lab
+to try to get working.
+Even if you don't get far through this,
+giving any feedback on the google form is useful for improving Koble for future students.
+* Answer section 2 of survey (ISS CW2 Lab)
+* Answer section 3 of survey (Additional Feedback)
+
+NOTE: Koble is still in beta and is not completely stable yet,
+you are likely to find both bugs and missing functionality.
+Please mention any problems you have in the feedback form
+so these can be improved for future versions.
