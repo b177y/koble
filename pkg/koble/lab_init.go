@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/b177y/koble/util/validator"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
@@ -40,9 +40,8 @@ func (nk *Koble) InitLab(options InitOpts) error {
 		return err
 	}
 	options.Name = filepath.Base(labPath)
-	err = validator.New().Var(options.Name, "alphanum,max=30")
-	if err != nil {
-		return err
+	if !validator.IsValidName(options.Name) {
+		return fmt.Errorf("lab name '%s' must be alphanumeric and no more than 32 chars", options.Name)
 	}
 	// TODO check if in script mode
 	// ask for name, description etc

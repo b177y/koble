@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/go-playground/validator/v10"
+	"github.com/b177y/koble/util/validator"
 	"github.com/spf13/cobra"
 )
 
@@ -18,8 +18,8 @@ type PodmanDriver struct {
 
 func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 	err error) {
-	if err := validator.New().Var(name, "alphanum,max=30"); err != nil {
-		return m, fmt.Errorf("machine name '%s' must be alphanumeric and no more than 30 chars", name)
+	if !validator.IsValidName(name) {
+		return m, fmt.Errorf("machine name '%s' must be alphanumeric and no more than 32 chars", name)
 	}
 	m = &Machine{
 		name:      name,
@@ -31,8 +31,8 @@ func (pd *PodmanDriver) Machine(name, namespace string) (m driver.Machine,
 
 func (pd *PodmanDriver) Network(name, namespace string) (n driver.Network,
 	err error) {
-	if err := validator.New().Var(name, "alphanum,max=30"); err != nil {
-		return n, fmt.Errorf("network name '%s' must be alphanumeric and no more than 30 chars", name)
+	if !validator.IsValidName(name) {
+		return n, fmt.Errorf("network name '%s' must be alphanumeric and no more than 32 chars", name)
 	}
 	n = &Network{
 		name:      name,

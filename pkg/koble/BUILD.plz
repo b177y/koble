@@ -12,6 +12,7 @@ go_library(
         "//pkg/driver/uml",
         "//pkg/output",
         "//util/topsort",
+        "//util/validator",
         "//third_party/go:go-humanize",
         "//third_party/go:shellescape",
         "//third_party/go:github.com__fatih__color",

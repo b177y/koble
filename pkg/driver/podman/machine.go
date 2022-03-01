@@ -157,7 +157,7 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	s.Name = m.Id()
 	s.Hostname = m.Name()
 	s.Command = []string{"/sbin/init"}
-	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN"}
+	s.CapAdd = []string{"NET_ADMIN", "SYS_ADMIN", "CAP_NET_BIND_SERVICE", "CAP_NET_RAW", "CAP_SYS_NICE", "CAP_IPC_LOCK", "CAP_CHOWN", "CAP_MKNOD"}
 	if len(opts.Networks) != 0 {
 		s.NetNS = specgen.Namespace{
 			NSMode: specgen.Bridge,

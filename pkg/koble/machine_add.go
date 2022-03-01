@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/go-playground/validator/v10"
+	"github.com/b177y/koble/util/validator"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/confmap"
@@ -21,16 +21,15 @@ func (nk *Koble) AddMachineToLab(name string, conf driver.MachineConfig) error {
 	}
 	log.WithFields(log.Fields{"name": name, "config": fmt.Sprintf("%+v", conf)}).
 		Info("adding machine to lab")
-	err := validator.New().Var(name, "alphanum,max=30")
-	if err != nil {
-		return err
+	if !validator.IsValidName(name) {
+		return fmt.Errorf("machine name '%s' must be alphanumeric and no more than 32 chars", name)
 	}
 
 	if _, ok := nk.Lab.Machines[name]; ok {
 		return fmt.Errorf("a machine named %s already exists", name)
 	}
 
-	err = os.Mkdir(name, 0755)
+	err := os.Mkdir(name, 0755)
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		return err
 	}

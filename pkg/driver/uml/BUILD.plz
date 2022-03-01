@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//pkg/driver",
         "//pkg/driver/podman",
+        "//util/validator",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings__containers",
         "//third_party/go:github.com__containers__podman__v3__pkg__bindings__images",
         "//third_party/go:github.com__containers__podman__v3__pkg__api__handlers",
