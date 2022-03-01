@@ -268,49 +268,37 @@ or User Mode Linux virtual machines (which are used for the original Netkit).
 You don&#8217;t need any understanding of how these technologies work for the purpose
 of this task.</p>
 </div>
-<div class="paragraph">
-<p>The task involves testing a few simple labs with both drivers,
-and answering some basic questions about your experience.
-You should read the rest of this page before you begin the tasks.</p>
-</div>
-<div class="paragraph">
-<p>After one of the tasks you will need to uncomment part of the lab config file,
-to switch to the UML driver.
-When and how to do this will be explained below.</p>
-</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_google_survey"><a class="anchor" href="#_google_survey"></a>Google Survey</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You will give your feedback via a google survey,
-which is broken into 5 short sections:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>initial feedback on tool from testing ABR lab</p>
-</li>
-<li>
-<p>Lab A - using Podman driver</p>
-</li>
-<li>
-<p>Lab B - using UML driver</p>
-</li>
-<li>
-<p>Driver feedback</p>
-</li>
-<li>
-<p>Additional (optional) feedback</p>
-</li>
-</ul>
+<p>You will give your feedback via a google survey.
+The link for this will be given to you in the session.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_install"><a class="anchor" href="#_install"></a>Install</h2>
 <div class="sectionbody">
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+This only covers installation for Ubuntu 20.04.
+This will not work for Ubuntu 21.04.
+It won&#8217;t work for CentOS.
+It won&#8217;t work for Arch.
+If you&#8217;re not using Ubuntu 20.04 use the manual install guide
+<a href="installation.html#_manual_installation" class="xref page">here</a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Firstly you will need to install <code>koble</code> on an Ubuntu 20.04 virtual machine.
 This can be done on the same VM that you use for Netkit, but it is recommended
@@ -344,73 +332,47 @@ source ~/.bashrc # or ~/.zshrc if you use zsh</code></pre>
 <div class="sect1">
 <h2 id="_tasks"><a class="anchor" href="#_tasks"></a>Tasks</h2>
 <div class="sectionbody">
-<div class="exampleblock">
-<div class="content">
-<div class="paragraph">
-<p>For one of the labs you will need to edit the <code>lab.yml</code> lab config file
-to change the following:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># driver:
-  # name: uml</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>should be uncommented to become:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">driver:
-  name: uml</code></pre>
-</div>
-</div>
-</div>
-</div>
 <div class="ulist">
 <ul>
 <li>
 <p><a href="LABS/abr.html" class="xref page">ABR Lab</a></p>
 </li>
 <li>
-<p>Answer section 1 of survey</p>
+<p>Answer section 1 of survey (ABR Lab Feedback)</p>
 </li>
 <li>
-<p><a href="LABS/dns.html" class="xref page">DNS Lab</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p>If you are group 1 you don&#8217;t need to change anything (this means you are using Podman).</p>
+<p>Start converting the lab that you submitted for ISS CW2 to use Koble instead of
+Netkit.
+This will involve creating a <code>lab.yml</code> file with all your machines.
+Looking through the <strong>Usage</strong> section of this docs site should help you
+getting started with Koble.
+For complex labs this is a big task so you could pick one or two features of the lab
+to try to get working.
+Even if you don&#8217;t get far through this,
+giving any feedback on the google form is useful for improving Koble for future students.</p>
 </li>
 <li>
-<p>If you are group 2 you need to uncomment the driver section in <code>lab.yml</code>
-(this means you are using UML).</p>
+<p>Answer section 2 of survey (ISS CW2 Lab)</p>
+</li>
+<li>
+<p>Answer section 3 of survey (Additional Feedback)</p>
 </li>
 </ul>
 </div>
-</li>
-<li>
-<p>Answer section 2 of survey</p>
-</li>
-<li>
-<p><a href="LABS/dhcp.html" class="xref page">DHCP Lab</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p>If you are group 1 you need to uncomment the driver section in <code>lab.yml</code>
-(this means you are using UML).</p>
-</li>
-<li>
-<p>If you are group 2 you don&#8217;t need to change anything
-(this means you are using Podman).</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Answer sections 3, 4 and 5 of survey</p>
-</li>
-</ul>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Koble is still in beta and is not completely stable yet,
+you are likely to find both bugs and missing functionality.
+Please mention any problems you have in the feedback form
+so these can be improved for future versions.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>

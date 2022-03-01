@@ -142,7 +142,100 @@
 </aside>
 <article class="doc">
 <h1 class="page">kstart</h1>
-
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>kstart</code> is the tool used during Koble machines' startup and shutdown to
+ensure everything is set up / stopped properly.
+This replaces the <code>netkit-phase1</code> and <code>netkit-phase2</code> scripts which
+were used in
+<a href="https://github.com/netkit-jh/netkit-jh-build">Netkit</a>.</p>
+</div>
+<div class="paragraph">
+<p>The tool is run automatically by the <code>koble-*</code> services in
+<code>filesystem-tweaks/usr/lib/systemd/system/</code>.</p>
+</div>
+<div class="paragraph">
+<p>It is written in Golang,
+and uses Cobra as a CLI helper library.
+The CLI structure is defined in <code>cmd/</code> and the main functionality is contained
+within <code>pkg/startup</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_functionality"><a class="anchor" href="#_functionality"></a>Functionality</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>During phase 1 of startup, <code>kstart</code> will:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Mount directories (for uml)</p>
+</li>
+<li>
+<p>Setup network interfaces</p>
+</li>
+<li>
+<p>Rename vecX interfaces to ethX (for uml vector networking)</p>
+</li>
+<li>
+<p>Setup /etc/hosts and the machine hostname</p>
+</li>
+<li>
+<p>Copy in files from <strong>/hostlab/MACHINE</strong> to <strong>/</strong> within the guest</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>During phase 2, <code>kstart</code> will:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Run the machine specific startup script</p>
+</li>
+<li>
+<p>Run the shared lab startup script</p>
+</li>
+<li>
+<p>Create the file <strong>/run/uml-guest/machine.ready</strong>,
+allowing Podman&#8217;s healthcheck to detect that the machine has
+finished booting. (uml only)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>During shutdown, <code>kstart</code> will:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Unmount directories</p>
+</li>
+<li>
+<p>Run machine specific shutdown script (TODO)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building"><a class="anchor" href="#_building"></a>Building</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before building the filesystem,
+<code>kstart</code> must be compiled so it can be copied into the image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">go build -o filesystem-tweaks/usr/local/bin/kstart cmd/*</code></pre>
+</div>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>
