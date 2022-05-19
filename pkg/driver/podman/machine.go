@@ -14,6 +14,8 @@ import (
 	"github.com/containers/image/v5/manifest"
 	"github.com/creasty/defaults"
 	"github.com/cri-o/ocicni/pkg/ocicni"
+	units "github.com/docker/go-units"
+	"github.com/opencontainers/runtime-spec/specs-go"
 
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/containers/podman/v3/pkg/api/handlers"
@@ -147,7 +149,6 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	}
 	if !imExists {
 		fmt.Println("Image", opts.Image, "does not already exist, attempting to pull...")
-		// t := new(images.PullOptions)
 		_, err = images.Pull(m.pd.Conn, opts.Image, nil)
 		if err != nil {
 			return err
@@ -194,6 +195,13 @@ func (m *Machine) Start(opts *driver.MachineConfig) (err error) {
 	s.Env = make(map[string]string, 0)
 	s.Env["kstart-driver"] = "podman"
 	s.Env["kstart-quiet"] = strconv.FormatBool(log.GetLevel() <= log.WarnLevel)
+	limit, err := units.RAMInBytes("132M") // TODO allow user set mem
+	if err != nil {
+		return fmt.Errorf("invalid memory format %s: %w", "132M", err)
+	}
+	s.ResourceLimits = &specs.LinuxResources{
+		Memory: &specs.LinuxMemory{Limit: &limit},
+	}
 	createResponse, err := containers.CreateWithSpec(m.pd.Conn, s, nil)
 	if err != nil {
 		return err

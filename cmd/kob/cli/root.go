@@ -8,6 +8,7 @@ import (
 var namespace string
 
 var (
+	// define Koble root command
 	RootCmd = &cobra.Command{
 		Use:   "koble",
 		Short: "Koble is a network emulation tool",

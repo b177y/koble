@@ -26,6 +26,7 @@ go_library(
         "//third_party/go:koanf",
         "//third_party/go:github.com__cri-o__ocicni__pkg__ocicni",
         "//third_party/go:github.com__containers__podman__v3__libpod__define",
+        "//third_party/go:github.com__docker__go-units",
     ],
 )
 
