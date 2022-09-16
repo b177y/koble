@@ -7,9 +7,9 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//third_party/go:github.com__fatih__color",
-        "//third_party/go:github.com__gosuri__uilive",
-        "//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:golang.org__x__crypto__ssh__terminal",
+        "//third_party/go/github.com/fatih/color",
+        "//third_party/go/github.com/gosuri/uilive",
+        "//third_party/go/github.com/sirupsen/logrus",
+        "//third_party/go/golang.org/x/crypto",
     ],
 )

@@ -11,7 +11,7 @@ remote_file(
     url = f"https://github.com/Tatskaari/go-deps/releases/download/{GO_DEPS_VERSION}/go_deps_{GO_DEPS_VERSION}_{CONFIG.OS}_{CONFIG.ARCH}",
 )
 
-WOLLEMI_VERSION = "v0.7.0"
+WOLLEMI_VERSION = "v0.8.1"
 
 remote_file(
     name = "wollemi",

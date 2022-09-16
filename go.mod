@@ -7,8 +7,9 @@ replace github.com/containernetworking/plugins => github.com/containernetworking
 require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/containers/buildah v1.27.0
+	github.com/containers/common v0.49.1
 	github.com/containers/image/v5 v5.22.0
-	github.com/containers/podman/v3 v3.4.0
+	github.com/containers/podman/v4 v4.2.1
 	github.com/creasty/defaults v1.5.2
 	github.com/cri-o/ocicni v0.4.0
 	github.com/docker/go-units v0.4.0
@@ -47,10 +48,8 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.12.0 // indirect
 	github.com/containernetworking/cni v1.1.2 // indirect
 	github.com/containernetworking/plugins v1.1.1 // indirect
-	github.com/containers/common v0.49.1 // indirect
 	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
 	github.com/containers/ocicrypt v1.1.5 // indirect
-	github.com/containers/podman/v4 v4.2.1 // indirect
 	github.com/containers/psgo v1.7.3 // indirect
 	github.com/containers/storage v1.42.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
@@ -71,6 +70,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-containerregistry v0.10.0 // indirect
 	github.com/google/go-intervals v0.0.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -78,7 +78,6 @@ require (
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.3.5 // indirect
@@ -143,7 +142,6 @@ require (
 	google.golang.org/genproto v0.0.0-20220624142145-8cd45d7dbd1f // indirect
 	google.golang.org/grpc v1.47.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

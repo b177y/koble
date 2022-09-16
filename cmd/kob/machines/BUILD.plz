@@ -7,11 +7,10 @@ go_library(
         exclude = ["*_test.go"],
     ),
     deps = [
-        "//pkg/koble",
-        "//pkg/output",
         "//cmd/kob/cli",
         "//pkg/driver",
-        #"//third_party/go:github.com__sirupsen__logrus",
-        "//third_party/go:github.com__spf13__cobra",
+        "//pkg/koble",
+        "//pkg/output",
+        "//third_party/go/github.com/spf13/cobra",
     ],
 )
