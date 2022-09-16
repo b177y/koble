@@ -2,7 +2,7 @@ package podman
 
 import (
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/containers/podman/v3/pkg/bindings/containers"
+	"github.com/containers/podman/v4/pkg/bindings/containers"
 )
 
 func (pd *PodmanDriver) ListMachines(namespace string, all bool) ([]driver.MachineInfo, error) {

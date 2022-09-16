@@ -20,7 +20,7 @@ type Lab struct {
 	Description  string                          `koanf:"description"`
 	Authors      []string                        `koanf:"authors"`
 	Emails       []string                        `koanf:"emails" validate:"dive,email"`
-	Web          []string                        `koanf:"web" validate:"dive,url"`
+	Webs         []string                        `koanf:"web" validate:"dive,url"`
 	Machines     map[string]driver.MachineConfig `koanf:"machines"`
 	Networks     map[string]driver.NetConfig     `koanf:"networks" mapstructure:"networks"`
 }

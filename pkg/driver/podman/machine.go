@@ -18,11 +18,11 @@ import (
 	"github.com/opencontainers/runtime-spec/specs-go"
 
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/containers/podman/v3/pkg/api/handlers"
-	"github.com/containers/podman/v3/pkg/bindings/containers"
-	"github.com/containers/podman/v3/pkg/bindings/images"
-	"github.com/containers/podman/v3/pkg/bindings/network"
-	"github.com/containers/podman/v3/pkg/specgen"
+	"github.com/containers/podman/v4/pkg/api/handlers"
+	"github.com/containers/podman/v4/pkg/bindings/containers"
+	"github.com/containers/podman/v4/pkg/bindings/images"
+	"github.com/containers/podman/v4/pkg/bindings/network"
+	"github.com/containers/podman/v4/pkg/specgen"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -247,7 +247,7 @@ func (m *Machine) Remove() error {
 	if !exists {
 		return nil
 	}
-	err = containers.Remove(m.pd.Conn, m.Id(), nil)
+	_, err = containers.Remove(m.pd.Conn, m.Id(), nil) // throw away RmReport
 	if err != nil {
 		return fmt.Errorf("could not remove container: %w", err)
 	}

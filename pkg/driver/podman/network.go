@@ -8,8 +8,8 @@ import (
 	"text/template"
 
 	"github.com/b177y/koble/pkg/driver"
-	"github.com/containers/podman/v3/pkg/bindings/network"
-	"github.com/containers/podman/v3/pkg/domain/entities"
+	"github.com/containers/common/libnetwork/types"
+	"github.com/containers/podman/v4/pkg/bindings/network"
 )
 
 func (n *Network) getNetLabels() map[string]string {
@@ -177,37 +177,33 @@ func (n *Network) Info() (nInfo driver.NetInfo, err error) {
 	return nInfo, err
 }
 
-func netInfoFromInspect(nw Network, insp []entities.NetworkInspectReport) (netInfo driver.NetInfo, err error) {
-	// this is currently very cursed due to podman bindings at v3.4
-	// returning map[string]interface{}
-	// future bindings will return
-	// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
-	// update this code to make it cleaner when this is released :)
+func netInfoFromInspect(nw Network, insp types.Network) (netInfo driver.NetInfo, err error) {
 	netInfo = driver.NetInfo{
 		Name:      nw.Name(),
 		Namespace: nw.Namespace,
 	}
-	if v, ok := insp[0]["plugins"]; ok {
-		parsed := v.([]interface{})
-		basicInfo := parsed[0].(map[string]interface{})
-		// if v, ok := basicInfo["bridge"]; ok {
-		// 	netInfo.Interface = v.(string)
-		// }
-		if v, ok := basicInfo["ipam"]; ok {
-			ipamParsed := v.(map[string]interface{})
-			if v, ok := ipamParsed["isGateway"]; ok {
-				netInfo.External = v.(bool)
-			}
-			if v, ok := ipamParsed["ranges"]; ok {
-				rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
-				if v, ok := rangesMap["gateway"]; ok {
-					netInfo.Gateway = v.(string)
-				}
-				if v, ok := rangesMap["subnet"]; ok {
-					netInfo.Subnet = v.(string)
-				}
-			}
-		}
-	}
+	fmt.Printf("found network %s\n", insp)
+	// if v, ok := insp[0]["plugins"]; ok {
+	// 	parsed := v.([]interface{})
+	// 	basicInfo := parsed[0].(map[string]interface{})
+	// 	// if v, ok := basicInfo["bridge"]; ok {
+	// 	// 	netInfo.Interface = v.(string)
+	// 	// }
+	// 	if v, ok := basicInfo["ipam"]; ok {
+	// 		ipamParsed := v.(map[string]interface{})
+	// 		if v, ok := ipamParsed["isGateway"]; ok {
+	// 			netInfo.External = v.(bool)
+	// 		}
+	// 		if v, ok := ipamParsed["ranges"]; ok {
+	// 			rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
+	// 			if v, ok := rangesMap["gateway"]; ok {
+	// 				netInfo.Gateway = v.(string)
+	// 			}
+	// 			if v, ok := rangesMap["subnet"]; ok {
+	// 				netInfo.Subnet = v.(string)
+	// 			}
+	// 		}
+	// 	}
+	// }
 	return netInfo, err
 }

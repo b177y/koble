@@ -64,7 +64,7 @@ func (lab *Lab) Header() string {
 	header += itemText("Version", lab.KobleVersion, width)
 	header += itemTextArray("Author", lab.Authors, width)
 	header += itemTextArray("Email", lab.Emails, width)
-	header += itemTextArray("Web", lab.Web, width)
+	header += itemTextArray("Web", lab.Webs, width)
 	header += itemText("Description", lab.Description, width)
 	header += barText('=', "", width)
 	return header + "\n"

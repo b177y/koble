@@ -3,7 +3,7 @@ package podman
 import (
 	"context"
 
-	"github.com/containers/podman/v3/pkg/bindings"
+	"github.com/containers/podman/v4/pkg/bindings"
 	log "github.com/sirupsen/logrus"
 )
 

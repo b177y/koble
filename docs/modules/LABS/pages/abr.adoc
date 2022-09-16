@@ -8,7 +8,7 @@ From the directory where you want to create your lab run:
 ----
 koble lab init --name abr --author YOURNAME \
     --description "abr example lab" \
-    --web EXAMPLE.COM
+    --web HTTPS://EXAMPLE.COM
 ----
 
 This will create a new lab directory called `abr`
