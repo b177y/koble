@@ -1,9 +1,11 @@
 package koble
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/b177y/koble/pkg/driver"
+	prettyjson "github.com/hokaccha/go-prettyjson"
 )
 
 func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
@@ -17,13 +19,21 @@ func (nk *Koble) StartNetwork(name string, conf driver.NetConfig) error {
 	return n.Start()
 }
 
-func (nk *Koble) ListNetworks(all bool) error {
-	networks, err := nk.Driver.ListNetworks(nk.Lab.Name, all)
+func (nk *Koble) ListNetworks(all, json bool) error {
+	networks, err := nk.Driver.ListNetworks(nk.Config.Namespace, all)
 	if err != nil {
 		return err
 	}
-	nlist, headers := NetInfoToStringArr(networks, all)
-	RenderTable(headers, nlist)
+	if json {
+		s, err := prettyjson.Marshal(networks)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(s))
+	} else {
+		nlist, headers := NetInfoToStringArr(networks, all)
+		RenderTable(headers, nlist)
+	}
 	return nil
 }
 

@@ -3,9 +3,6 @@ package podman
 import (
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
-	"text/template"
 
 	"github.com/b177y/koble/pkg/driver"
 	"github.com/containers/common/libnetwork/types"
@@ -43,17 +40,6 @@ func (n *Network) Create(opts *driver.NetConfig) (err error) {
 	if exists {
 		return driver.ErrExists
 	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	// TODO check ~/.config/cni/net.d/cni.lock ??
-	f, err := os.Create(filepath.Join(home, ".config", "cni", "net.d", n.Id()+".conflist"))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	var tmpl *template.Template
 	if opts.External {
 		if opts.Subnet == "" || opts.Gateway == "" {
 			return fmt.Errorf("gateway and subnet must be specified for network %s", n.name)
@@ -66,21 +52,24 @@ func (n *Network) Create(opts *driver.NetConfig) (err error) {
 		if gw == nil {
 			return fmt.Errorf("Could not parse IP %s as gateway", opts.Gateway)
 		}
-		tmpl, err = template.New("netconf").Parse(EXTERNAL_NET)
-		if err != nil {
-			return err
-		}
-	} else {
-		tmpl, err = template.New("netconf").Parse(INTERNAL_NET)
-		if err != nil {
-			return err
-		}
 	}
-
-	return tmpl.Execute(f, tmplNet{
-		Net:  n,
-		Opts: *opts,
-	})
+	newNet := &types.Network{
+		Name: n.Id(),
+		//Subnets: []types.Subnet{opts.Subnet}, // TODO
+		//IPv6Enabled: opts.IPv6,
+		Internal: !opts.External,
+	}
+	if !opts.External {
+		ipamOpts := map[string]string{}
+		ipamOpts["driver"] = "none"
+		newNet.IPAMOptions = ipamOpts
+	}
+	newNet.Labels = map[string]string{}
+	newNet.Labels["koble"] = "true"
+	newNet.Labels["koble:driver"] = n.pd.DriverName
+	newNet.Labels["koble:namespace"] = n.Namespace
+	_, err = network.Create(n.pd.Conn, newNet)
+	return err
 }
 
 func (n *Network) Start() (err error) {
@@ -103,57 +92,24 @@ func (n *Network) Running() (running bool, err error) {
 }
 
 func (pd *PodmanDriver) ListNetworks(namespace string, all bool) (networks []driver.NetInfo, err error) {
-	// opts := new(network.ListOptions)
-	// filters := getFilters("", lab, "GLOBAL", all)
-	// opts.WithFilters(filters)
-	// nets, err := network.List(pd.conn, opts)
-	// if err != nil {
-	// 	return networks, err
-	// }
-	// for _, n := range nets {
-	// 	name, namespace, lab := getInfoFromLabels(n.Labels)
-	// 	n := driver.Network{
-	// 		Name:      name,
-	// 		Namespace: namespace,
-	// 		Lab:       lab,
-	// 	}
-	// 	info, err := network.Inspect(pd.conn, n.Fullname(), nil)
-	// 	if err != nil {
-	// 		return networks, err
-	// 	}
-	// 	nw := driver.NetInfo{
-	// 		Name: name,
-	// 		Lab:  lab,
-	// 	}
-	// this is currently very cursed due to podman bindings at v3.4
-	// returning map[string]interface{}
-	// future bindings will return
-	// https://github.com/containers/podman/blob/abbd6c167e8163a711680db80137a0731e06e564/libpod/network/types/network.go#L34
-	// update this code to make it cleaner when this is released :)
-	// if v, ok := info[0]["plugins"]; ok {
-	// 	parsed := v.([]interface{})
-	// 	basicInfo := parsed[0].(map[string]interface{})
-	// if v, ok := basicInfo["bridge"]; ok {
-	// 	nw.Interface = v.(string)
-	// }
-	// if v, ok := basicInfo["ipam"]; ok {
-	// 	ipamParsed := v.(map[string]interface{})
-	// 	if v, ok := ipamParsed["isGateway"]; ok {
-	// 		nw.External = v.(bool)
-	// 	}
-	// 	if v, ok := ipamParsed["ranges"]; ok {
-	// 		rangesMap := v.([]interface{})[0].([]interface{})[0].(map[string]interface{})
-	// 		if v, ok := rangesMap["gateway"]; ok {
-	// 			nw.Gateway = v.(string)
-	// 		}
-	// 		if v, ok := rangesMap["subnet"]; ok {
-	// 			nw.Subnet = v.(string)
-	// 		}
-	// 	}
-	// }
-	// }
-	// networks = append(networks, nw)
-	// }
+	opts := new(network.ListOptions)
+	filters := getFilters("", namespace, pd.DriverName, all)
+	opts.WithFilters(filters)
+	nets, err := network.List(pd.Conn, opts)
+	if err != nil {
+		return networks, err
+	}
+	for _, n := range nets {
+		networks = append(networks, driver.NetInfo{
+			Name:      n.Name, // TODO cut 3rd element of name
+			Namespace: n.Name, // TODO cut 2nd element of name
+			External:  !n.Internal,
+			Gateway:   "", // TODO
+			IpRange:   "", // TODO
+			Subnet:    "", // TODO
+			IPv6:      "", // TODO
+		})
+	}
 	return networks, nil
 }
 

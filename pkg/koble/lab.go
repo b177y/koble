@@ -119,7 +119,7 @@ func (nk *Koble) LabInfo() error {
 		return err
 	}
 	fmt.Printf("\n")
-	err = nk.ListNetworks(false)
+	err = nk.ListNetworks(false, false)
 	fmt.Printf("\n")
 	return err
 }
