@@ -49,7 +49,7 @@ func itemTextArray(key string, values []string, width int) string {
 	return itemText(key, strings.Join(values, ", "), width)
 }
 
-func (lab *Lab) Header() string {
+func (lab *Lab) Header(titlePref string) string {
 	var header string
 	width, _, err := terminal.GetSize(0)
 	if err != nil {
@@ -58,7 +58,9 @@ func (lab *Lab) Header() string {
 	if width > MAXPRINTWIDTH {
 		width = MAXPRINTWIDTH
 	}
-	header += barText('=', "Starting Lab", width)
+	header += barText('=',
+		fmt.Sprintf("%s Lab", titlePref),
+		width)
 	header += itemText("Lab Directory", lab.Directory, width)
 	header += itemText("Created At", lab.CreatedAt, width)
 	header += itemText("Version", lab.KobleVersion, width)

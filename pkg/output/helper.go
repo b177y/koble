@@ -1,8 +1,8 @@
 package output
 
-func WithSimpleContainer(title string, header func() string, plain bool,
+func WithSimpleContainer(title string, header func(string) string, plain bool,
 	toRun func(o Output) error) (err error) {
-	oc := NewContainer(header, plain)
+	oc := NewContainer(header, title, plain)
 	oc.Start()
 	defer oc.Stop()
 	return WithStdout(title, oc, toRun)

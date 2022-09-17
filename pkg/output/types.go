@@ -22,12 +22,13 @@ type Container interface {
 	AddOutput(name string) Output
 }
 
-func NewContainer(headerFunc func() string, plain bool) (c Container) {
+func NewContainer(headerFunc func(string) string, titlePrefix string, plain bool) (c Container) {
 	if plain {
 		c = &LogContainer{
-			Out:        os.Stdout,
-			Outputs:    make([]*LogOutput, 0),
-			headerFunc: headerFunc,
+			Out:         os.Stdout,
+			Outputs:     make([]*LogOutput, 0),
+			headerFunc:  headerFunc,
+			titlePrefix: titlePrefix,
 		}
 	} else {
 		lw := uilive.New()
@@ -40,6 +41,7 @@ func NewContainer(headerFunc func() string, plain bool) (c Container) {
 			lw:              lw,
 			mtx:             &sync.RWMutex{},
 			headerFunc:      headerFunc,
+			titlePrefix:     titlePrefix,
 		}
 	}
 	return c

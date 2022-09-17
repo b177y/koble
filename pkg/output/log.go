@@ -35,9 +35,10 @@ func (lo *LogOutput) Error(err error) {
 }
 
 type LogContainer struct {
-	Out        io.Writer
-	Outputs    []*LogOutput
-	headerFunc func() string
+	Out         io.Writer
+	Outputs     []*LogOutput
+	headerFunc  func(string) string
+	titlePrefix string
 }
 
 func (lc *LogContainer) AddOutput(name string) Output {
@@ -52,7 +53,7 @@ func (lc *LogContainer) AddOutput(name string) Output {
 
 func (lc *LogContainer) Start() {
 	if lc.headerFunc != nil {
-		fmt.Fprint(lc.Out, lc.headerFunc())
+		fmt.Fprint(lc.Out, lc.headerFunc(lc.titlePrefix))
 	}
 }
 

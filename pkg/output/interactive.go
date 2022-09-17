@@ -19,7 +19,8 @@ type InteractiveContainer struct {
 	ticker          *time.Ticker
 	tdone           chan bool
 	mtx             *sync.RWMutex
-	headerFunc      func() string
+	headerFunc      func(string) string
+	titlePrefix     string
 }
 
 func (c *InteractiveContainer) AddOutput(name string) Output {
@@ -52,7 +53,7 @@ func (c *InteractiveContainer) print() {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 	if c.headerFunc != nil {
-		fmt.Fprint(c.lw, c.headerFunc())
+		fmt.Fprint(c.lw, c.headerFunc(c.titlePrefix))
 	}
 	width, _, err := terminal.GetSize(0)
 	if err != nil {

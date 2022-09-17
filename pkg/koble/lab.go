@@ -124,12 +124,12 @@ func (nk *Koble) LabInfo() error {
 	return err
 }
 
-func (nk *Koble) ForMachine(headerFunc func() string, titlePref string, filterList []string, toRun func(name string, mconf driver.MachineConfig, out output.Output) error) error {
+func (nk *Koble) ForMachine(headerFunc func(string) string, titlePref string, filterList []string, toRun func(name string, mconf driver.MachineConfig, out output.Output) error) error {
 	if nk.LabRoot == "" {
 		return errors.New("You are not currently in a lab directory.")
 	}
 
-	oc := output.NewContainer(nk.Lab.Header, nk.Config.NonInteractive)
+	oc := output.NewContainer(headerFunc, titlePref, nk.Config.NonInteractive)
 	oc.Start()
 	defer oc.Stop()
 	machines := filterMachines(nk.Lab.Machines, filterList)
